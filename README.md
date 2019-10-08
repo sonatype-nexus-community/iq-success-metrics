@@ -1,4 +1,4 @@
-# Customer Success Metrics
+# IQ Success Metrics
 
 ## Overview
 
