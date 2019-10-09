@@ -80,8 +80,9 @@ def main():
         opeCridict = dict()
         opeTotaldict = dict()
 
+
         for i in range(0,int(args["scope"])):
-                weeks.append(get_week_only(int(args["scope"])-1-i)) #set week list for images
+                weeks.append(get_week_only(int(args["scope"])-i)) #set week list for images. Use int(args["scope"])-1-i if looking for Year-To-Date instead of fully completed weeks
                 appNumberScandict[weeks[i]] = 0
                 weeklyScansdict[weeks[i]] = 0
                 appOnboarddict[weeks[i]] = 0
@@ -117,7 +118,7 @@ def main():
                         for a in app["aggregations"]:
                                 # process weekly reports for application.
                                 process_week(a, s)
-
+                                
                         #calculate averages and totals.#
                         compute_summary(s)
                         app.update({"summary": s}) #just adding summary back to application for now.
@@ -131,13 +132,13 @@ def main():
                                         if app["summary"]["weeks"][i] == k:                                                
                                                 if app["summary"]["evaluationCount"]["rng"][i] != 0:
                                                         appNumberScandict[str(k)] += 1
+                                                        weeklyScansdict[str(k)] += app["summary"]["evaluationCount"]["rng"][i]
                                                 
                                                         
                         j = 0
                         for w in app["summary"]["weeks"]:
                                 if w >= app["weeksInScope"][0]:
                                         appOnboarddict[w] += 1
-                                        weeklyScansdict[w] += app["summary"]["evaluationCount"]["rng"][j]
                                         disLowdict[w] += app["summary"]["discoveredCounts"]["TOTAL"]["LOW"]["rng"][j]
                                         disModdict[w] += app["summary"]["discoveredCounts"]["TOTAL"]["MODERATE"]["rng"][j]
                                         disSevdict[w] += app["summary"]["discoveredCounts"]["TOTAL"]["SEVERE"]["rng"][j]
@@ -267,7 +268,7 @@ def get_week_date(s):
 def get_metrics(iq_url, scope = 6, appId = [], orgId = []): # scope is number of week prior to current week.
 	url = "{}/api/v2/reports/metrics".format(iq_url)
 	iq_header = {'Content-Type':'application/json', 'Accept':'application/json'}
-	r_body = {"timePeriod": "WEEK", "firstTimePeriod": get_week(scope) ,"lastTimePeriod": get_week(0), 
+	r_body = {"timePeriod": "WEEK", "firstTimePeriod": get_week(scope) ,"lastTimePeriod": get_week(1), #use get_week(0) instead if looking for Year-To-Date data instead of fully completed weeks
 		"applicationIds": appId, "organizationIds": orgId}
 	response = iq_session.post( url, json=r_body, headers=iq_header)
 	return response.json()
