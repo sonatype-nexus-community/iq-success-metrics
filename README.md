@@ -163,7 +163,7 @@ You will also need to install Orca for the script to be able to programatically 
 You can get started by running the following command to display all the available options:
 
 ```
-python3 success_metrics -h
+python3 success_metrics.py -h
 
 Usage: python3 success_metrics.py [-h] [-a AUTH] [-s SCOPE] [-u URL] [-i APPID] [-o ORGID] [-p] [-v]
 
