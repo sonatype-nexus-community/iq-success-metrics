@@ -152,6 +152,11 @@ def adoption(jsonfile,target=0):
     
     make_chart(data[0]['weeksInScope'],data[len(data)-1]['appNumberScan'],"AppsScanning.png","Number of apps scanned per week","0",xtitle[0])
     pages.append('AppsScanning.png')
+
+    make_chart(data[0]['weeksInScope'],data[len(data)-1]['weeklyScans'],"WeeklyScans.png","Total number of scans per week","0",xtitle[0])
+    pages.append('WeeklyScans.png')
+
+    
     
     for app in data:
         time.sleep(0.1)
@@ -169,6 +174,7 @@ def adoption(jsonfile,target=0):
                            )
         pages.append(app["applicationName"]+"_DisFixWaiCount.png")
 
+    #print(scans)
     make_chart(list(scans.keys()),list(scans.values()),"AppsTotalScans.png","Total number of scans per app","0",xtitle[1])
     pages.append('AppsTotalScans.png')
     output_pdf(pages,"adoption_report.pdf")

@@ -50,13 +50,14 @@ def main():
         # get success metrics
         data = get_metrics(args["url"], args["scope"], appId,  orgId ) #collects data with or without filters according to appId and orgId
         #print(data)
-        appName, appOnboard, appNumberScan, orgName, weeks = [], [], [], [], []
+        appName, appOnboard, appNumberScan, orgName, weeks, weeklyScans = [], [], [], [], [], []
         disLow, disMod, disSev, disCri, disTotal = [], [], [], [], []
         fixLow, fixMod, fixSev, fixCri, fixTotal = [], [], [], [], []
         waiLow, waiMod, waiSev, waiCri, waiTotal = [], [], [], [], []
         opeLow, opeMod, opeSev, opeCri, opeTotal = [], [], [], [], []
         
         appNumberScandict = dict()
+        weeklyScansdict = dict()
         appOnboarddict = dict()
         disLowdict = dict()
         disModdict = dict()
@@ -82,6 +83,7 @@ def main():
         for i in range(0,int(args["scope"])):
                 weeks.append(get_week_only(int(args["scope"])-1-i)) #set week list for images
                 appNumberScandict[weeks[i]] = 0
+                weeklyScansdict[weeks[i]] = 0
                 appOnboarddict[weeks[i]] = 0
                 disLowdict[weeks[i]] = 0
                 disModdict[weeks[i]] = 0
@@ -123,16 +125,19 @@ def main():
                         app.update({"orgNames" : orgName})
                         app.update({"appNames" : appName})
 
-                        
-                        for i in range(int(app["summary"]["weeks"][0]),int(weeks[len(weeks)-1])+1):
-                                if str(i) >= app["weeksInScope"][0]:
-                                        appOnboarddict[str(i)] += 1
-                                                
+
+                        for k in app["weeksInScope"]:
+                                for i in range(0,len(app["summary"]["weeks"])):
+                                        if app["summary"]["weeks"][i] == k:                                                
+                                                if app["summary"]["evaluationCount"]["rng"][i] != 0:
+                                                        appNumberScandict[str(k)] += 1
+                                                        print(appNumberScandict)
+                                                        
                         j = 0
                         for w in app["summary"]["weeks"]:
                                 if w >= app["weeksInScope"][0]:
-                                        appNumberScandict[w] += 1
-                                        
+                                        appOnboarddict[w] += 1
+                                        weeklyScansdict[w] += app["summary"]["evaluationCount"]["rng"][j]
                                         disLowdict[w] += app["summary"]["discoveredCounts"]["TOTAL"]["LOW"]["rng"][j]
                                         disModdict[w] += app["summary"]["discoveredCounts"]["TOTAL"]["MODERATE"]["rng"][j]
                                         disSevdict[w] += app["summary"]["discoveredCounts"]["TOTAL"]["SEVERE"]["rng"][j]
@@ -153,10 +158,10 @@ def main():
                                         opeSevdict[w] += app["summary"]["openCountsAtTimePeriodEnd"]["TOTAL"]["SEVERE"]["rng"][j]
                                         opeCridict[w] += app["summary"]["openCountsAtTimePeriodEnd"]["TOTAL"]["CRITICAL"]["rng"][j]
                                         opeTotaldict[w] += app["summary"]["openCountsAtTimePeriodEnd"]["TOTAL"]["rng"][j]
-                                        #print(opeTotaldict)
                                         j += 1
 
                         appNumberScan = list(appNumberScandict.values())
+                        weeklyScans = list(weeklyScansdict.values())
                         appOnboard = list(appOnboarddict.values())
                         disTotal = list(disTotaldict.values())
                         fixTotal = list(fixTotaldict.values())
@@ -183,6 +188,7 @@ def main():
                         
                         app.update({"appNumberScan" : appNumberScan})
                         app.update({"appOnboard" : appOnboard})
+                        app.update({"weeklyScans" : weeklyScans})
                         app.update({"discoveredTotal" : disTotal})
                         app.update({"fixedTotal" : fixTotal})
                         app.update({"waivedTotal" : waiTotal})
