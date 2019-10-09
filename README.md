@@ -267,7 +267,7 @@ Don't worry, using this community item does not "void your warranty". In a worst
 Remember:
 
 * Use this contribution at the risk tolerance that you have
-* Do NOT file Sonatype support tickets related to Cabal support in regard to this plugin
+* Do NOT file Sonatype support tickets related to iq-success-metrics
 * DO file issues here on GitHub, so that the community can pitch in
 
 Phew, that was easier than I thought. Last but not least of all:
