@@ -131,7 +131,7 @@ def main():
                                         if app["summary"]["weeks"][i] == k:                                                
                                                 if app["summary"]["evaluationCount"]["rng"][i] != 0:
                                                         appNumberScandict[str(k)] += 1
-                                                        print(appNumberScandict)
+                                                
                                                         
                         j = 0
                         for w in app["summary"]["weeks"]:
