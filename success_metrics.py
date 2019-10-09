@@ -212,8 +212,9 @@ def main():
                         json.dump(data, f)
                         print( "saved to successmetrics.json" )
 
-        #else:
-                #print(data)
+        else:
+                print("Please use -v option to save to json file and/or -p option to display indented output on screen.")
+                print("e.g. $> python3 success_metrics.py -v -p")
 
 #-----------------------------------------------------------------------------------
 def searchApps(search, iq_url):
