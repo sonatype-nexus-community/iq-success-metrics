@@ -2,4 +2,4 @@
 *.png
 *.pdf
 successmetrics.json
-venv
+.venv
