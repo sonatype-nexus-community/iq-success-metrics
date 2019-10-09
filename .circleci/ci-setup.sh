@@ -2,7 +2,7 @@
 
 # intended to be run from directory above this one.
 
-# Setup a proper path, I call my virtualenv dir "venv" and
+# Setup a proper path, I call my virtualenv dir "venv"
 PATH=$WORKSPACE/venv/bin:$PATH
 lsb_release -a
 python3 --version
