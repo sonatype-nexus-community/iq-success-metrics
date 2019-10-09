@@ -3,3 +3,4 @@
 *.pdf
 successmetrics.json
 .venv
+/.circleci/local-config.yml
