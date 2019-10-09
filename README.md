@@ -158,6 +158,13 @@ pip3 install psutil
 
 You will also need to install Orca for the script to be able to programatically save the plotly images to disk and for these to be added to the pdf report. To do this, follow the Installation notes for Method 4: Standalone binaries inside the README file in Orca's github. If you have questions regarding these instructions please contact Sonatype Customer Success. Below a screenshot for the Mac OS:
 
+
+Another alternative is to install the required dependencies using the [requirements.txt](requirements.txt) file at the root of this project, e.g.:
+
+    pip3 install -r requirements.txt
+    
+  A virtual environment with these requirements can be created and activated using the script: `.circleci/ci-setup.sh`.      
+
 ### Usage
 
 You can get started by running the following command to display all the available options:
