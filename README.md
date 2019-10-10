@@ -1,5 +1,7 @@
 # IQ Success Metrics
 
+[![CircleCI](https://circleci.com/gh/sonatype-nexus-community/iq-success-metrics.svg?style=svg)](https://circleci.com/gh/sonatype-nexus-community/iq-success-metrics)
+
 ## Overview
 
 Nexus IQ Server has a number of REST APIs that allow you to automate certain tasks as well as quickly retrieve IQ server data. One of those APIs is the Success Metrics Data API which collects all the violations and other measurements and shares them as counters inside a JSON dictionary. In order to better capture the results, we have developed a Python script to collect, aggregate and process the counters into outcome-based metrics. We can use these outcome-based metrics to measure progression toward your PDOs.
