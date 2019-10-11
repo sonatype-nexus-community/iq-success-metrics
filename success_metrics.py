@@ -137,7 +137,7 @@ def main():
                                                         
                         j = 0
                         for w in app["summary"]["weeks"]:
-                                if w >= app["weeksInScope"][0]:
+                                if w in app["weeksInScope"]:
                                         appOnboarddict[w] += 1
                                         disLowdict[w] += app["summary"]["discoveredCounts"]["TOTAL"]["LOW"]["rng"][j]
                                         disModdict[w] += app["summary"]["discoveredCounts"]["TOTAL"]["MODERATE"]["rng"][j]
