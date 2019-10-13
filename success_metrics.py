@@ -49,174 +49,82 @@ def main():
 
         # get success metrics
         data = get_metrics(args["url"], args["scope"], appId,  orgId ) #collects data with or without filters according to appId and orgId
-        #print(data)
-        appName, appOnboard, appNumberScan, orgName, weeks, weeklyScans = [], [], [], [], [], []
-        disLow, disMod, disSev, disCri, disTotal = [], [], [], [], []
-        fixLow, fixMod, fixSev, fixCri, fixTotal = [], [], [], [], []
-        waiLow, waiMod, waiSev, waiCri, waiTotal = [], [], [], [], []
-        opeLow, opeMod, opeSev, opeCri, opeTotal = [], [], [], [], []
+
+        if data is None: 
+                print("No results found.")
+                raise SystemExit
+
+        #cnt is used to aggrigate totals from the filtered set of applications.
+        #reportSummary will return the final results.
+        cnt, reportSummary = {}, {"appNames":[], "orgNames":[], "weeks":[], "timePeriodStart" : []}
+
+        # set the weeks range in the report summary for the required scope.
+        for ii in range(0, args["scope"]):
+                recency = args["scope"]-ii
+                reportSummary["timePeriodStart"].append( get_week_start( recency ) ) 
+                reportSummary["weeks"].append( get_week_only( recency ) ) 
         
-        appNumberScandict = dict()
-        weeklyScansdict = dict()
-        appOnboarddict = dict()
-        disLowdict = dict()
-        disModdict = dict()
-        disSevdict = dict()
-        disCridict = dict()
-        disTotaldict = dict()
-        fixLowdict = dict()
-        fixModdict = dict()
-        fixSevdict = dict()
-        fixCridict = dict()
-        fixTotaldict = dict()
-        waiLowdict = dict()
-        waiModdict = dict()
-        waiSevdict = dict()
-        waiCridict = dict()
-        waiTotaldict = dict()
-        opeLowdict = dict()
-        opeModdict = dict()
-        opeSevdict = dict()
-        opeCridict = dict()
-        opeTotaldict = dict()
+        # set empty range for scope
+        for tt in ["appNumberScan", "appOnboard", "weeklyScans"]:
+                cnt.update({ tt : zeros(reportSummary["weeks"]) })
 
+        # building aggrigated set of fields.
+        for tt in config["status"]:
+                cnt.update({ tt: {} })
+                for rr in config["risk"]:
+                        cnt[tt].update({ rr: zeros(reportSummary["weeks"]) })
+                cnt[tt].update({ "TOTAL" : zeros(reportSummary["weeks"]) })
 
-        for i in range(0,int(args["scope"])):
-                weeks.append(get_week_only(int(args["scope"])-i)) #set week list for images. Use int(args["scope"])-1-i if looking for Year-To-Date instead of fully completed weeks
-                appNumberScandict[weeks[i]] = 0
-                weeklyScansdict[weeks[i]] = 0
-                appOnboarddict[weeks[i]] = 0
-                disLowdict[weeks[i]] = 0
-                disModdict[weeks[i]] = 0
-                disSevdict[weeks[i]] = 0
-                disCridict[weeks[i]] = 0
-                disTotaldict[weeks[i]] = 0
-                fixLowdict[weeks[i]] = 0
-                fixModdict[weeks[i]] = 0
-                fixSevdict[weeks[i]] = 0
-                fixCridict[weeks[i]] = 0
-                fixTotaldict[weeks[i]] = 0
-                waiLowdict[weeks[i]] = 0
-                waiModdict[weeks[i]] = 0
-                waiSevdict[weeks[i]] = 0
-                waiCridict[weeks[i]] = 0
-                waiTotaldict[weeks[i]] = 0
-                opeLowdict[weeks[i]] = 0
-                opeModdict[weeks[i]] = 0
-                opeSevdict[weeks[i]] = 0
-                opeCridict[weeks[i]] = 0
-                opeTotaldict[weeks[i]] = 0
+        # loop through applications in success metric data.
+        for app in data:
+                reportSummary['appNames'].append( app["applicationName"] )
+                reportSummary['orgNames'].append( app["organizationName"] )
                 
-                
-        if data is not None: #got data??#
-                for app in data:
-                        appName.append(app["applicationName"])
-                        orgName.append(app["organizationName"])
-                        # zeroed summary template.
-                        s = get_aggs_list() 
+                s = get_aggs_list() # zeroed summary template.
+                for a in app["aggregations"]:
+                        # process the weekly reports for application.
+                        process_week(a, s)
 
-                        for a in app["aggregations"]:
-                                # process weekly reports for application.
-                                process_week(a, s)
-                                
-                        #calculate averages and totals.#
-                        compute_summary(s)
-                        app.update({"summary": s}) #just adding summary back to application for now.
-                        app.update({"weeksInScope" : weeks})
-                        app.update({"orgNames" : orgName})
-                        app.update({"appNames" : appName})
+                compute_summary(s)
+                app.update({"summary": s})
 
+                j = 0
+                for w in s["weeks"]:
+                        cnt["appOnboard"][w] += 1
+                        if s["evaluationCount"]["rng"][j] != 0:
+                                cnt["appNumberScan"][w] += 1
+                                cnt["weeklyScans"][w] += s["evaluationCount"]["rng"][j] 
 
-                        for k in app["weeksInScope"]:
-                                for i in range(0,len(app["summary"]["weeks"])):
-                                        if app["summary"]["weeks"][i] == k:                                                
-                                                if app["summary"]["evaluationCount"]["rng"][i] != 0:
-                                                        appNumberScandict[str(k)] += 1
-                                                        weeklyScansdict[str(k)] += app["summary"]["evaluationCount"]["rng"][i]
-                                                
-                                                        
-                        j = 0
-                        for w in app["summary"]["weeks"]:
-                                if w in app["weeksInScope"]:
-                                        appOnboarddict[w] += 1
-                                        disLowdict[w] += app["summary"]["discoveredCounts"]["TOTAL"]["LOW"]["rng"][j]
-                                        disModdict[w] += app["summary"]["discoveredCounts"]["TOTAL"]["MODERATE"]["rng"][j]
-                                        disSevdict[w] += app["summary"]["discoveredCounts"]["TOTAL"]["SEVERE"]["rng"][j]
-                                        disCridict[w] += app["summary"]["discoveredCounts"]["TOTAL"]["CRITICAL"]["rng"][j]
-                                        disTotaldict[w] += app["summary"]["discoveredCounts"]["TOTAL"]["rng"][j]
-                                        fixLowdict[w] += app["summary"]["fixedCounts"]["TOTAL"]["LOW"]["rng"][j]
-                                        fixModdict[w] += app["summary"]["fixedCounts"]["TOTAL"]["MODERATE"]["rng"][j]
-                                        fixSevdict[w] += app["summary"]["fixedCounts"]["TOTAL"]["SEVERE"]["rng"][j]
-                                        fixCridict[w] += app["summary"]["fixedCounts"]["TOTAL"]["CRITICAL"]["rng"][j]
-                                        fixTotaldict[w] += app["summary"]["fixedCounts"]["TOTAL"]["rng"][j]
-                                        waiLowdict[w] += app["summary"]["waivedCounts"]["TOTAL"]["LOW"]["rng"][j]
-                                        waiModdict[w] += app["summary"]["waivedCounts"]["TOTAL"]["MODERATE"]["rng"][j]
-                                        waiSevdict[w] += app["summary"]["waivedCounts"]["TOTAL"]["SEVERE"]["rng"][j]
-                                        waiCridict[w] += app["summary"]["waivedCounts"]["TOTAL"]["CRITICAL"]["rng"][j]
-                                        waiTotaldict[w] += app["summary"]["waivedCounts"]["TOTAL"]["rng"][j]
-                                        opeLowdict[w] += app["summary"]["openCountsAtTimePeriodEnd"]["TOTAL"]["LOW"]["rng"][j]
-                                        opeModdict[w] += app["summary"]["openCountsAtTimePeriodEnd"]["TOTAL"]["MODERATE"]["rng"][j]
-                                        opeSevdict[w] += app["summary"]["openCountsAtTimePeriodEnd"]["TOTAL"]["SEVERE"]["rng"][j]
-                                        opeCridict[w] += app["summary"]["openCountsAtTimePeriodEnd"]["TOTAL"]["CRITICAL"]["rng"][j]
-                                        opeTotaldict[w] += app["summary"]["openCountsAtTimePeriodEnd"]["TOTAL"]["rng"][j]
-                                        j += 1
+                        for tt in config["status"]:
+                                for rr in config["risk"]:
+                                        cnt[tt][rr][w] += s[tt]["TOTAL"][rr]["rng"][j]
+                                cnt[tt]["TOTAL"][w] += s[tt]["TOTAL"]["rng"][j]
+                        j += 1
 
-                        appNumberScan = list(appNumberScandict.values())
-                        weeklyScans = list(weeklyScansdict.values())
-                        appOnboard = list(appOnboarddict.values())
-                        disTotal = list(disTotaldict.values())
-                        fixTotal = list(fixTotaldict.values())
-                        waiTotal = list(waiTotaldict.values())
-                        opeTotal = list(opeTotaldict.values())
-                        disLow = list(disLowdict.values())
-                        disMod = list(disModdict.values())
-                        disSev = list(disSevdict.values())
-                        disCri = list(disCridict.values())
-                        fixLow = list(fixLowdict.values())
-                        fixMod = list(fixModdict.values())
-                        fixSev = list(fixSevdict.values())
-                        fixCri = list(fixCridict.values())
-                        waiLow = list(waiLowdict.values())
-                        waiMod = list(waiModdict.values())
-                        waiSev = list(waiSevdict.values())
-                        waiCri = list(waiCridict.values())
-                        opeLow = list(opeLowdict.values())
-                        opeMod = list(opeModdict.values())
-                        opeSev = list(opeSevdict.values())
-                        opeCri = list(opeCridict.values())
-                        
-                        
-                        
-                        app.update({"appNumberScan" : appNumberScan})
-                        app.update({"appOnboard" : appOnboard})
-                        app.update({"weeklyScans" : weeklyScans})
-                        app.update({"discoveredTotal" : disTotal})
-                        app.update({"fixedTotal" : fixTotal})
-                        app.update({"waivedTotal" : waiTotal})
-                        app.update({"openTotal" : opeTotal})
-                        app.update({"discoveredLow" : disLow})
-                        app.update({"discoveredMod" : disMod})
-                        app.update({"discoveredSev" : disSev})
-                        app.update({"discoveredCri" : disCri})
-                        app.update({"fixedLow" : fixLow})
-                        app.update({"fixedMod" : fixMod})
-                        app.update({"fixedSev" : fixSev})
-                        app.update({"fixedCri" : fixCri})
-                        app.update({"waivedLow" : waiLow})
-                        app.update({"waivedMod" : waiMod})
-                        app.update({"waivedSev" : waiSev})
-                        app.update({"waivedCri" : waiCri})
-                        app.update({"openLow" : opeLow})
-                        app.update({"openMod" : opeMod})
-                        app.update({"openSev" : opeSev})
-                        app.update({"openCri" : opeCri})
+        #convert the dicts to arrays.
+        for tt in ["appNumberScan", "appOnboard", "weeklyScans"]:
+                reportSummary.update({ tt : list( cnt[tt].values() ) })
+
+        for tt in config["status"]:
+                reportSummary.update({ tt: {} })
+                for rr in config["risk"]:
+                        reportSummary[tt].update({ rr: list( cnt[tt][rr].values() ) })
+                reportSummary[tt].update({ "LIST" : list( reportSummary[tt].values() ) })        
+                reportSummary[tt].update({ "TOTAL" : list( cnt[tt]["TOTAL"].values() ) })
+
+        #for x in cnt.keys():
+                #reportSummary.update({ x: list( cnt[x].values() ) })
+
+        # Final report with summary and data objects.
+        report = {"summary": reportSummary, "apps": data}
+
 
         if args["pretty"]:
-                print( json.dumps(data, indent=4) )
+                print( json.dumps(report, indent=4) )
 
         if args["save"]:
                 with open("successmetrics.json",'w') as f:
-                        json.dump(data, f)
+                        json.dump(report, f)
                         print( "saved to successmetrics.json" )
 
         else:
@@ -248,6 +156,11 @@ def searchOrgs(search, iq_url):
                                         orgId.append(org["id"]) #if org "name", "id" or "publicId" in arguments, then creates array of org IDs in orgId
         return orgId
 
+def get_week_start(recency = 0):
+        d = datetime.date.today()
+        d = d - datetime.timedelta(days=d.weekday()+(recency*7) )
+        period = '{}'.format( d.isoformat() )
+        return period
 
 def get_week_only(recency = 0):
         d = datetime.date.today() - datetime.timedelta(days=(recency*7))
@@ -277,7 +190,7 @@ def rnd(n): return round(n,2)
 def avg(n): return rnd(sum(n)/len(n))
 def rate(n, d): return 0 if d == 0 else (n/d)
 def percent(n, d): return rnd(rate(n, d)*100)
-
+def zeros(n): return dict.fromkeys( n, 0)
 
 def ms_days(v): #convert ms to days
 	if v is None: return 0
@@ -286,7 +199,7 @@ def ms_days(v): #convert ms to days
 
 def get_aggs_list():
 	s = {"weeks":[], "fixedRate":[], "waivedRate":[], "dealtRate":[]}
-	s.update(dict.fromkeys(config["statRates"], 0))
+	s.update(zeros(config["statRates"]))
 	for m in config["mttr"]:
 		s.update({m:{"avg":0,"rng":[]}})
 	for t in config["status"]:
@@ -408,3 +321,5 @@ def compute_summary(s):
 
 if __name__ == "__main__":
 	main()
+#raise SystemExit
+

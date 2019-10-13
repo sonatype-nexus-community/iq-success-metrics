@@ -12,27 +12,36 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import json
-import pandas as pd
+#import pandas as pd #this was only being used to import file.  You can just use open.
 from fpdf import FPDF
 import time
 import plotly.graph_objects as go
 
 
-xtitle = ["ISO week number","Applications"]
+xtitle = ["ISO week number", "Applications"]
+
+#filename = input("\nPlease enter JSON file name containing success metrics to analyse, e.g. successmetrics.json\n")    
+filename = "successmetrics.json"
+
+#data = pd.read_json(jsonfile, typ='dict')
+with open(filename, 'r') as f:
+    report = json.load(f)
+    #data={"summary":{},"apps":[]}
+    summary = report["summary"]
+    apps = report["apps"]
+    appCount = len(apps)
 
 # Print iterations progress
-def printProgressBar (iteration, total, prefix = '', suffix = '', decimals = 1, length = 100, fill = '█'):
-    """
-    Call in a loop to create terminal progress bar
-    @params:
-        iteration   - Required  : current iteration (Int)
-        total       - Required  : total iterations (Int)
-        prefix      - Optional  : prefix string (Str)
-        suffix      - Optional  : suffix string (Str)
-        decimals    - Optional  : positive number of decimals in percent complete (Int)
-        length      - Optional  : character length of bar (Int)
-        fill        - Optional  : bar fill character (Str)
-    """
+def printProgressBar (
+        iteration, 
+        total, 
+        prefix = 'Progress:', 
+        suffix = 'Complete', 
+        decimals = 1, 
+        length = 50, 
+        fill = '█'):
+
+    time.sleep(0.1)
     percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
     filledLength = int(length * iteration // total)
     bar = fill * filledLength + '-' * (length - filledLength)
@@ -86,17 +95,23 @@ def make_hor_line(fig,x0,y0,x1,y1,colour):
             #),
         ]
     )
+
 def make_chart(period, data, filename, title, target, xtitle):
-    fig = go.Figure(data=[ go.Bar(x=period, y=data, text=data, textposition='auto') ], layout_title_text=title)
+    fig = go.Figure(
+        data=[ go.Bar(x=period, y=data, text=data, textposition='auto') ], 
+        layout_title_text=title
+    )
+
     fig.update_layout(autosize=False, width=864, height=528, xaxis=go.layout.XAxis(title_text=xtitle))
     fig.update_xaxes(tickvals=period,automargin=True)
+
     if target != "0":    
         make_hor_line(fig,period[0],int(target),period[len(period)-1],int(target),"Red")
     fig.write_image(filename)
 
-def make_stacked_chart(period,data,legend,filename,title):
+def make_stacked_chart(period, data, legend, filename, title):
     traces = []
-    for i in range(0,len(data)):
+    for i in range(0, len(data)):
         trace = go.Bar(
             name = legend[i],
             x = period,
@@ -106,7 +121,7 @@ def make_stacked_chart(period,data,legend,filename,title):
             )
         traces.append(trace)
 
-    fig = go.Figure(data=traces,layout_title_text=title)
+    fig = go.Figure(data=traces, layout_title_text=title)
     fig.update_layout(
         barmode='stack',
         autosize=False,
@@ -135,152 +150,200 @@ def output_pdf(pages, filename):
 #ADOPTION: "To increase the use of Nexus IQ within my organisation".
 #Tracks total number of applications onboarded (weekly basis)
 #Tracks number of applications scanned per week (per org)
-#Generates scans/week (total, per org, per app). Tracks compliance percentage of minimum of x scans per week on all apps
+#Generates scans/week (total, per org, per app). 
+#Tracks compliance percentage of minimum of x scans per week on all apps
 #Generates discovered, fixed & waived counts/week (total, per org, per app).
 #Tracks compliance percentage of fix, waive & dealt-with percentage per week and threat level
-#Generates open counts/week (total, per org, per app). Displays current technical debt, and tracks how long (in hours) would it take to deal with it at current dealt-with rate (for informational purposes).
-def adoption(jsonfile,target=0):
+#Generates open counts/week (total, per org, per app). 
+#Displays current technical debt, and tracks how long (in hours) 
+#would it take to deal with it at current dealt-with rate (for informational purposes).
+
+def adoption(target=0):
     pages = []
     scans = dict()
     j = 0
     
-    data = pd.read_json(jsonfile,typ='dict')
-    printProgressBar(j,len(data),prefix = 'Progress:', suffix = 'Complete', length = 50)
-
-    make_chart(data[0]['weeksInScope'],data[len(data)-1]['appOnboard'],"AppsOnboarded.png","Number of apps onboarded (weekly view)",target[0],xtitle[0])
+    printProgressBar(j, appCount)
+    #------------------------------------
+    make_chart( 
+        summary['weeks'], 
+        summary['appOnboard'], 
+        "AppsOnboarded.png", 
+        "Number of apps onboarded (weekly view)", 
+        target[0], 
+        xtitle[0]
+    )
     pages.append('AppsOnboarded.png')
-    
-    make_chart(data[0]['weeksInScope'],data[len(data)-1]['appNumberScan'],"AppsScanning.png","Number of apps scanned per week","0",xtitle[0])
+    #------------------------------------
+    make_chart(
+        summary['weeks'], 
+        summary['appNumberScan'], 
+        "AppsScanning.png", 
+        "Number of apps scanned per week", 
+        "0", 
+        xtitle[0]
+    )
     pages.append('AppsScanning.png')
-
-    make_chart(data[0]['weeksInScope'],data[len(data)-1]['weeklyScans'],"WeeklyScans.png","Total number of scans per week","0",xtitle[0])
+    #------------------------------------
+    make_chart( 
+        summary['weeks'], 
+        summary['weeklyScans'], 
+        "WeeklyScans.png", 
+        "Total number of scans per week", 
+        "0", 
+        xtitle[0]
+    )
     pages.append('WeeklyScans.png')
+    #------------------------------------
 
-    
-    
-    for app in data:
-        time.sleep(0.1)
+    for app in apps:
         j+=1
-        printProgressBar(j,len(data),prefix = 'Progress:', suffix = 'Complete', length = 50)
-        scans[app["applicationName"]] = sum(app["summary"]["evaluationCount"]["rng"])
-        make_chart(data[0]['weeksInScope'],app['summary']['evaluationCount']['rng'],app["applicationName"]+"_EvalCount.png","Number of scans/week for app "+str(app["applicationName"]),target[1],xtitle[0])
-        pages.append(app["applicationName"]+"_EvalCount.png")
-        make_stacked_chart(data[0]['weeksInScope'],[app['summary']['discoveredCounts']['TOTAL']['rng'],
-                                                    app['summary']['fixedCounts']['TOTAL']['rng'],
-                                                    app['summary']['waivedCounts']['TOTAL']['rng']
-                                                     ],
-                                                   ['Discovered','Fixed','Waived'],
-                                                   app["applicationName"]+"_DisFixWaiCount.png","Number of Discovered, Fixed & Waived vulnerabilities for app "+str(app["applicationName"])
-                           )
-        pages.append(app["applicationName"]+"_DisFixWaiCount.png")
+        appName = app["applicationName"]
+
+        printProgressBar(j, appCount)
+        scans.update({ appName: sum(app["summary"]["evaluationCount"]["rng"]) })
+
+        make_chart( 
+            summary['weeks'], 
+            app['summary']['evaluationCount']['rng'], 
+            f"{appName}_EvalCount.png", 
+            f"Number of scans/week for app {appName}", 
+            target[1], 
+            xtitle[0]
+        )
+        pages.append( f"{appName}_EvalCount.png" )
+
+        make_stacked_chart(
+            summary['weeks'],
+            [
+                app['summary']['discoveredCounts']['TOTAL']['rng'],
+                app['summary']['fixedCounts']['TOTAL']['rng'],
+                app['summary']['waivedCounts']['TOTAL']['rng']
+            ],
+            ['Discovered','Fixed','Waived'],
+            f"{appName}_DisFixWaiCount.png",
+            f"Number of Discovered, Fixed, & Waived vulnerabilities for app {appName}"
+        )
+        pages.append(f"{appName}_DisFixWaiCount.png")
 
     #print(scans)
-    make_chart(list(scans.keys()),list(scans.values()),"AppsTotalScans.png","Total number of scans per app","0",xtitle[1])
+    make_chart( 
+        list(scans.keys()), 
+        list(scans.values()), 
+        "AppsTotalScans.png", 
+        "Total number of scans per app", 
+        "0", 
+        xtitle[1]
+    )
     pages.append('AppsTotalScans.png')
-    output_pdf(pages,"adoption_report.pdf")
+    output_pdf(pages, "adoption_report.pdf")
 
 #---------------------------------
 #PREVENTION: "To reduce the number of vulnerabilities passed from build to release"
 #Generates open counts at build and at release per week (total, per org, per app) and compares them
 #Tracks compliance percentage of maximum number of vulnerabilities at release stage per threat level
-def prevention(jsonfile):
+def prevention():
     print("Prevention report soon to be implemented")
 
 
-#---------------------------------
+#-------------------------------------------------------------------------
 #REMEDIATION: "To reduce the number of vulnerabilities by x percentage"
-#Generates discovered, fixed & waived counts/week (total, per org, per app). Tracks compliance percentage of fix, waive & dealt-with percentage per week and threat level
-#Generates open counts/week (total, per org, per app). Displays current technical debt, and tracks how long (in hours) would it take to deal with it at current dealt-with rate (for informational purposes).
-def remediation(jsonfile):
-    pages = []
-    j = 5 #number of graphs to be generated. Used for progress bar
-    
-    data = pd.read_json(jsonfile,typ='dict')
-    printProgressBar(0,j,prefix = 'Progress:', suffix = 'Complete', length = 50)
+#Generates discovered, fixed & waived counts/week (total, per org, per app). 
+#Tracks compliance percentage of fix, waive & dealt-with percentage per week and threat level
+#Generates open counts/week (total, per org, per app). 
+#Displays current technical debt, and tracks how long (in hours) 
+#would it take to deal with it at current dealt-with rate (for informational purposes).
+#-------------------------------------------------------------------------
+#"status" : ["discoveredCounts", "fixedCounts", "waivedCounts", "openCountsAtTimePeriodEnd"],
+#"risk" : ["LOW", "MODERATE", "SEVERE", "CRITICAL"]
 
-    make_stacked_chart(data[0]['weeksInScope'],[data[len(data)-1]['discoveredTotal'],
-                                                data[len(data)-1]['fixedTotal'],
-                                                data[len(data)-1]['waivedTotal']
-                                                 ],
-                                               ['Discovered','Fixed','Waived'],
-                                               "Total_DisFixWaiCount.png","Total Number of Discovered, Fixed & Waived vulnerabilities week-on-week"
-                       )
+def remediation():
+    pages, j = [], 5
+    #---------------------------------------------------------------------
+    printProgressBar(0, j)
+    make_stacked_chart(
+        summary['weeks'],
+        [
+            summary['discoveredCounts']['TOTAL'],
+            summary['fixedCounts']['TOTAL'],
+            summary['waivedCounts']['TOTAL']
+        ],
+       ['Discovered', 'Fixed', 'Waived'],
+       "Total_DisFixWaiCount.png", 
+       "Total Number of Discovered, Fixed & Waived vulnerabilities week-on-week"
+    )
     pages.append("Total_DisFixWaiCount.png")
-
-    time.sleep(0.1)
-    printProgressBar(1,j,prefix = 'Progress:', suffix = 'Complete', length = 50)
-
-    make_stacked_chart(data[0]['weeksInScope'],[data[len(data)-1]['discoveredLow'],
-                                                data[len(data)-1]['discoveredMod'],
-                                                data[len(data)-1]['discoveredSev'],
-                                                data[len(data)-1]['discoveredCri']
-                                                 ],
-                                               ['Discovered Low','Discovered Moderate','Discovered Severe', 'Discovered Critical'],
-                                               "Discovered_breakdown.png","Total Number of Discovered vulnerabilities by severity week-on-week"
-                       )
+    #---------------------------------------------------------------------
+    printProgressBar(1, j)
+    make_stacked_chart(
+        summary['weeks'], 
+        summary['discoveredCounts']['LIST'],
+        ['Discovered Low', 'Discovered Moderate', 'Discovered Severe', 'Discovered Critical'],
+        "Discovered_breakdown.png",
+        "Total Number of Discovered vulnerabilities by severity week-on-week"
+    )
     pages.append("Discovered_breakdown.png")
-
-
-    time.sleep(0.1)
-    printProgressBar(2,j,prefix = 'Progress:', suffix = 'Complete', length = 50)
-
-    make_stacked_chart(data[0]['weeksInScope'],[data[len(data)-1]['fixedLow'],
-                                                data[len(data)-1]['fixedMod'],
-                                                data[len(data)-1]['fixedSev'],
-                                                data[len(data)-1]['fixedCri']
-                                                 ],
-                                               ['Fixed Low','Fixed Moderate','Fixed Severe', 'Fixed Critical'],
-                                               "Fixed_breakdown.png","Total Number of Fixed vulnerabilities by severity week-on-week"
-                       )
+    #---------------------------------------------------------------------
+    printProgressBar(2, j)
+    make_stacked_chart(
+        summary['weeks'], 
+        summary['fixedCounts']['LIST'],
+        ['Fixed Low', 'Fixed Moderate', 'Fixed Severe', 'Fixed Critical'],
+        "Fixed_breakdown.png",
+        "Total Number of Fixed vulnerabilities by severity week-on-week"
+    )
     pages.append("Fixed_breakdown.png")
-
-    time.sleep(0.1)
-    printProgressBar(3,j,prefix = 'Progress:', suffix = 'Complete', length = 50)
-
-    make_stacked_chart(data[0]['weeksInScope'],[data[len(data)-1]['waivedLow'],
-                                                data[len(data)-1]['waivedMod'],
-                                                data[len(data)-1]['waivedSev'],
-                                                data[len(data)-1]['waivedCri']
-                                                 ],
-                                               ['Waived Low','Waived Moderate','Waived Severe', 'Waived Critical'],
-                                               "Waived_breakdown.png","Total Number of Waived vulnerabilities by severity week-on-week"
-                       )
+    #---------------------------------------------------------------------
+    printProgressBar(3, j)
+    make_stacked_chart(
+        summary['weeks'], 
+        summary['waivedCounts']['LIST'],
+        ['Waived Low', 'Waived Moderate', 'Waived Severe', 'Waived Critical'],
+        "Waived_breakdown.png",
+        "Total Number of Waived vulnerabilities by severity week-on-week"
+    )
     pages.append("Waived_breakdown.png")
-
-    time.sleep(0.1)
-    printProgressBar(4,j,prefix = 'Progress:', suffix = 'Complete', length = 50)
-    
-
-    make_chart(data[0]['weeksInScope'],data[len(data)-1]['openTotal'],"OpenBacklog.png","Number of open vulnerabilities (backlog) per week","0",xtitle[0])
+    #---------------------------------------------------------------------
+    printProgressBar(4, j)
+    make_chart(
+        summary['weeks'],
+        summary['openCountsAtTimePeriodEnd']['TOTAL'],
+        "OpenBacklog.png",
+        "Number of open vulnerabilities (backlog) per week",
+        "0",
+        xtitle[0]
+    )
     pages.append('OpenBacklog.png')
-
-    time.sleep(0.1)
-    printProgressBar(5,j,prefix = 'Progress:', suffix = 'Complete', length = 50)
-
-    
-    output_pdf(pages,"remediation_report.pdf")
+    #---------------------------------------------------------------------
+    printProgressBar(5, j)
+    output_pdf(pages, "remediation_report.pdf")
 
 #---------------------------------
-#ENFORCEMENT: "To control a specific metric regularly, for example: number of waivers, MTTR at certain value per threat level, CVSS==10 vulnerabilities below threshold or fixed before x time"
-#Generates the specific metric (Custom)
+#ENFORCEMENT: To control a specific metric regularly, for example: 
+# number of waivers, MTTR at certain value per threat level, 
+# CVSS==10 vulnerabilities below threshold or fixed before x time
+# Generates the specific metric (Custom)
 #Tracks deviation level
-def enforcement(jsonfile):
+def enforcement():
     print("Enforcement report soon to be implemented")
 
 #---------------------------------
 #HYGIENE: "To not use any components older than a certain age or below a certain popularity"
 #Generates age & popularity report
 #Tracks compliance percentage for age & popularity thresholds
-def hygiene(jsonfile):
+def hygiene():
     print("Hygiene report soon to be implemented")
 
 #---------------------------------
 
-#filename = input("\nPlease enter JSON file name containing success metrics to analyse, e.g. successmetrics.json\n")    
-filename = "successmetrics.json"
 i = True
 while i==True:
-    choice = input("\nFor Adoption report, press 1: \nFor Prevention report, press 2: \nFor Remediation report, press 3: \nFor Enforcement report, press 4: \nFor Hygiene report, press 5: \nTo exit, press 0: \n")
+    choice = input("\nFor Adoption report, press 1: \n"+
+                   "For Prevention report, press 2: \n"+
+                   "For Remediation report, press 3: \n"+
+                   "For Enforcement report, press 4: \n"+
+                   "For Hygiene report, press 5: \n"+
+                   "To exit, press 0: \n")
 
     if choice == "1":
         choice = input("Do you want to set targets? (y/n): ")
@@ -289,22 +352,25 @@ while i==True:
             print("WARNING: a minimum of two data points (2 weeks of data) is needed to display the target line")
             target.append(input("\nWhat is the desired number of apps to be onboarded?: "))
             target.append(input("What is the desired number of scans/week per app?: "))
-            adoption(filename,target)
+            adoption(target)
+
         if choice =="n":
-            adoption(filename,["0","0"])
+            adoption(["0","0"])
+
         else:
             print("Incorrect option selected")
+
     if choice == "2":
-        prevention(filename)
+        prevention()
 
     if choice == "3":
-        remediation(filename)
+        remediation()
 
     if choice == "4":
-        enforcement(filename)
+        enforcement()
 
     if choice == "5":
-        hygiene(filename)
+        hygiene()
 
     if choice == "0":
         i = False
