@@ -54,7 +54,7 @@ def main():
                 print("No results found.")
                 raise SystemExit
 
-        #cnt is used to aggrigate totals from the filtered set of applications.
+        #cnt is used to aggregate totals from the filtered set of applications.
         #reportSummary will return the final results.
         cnt, reportSummary = {}, {"appNames":[], "orgNames":[], "weeks":[], "timePeriodStart" : []}
 
@@ -80,107 +80,6 @@ def main():
                 reportSummary['appNames'].append( app["applicationName"] )
                 reportSummary['orgNames'].append( app["organizationName"] )
                 
-<<<<<<< HEAD
-        if data is not None: #got data??#
-                for app in data:
-                        appName.append(app["applicationName"])
-                        orgName.append(app["organizationName"])
-                        # zeroed summary template.
-                        s = get_aggs_list() 
-
-                        for a in app["aggregations"]:
-                                # process weekly reports for application.
-                                process_week(a, s)
-                                
-                        #calculate averages and totals.#
-                        compute_summary(s)
-                        app.update({"summary": s}) #just adding summary back to application for now.
-                        app.update({"weeksInScope" : weeks})
-                        app.update({"orgNames" : orgName})
-                        app.update({"appNames" : appName})
-
-
-                        for k in app["weeksInScope"]:
-                                for i in range(0,len(app["summary"]["weeks"])):
-                                        if app["summary"]["weeks"][i] == k:                                                
-                                                if app["summary"]["evaluationCount"]["rng"][i] != 0:
-                                                        appNumberScandict[str(k)] += 1
-                                                        weeklyScansdict[str(k)] += app["summary"]["evaluationCount"]["rng"][i]
-                                                
-                                                        
-                        j = 0
-                        for w in app["summary"]["weeks"]:
-                                if w in app["weeksInScope"]:
-                                        appOnboarddict[w] += 1
-                                        disLowdict[w] += app["summary"]["discoveredCounts"]["TOTAL"]["LOW"]["rng"][j]
-                                        disModdict[w] += app["summary"]["discoveredCounts"]["TOTAL"]["MODERATE"]["rng"][j]
-                                        disSevdict[w] += app["summary"]["discoveredCounts"]["TOTAL"]["SEVERE"]["rng"][j]
-                                        disCridict[w] += app["summary"]["discoveredCounts"]["TOTAL"]["CRITICAL"]["rng"][j]
-                                        disTotaldict[w] += app["summary"]["discoveredCounts"]["TOTAL"]["rng"][j]
-                                        fixLowdict[w] += app["summary"]["fixedCounts"]["TOTAL"]["LOW"]["rng"][j]
-                                        fixModdict[w] += app["summary"]["fixedCounts"]["TOTAL"]["MODERATE"]["rng"][j]
-                                        fixSevdict[w] += app["summary"]["fixedCounts"]["TOTAL"]["SEVERE"]["rng"][j]
-                                        fixCridict[w] += app["summary"]["fixedCounts"]["TOTAL"]["CRITICAL"]["rng"][j]
-                                        fixTotaldict[w] += app["summary"]["fixedCounts"]["TOTAL"]["rng"][j]
-                                        waiLowdict[w] += app["summary"]["waivedCounts"]["TOTAL"]["LOW"]["rng"][j]
-                                        waiModdict[w] += app["summary"]["waivedCounts"]["TOTAL"]["MODERATE"]["rng"][j]
-                                        waiSevdict[w] += app["summary"]["waivedCounts"]["TOTAL"]["SEVERE"]["rng"][j]
-                                        waiCridict[w] += app["summary"]["waivedCounts"]["TOTAL"]["CRITICAL"]["rng"][j]
-                                        waiTotaldict[w] += app["summary"]["waivedCounts"]["TOTAL"]["rng"][j]
-                                        opeLowdict[w] += app["summary"]["openCountsAtTimePeriodEnd"]["TOTAL"]["LOW"]["rng"][j]
-                                        opeModdict[w] += app["summary"]["openCountsAtTimePeriodEnd"]["TOTAL"]["MODERATE"]["rng"][j]
-                                        opeSevdict[w] += app["summary"]["openCountsAtTimePeriodEnd"]["TOTAL"]["SEVERE"]["rng"][j]
-                                        opeCridict[w] += app["summary"]["openCountsAtTimePeriodEnd"]["TOTAL"]["CRITICAL"]["rng"][j]
-                                        opeTotaldict[w] += app["summary"]["openCountsAtTimePeriodEnd"]["TOTAL"]["rng"][j]
-                                        j += 1
-
-                        appNumberScan = list(appNumberScandict.values())
-                        weeklyScans = list(weeklyScansdict.values())
-                        appOnboard = list(appOnboarddict.values())
-                        disTotal = list(disTotaldict.values())
-                        fixTotal = list(fixTotaldict.values())
-                        waiTotal = list(waiTotaldict.values())
-                        opeTotal = list(opeTotaldict.values())
-                        disLow = list(disLowdict.values())
-                        disMod = list(disModdict.values())
-                        disSev = list(disSevdict.values())
-                        disCri = list(disCridict.values())
-                        fixLow = list(fixLowdict.values())
-                        fixMod = list(fixModdict.values())
-                        fixSev = list(fixSevdict.values())
-                        fixCri = list(fixCridict.values())
-                        waiLow = list(waiLowdict.values())
-                        waiMod = list(waiModdict.values())
-                        waiSev = list(waiSevdict.values())
-                        waiCri = list(waiCridict.values())
-                        opeLow = list(opeLowdict.values())
-                        opeMod = list(opeModdict.values())
-                        opeSev = list(opeSevdict.values())
-                        opeCri = list(opeCridict.values())
-                        
-                        
-                        
-                        app.update({"discoveredTotal" : disTotal})
-                        app.update({"fixedTotal" : fixTotal})
-                        app.update({"waivedTotal" : waiTotal})
-                        app.update({"openTotal" : opeTotal})
-                        app.update({"discoveredLow" : disLow})
-                        app.update({"discoveredMod" : disMod})
-                        app.update({"discoveredSev" : disSev})
-                        app.update({"discoveredCri" : disCri})
-                        app.update({"fixedLow" : fixLow})
-                        app.update({"fixedMod" : fixMod})
-                        app.update({"fixedSev" : fixSev})
-                        app.update({"fixedCri" : fixCri})
-                        app.update({"waivedLow" : waiLow})
-                        app.update({"waivedMod" : waiMod})
-                        app.update({"waivedSev" : waiSev})
-                        app.update({"waivedCri" : waiCri})
-                        app.update({"openLow" : opeLow})
-                        app.update({"openMod" : opeMod})
-                        app.update({"openSev" : opeSev})
-                        app.update({"openCri" : opeCri})
-=======
                 s = get_aggs_list() # zeroed summary template.
                 for a in app["aggregations"]:
                         # process the weekly reports for application.
@@ -218,14 +117,6 @@ def main():
 
         # Final report with summary and data objects.
         report = {"summary": reportSummary, "apps": data}
-
->>>>>>> 966fb46b73df1c94286a52a04c9c856197126336
-
-                for app in data:
-                        app.update({"appNumberScan" : appNumberScan})
-                        app.update({"appOnboard" : appOnboard})
-                        app.update({"weeklyScans" : weeklyScans})
-
 
         if args["pretty"]:
                 print( json.dumps(report, indent=4) )
