@@ -12,21 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import json
-#import pandas as pd #this was only being used to import file.  You can just use open.
 from fpdf import FPDF
 import time
 import plotly.graph_objects as go
 
 
 xtitle = ["ISO week number", "Applications"]
-
-#filename = input("\nPlease enter JSON file name containing success metrics to analyse, e.g. successmetrics.json\n")    
 filename = "successmetrics.json"
 
-#data = pd.read_json(jsonfile, typ='dict')
 with open(filename, 'r') as f:
     report = json.load(f)
-    #data={"summary":{},"apps":[]}
     summary = report["summary"]
     apps = report["apps"]
     appCount = len(apps)
@@ -109,7 +104,7 @@ def make_chart(period, data, filename, title, target, xtitle):
         make_hor_line(fig,period[0],int(target),period[len(period)-1],int(target),"Red")
     fig.write_image(filename)
 
-def make_stacked_chart(period, data, legend, filename, title):
+def make_stacked_chart(period, data, legend, filename, title, xtitle):
     traces = []
     for i in range(0, len(data)):
         trace = go.Bar(
@@ -128,7 +123,7 @@ def make_stacked_chart(period, data, legend, filename, title):
         width=840,
         height=528,
         xaxis=go.layout.XAxis(
-            title_text="ISO week number"
+            title_text=xtitle
             )
         )
     fig.update_xaxes(tickvals=period,automargin=True)
@@ -222,11 +217,11 @@ def adoption(target=0):
             ],
             ['Discovered','Fixed','Waived'],
             f"{appName}_DisFixWaiCount.png",
-            f"Number of Discovered, Fixed, & Waived vulnerabilities for app {appName}"
+            f"Number of Discovered, Fixed, & Waived vulnerabilities for app {appName}",
+            xtitle[0]
         )
         pages.append(f"{appName}_DisFixWaiCount.png")
 
-    #print(scans)
     make_chart( 
         list(scans.keys()), 
         list(scans.values()), 
@@ -254,13 +249,36 @@ def prevention():
 #Displays current technical debt, and tracks how long (in hours) 
 #would it take to deal with it at current dealt-with rate (for informational purposes).
 #-------------------------------------------------------------------------
-#"status" : ["discoveredCounts", "fixedCounts", "waivedCounts", "openCountsAtTimePeriodEnd"],
-#"risk" : ["LOW", "MODERATE", "SEVERE", "CRITICAL"]
-
 def remediation():
-    pages, j = [], 5
+    pages, j = [], 0
+    appName, OpeLow, OpeMod, OpeSev, OpeCri = [],[],[],[],[]
     #---------------------------------------------------------------------
-    printProgressBar(0, j)
+    printProgressBar(j, appCount)
+
+    for app in apps:
+        j +=1
+        printProgressBar(j, appCount)
+        appName.append(app["applicationName"])
+        OpeLow.append(app["summary"]["openCountsAtTimePeriodEnd"]["TOTAL"]["LOW"]["rng"][len(app["summary"]["openCountsAtTimePeriodEnd"]["TOTAL"]["LOW"]["rng"])-1])
+        OpeMod.append(app["summary"]["openCountsAtTimePeriodEnd"]["TOTAL"]["MODERATE"]["rng"][len(app["summary"]["openCountsAtTimePeriodEnd"]["TOTAL"]["MODERATE"]["rng"])-1])
+        OpeSev.append(app["summary"]["openCountsAtTimePeriodEnd"]["TOTAL"]["SEVERE"]["rng"][len(app["summary"]["openCountsAtTimePeriodEnd"]["TOTAL"]["SEVERE"]["rng"])-1])
+        OpeCri.append(app["summary"]["openCountsAtTimePeriodEnd"]["TOTAL"]["CRITICAL"]["rng"][len(app["summary"]["openCountsAtTimePeriodEnd"]["TOTAL"]["CRITICAL"]["rng"])-1])
+    
+    make_stacked_chart(
+        appName,
+        [
+            OpeLow,
+            OpeMod,
+            OpeSev,
+            OpeCri
+        ],
+       ['Low', 'Moderate', 'Severe', 'Critical'],
+       "Current_Open_Count.png", 
+       "Current Total Number of Open vulnerabilities",
+        xtitle[1]
+    )
+    pages.append("Current_Open_Count.png")
+    #---------------------------------------------------------------------
     make_stacked_chart(
         summary['weeks'],
         [
@@ -270,41 +288,41 @@ def remediation():
         ],
        ['Discovered', 'Fixed', 'Waived'],
        "Total_DisFixWaiCount.png", 
-       "Total Number of Discovered, Fixed & Waived vulnerabilities week-on-week"
+       "Total Number of Discovered, Fixed & Waived vulnerabilities week-on-week",
+        xtitle[0]
     )
     pages.append("Total_DisFixWaiCount.png")
     #---------------------------------------------------------------------
-    printProgressBar(1, j)
     make_stacked_chart(
         summary['weeks'], 
         summary['discoveredCounts']['LIST'],
         ['Discovered Low', 'Discovered Moderate', 'Discovered Severe', 'Discovered Critical'],
         "Discovered_breakdown.png",
-        "Total Number of Discovered vulnerabilities by severity week-on-week"
+        "Total Number of Discovered vulnerabilities by severity week-on-week",
+        xtitle[0]
     )
     pages.append("Discovered_breakdown.png")
     #---------------------------------------------------------------------
-    printProgressBar(2, j)
     make_stacked_chart(
         summary['weeks'], 
         summary['fixedCounts']['LIST'],
         ['Fixed Low', 'Fixed Moderate', 'Fixed Severe', 'Fixed Critical'],
         "Fixed_breakdown.png",
-        "Total Number of Fixed vulnerabilities by severity week-on-week"
+        "Total Number of Fixed vulnerabilities by severity week-on-week",
+        xtitle[0]
     )
     pages.append("Fixed_breakdown.png")
     #---------------------------------------------------------------------
-    printProgressBar(3, j)
     make_stacked_chart(
         summary['weeks'], 
         summary['waivedCounts']['LIST'],
         ['Waived Low', 'Waived Moderate', 'Waived Severe', 'Waived Critical'],
         "Waived_breakdown.png",
-        "Total Number of Waived vulnerabilities by severity week-on-week"
+        "Total Number of Waived vulnerabilities by severity week-on-week",
+        xtitle[0]
     )
     pages.append("Waived_breakdown.png")
     #---------------------------------------------------------------------
-    printProgressBar(4, j)
     make_chart(
         summary['weeks'],
         summary['openCountsAtTimePeriodEnd']['TOTAL'],
@@ -315,7 +333,6 @@ def remediation():
     )
     pages.append('OpenBacklog.png')
     #---------------------------------------------------------------------
-    printProgressBar(5, j)
     output_pdf(pages, "remediation_report.pdf")
 
 #---------------------------------
