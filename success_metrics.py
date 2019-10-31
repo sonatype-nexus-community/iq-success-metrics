@@ -75,6 +75,13 @@ def main():
                         cnt[tt].update({ rr: zeros(reportSummary["weeks"]) })
                 cnt[tt].update({ "TOTAL" : zeros(reportSummary["weeks"]) })
 
+        # building aggregated set of fields for MTTR
+        for tt in config["mttr"]:
+                cnt.update({tt: {} })
+                for rr in config["risk"]:
+                        cnt[tt].update({ rr: zeros(reportSummary["weeks"]) })
+                cnt[tt].update({"TOTAL" : zeros(reportSummary["weeks"])})
+
         # loop through applications in success metric data.
         for app in data:
                 reportSummary['appNames'].append( app["applicationName"] )
@@ -99,6 +106,9 @@ def main():
                                 for rr in config["risk"]:
                                         cnt[tt][rr][w] += s[tt]["TOTAL"][rr]["rng"][j]
                                 cnt[tt]["TOTAL"][w] += s[tt]["TOTAL"]["rng"][j]
+                                
+                        #for tt in config["mttr"]:
+                                #cnt[tt][w] += s[tt]["rng"][j]
                         j += 1
 
         #convert the dicts to arrays.
@@ -109,6 +119,11 @@ def main():
                 reportSummary.update({ tt: {} })
                 for rr in config["risk"]:
                         reportSummary[tt].update({ rr: list( cnt[tt][rr].values() ) })
+                reportSummary[tt].update({ "LIST" : list( reportSummary[tt].values() ) })        
+                reportSummary[tt].update({ "TOTAL" : list( cnt[tt]["TOTAL"].values() ) })
+
+        for tt in config["mttr"]:
+                reportSummary.update({ tt: {} })
                 reportSummary[tt].update({ "LIST" : list( reportSummary[tt].values() ) })        
                 reportSummary[tt].update({ "TOTAL" : list( cnt[tt]["TOTAL"].values() ) })
 
