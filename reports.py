@@ -17,7 +17,7 @@ import time
 import plotly.graph_objects as go
 
 
-xtitle = ["ISO week number", "Applications"]
+xtitle = ["ISO week number", "Applications", "Organisations"]
 filename = "successmetrics.json"
 
 with open(filename, 'r') as f:
@@ -156,9 +156,9 @@ def output_pdf(pages, filename):
 def adoption(target=0):
     pages = []
     scans = dict()
-    j = 0
+    j, graphNo = 0, 5
     
-    printProgressBar(j, appCount)
+    printProgressBar(j, graphNo)
     #------------------------------------
     make_chart( 
         summary['weeks'], 
@@ -169,6 +169,8 @@ def adoption(target=0):
         xtitle[0]
     )
     pages.append('AppsOnboarded.png')
+    j +=1
+    printProgressBar(j, graphNo)
     #------------------------------------
     make_chart(
         summary['weeks'], 
@@ -179,6 +181,8 @@ def adoption(target=0):
         xtitle[0]
     )
     pages.append('AppsScanning.png')
+    j +=1
+    printProgressBar(j, graphNo)
     #------------------------------------
     make_chart( 
         summary['weeks'], 
@@ -189,13 +193,13 @@ def adoption(target=0):
         xtitle[0]
     )
     pages.append('WeeklyScans.png')
+    j +=1
+    printProgressBar(j, graphNo)
     #------------------------------------
 
     for app in apps:
-        j+=1
         appName = app["applicationName"]
 
-        printProgressBar(j, appCount)
         scans.update({ appName: sum(app["summary"]["evaluationCount"]["rng"]) })
 
         make_chart( 
@@ -221,7 +225,9 @@ def adoption(target=0):
             xtitle[0]
         )
         pages.append(f"{appName}_DisFixWaiCount.png")
-
+    j +=1
+    printProgressBar(j, graphNo)
+    #------------------------------------
     make_chart( 
         list(scans.keys()), 
         list(scans.values()), 
@@ -231,6 +237,9 @@ def adoption(target=0):
         xtitle[1]
     )
     pages.append('AppsTotalScans.png')
+    j +=1
+    printProgressBar(j, graphNo)
+    #------------------------------------
     output_pdf(pages, "adoption_report.pdf")
 
 #---------------------------------
@@ -250,14 +259,48 @@ def prevention():
 #would it take to deal with it at current dealt-with rate (for informational purposes).
 #-------------------------------------------------------------------------
 def remediation():
-    pages, j = [], 0
-    appName, OpeLow, OpeMod, OpeSev, OpeCri = [],[],[],[],[]
-    #---------------------------------------------------------------------
-    printProgressBar(j, appCount)
+    pages, j, graphNo = [], 0, 7
+    appName, orgName, OpeLow, OpeMod, OpeSev, OpeCri = [],[],[],[],[],[]
 
+    printProgressBar(j,graphNo)
+    #---------------------------------------------------------------------
+    make_stacked_chart(
+        summary['weeks'],
+        summary['openCountsAtTimePeriodEnd']['LIST'],
+        ['Low','Moderate','Severe','Critical'],
+        "OpenBacklog.png",
+        "Number of open vulnerabilities (backlog) per week",
+        xtitle[0]
+    )
+    pages.append('OpenBacklog.png')
+    j +=1
+    printProgressBar(j,graphNo)
+    #---------------------------------------------------------------------
     for app in apps:
-        j +=1
-        printProgressBar(j, appCount)
+        orgName.append(app["organizationName"])
+        OpeLow.append(app["summary"]["openCountsAtTimePeriodEnd"]["TOTAL"]["LOW"]["rng"][len(app["summary"]["openCountsAtTimePeriodEnd"]["TOTAL"]["LOW"]["rng"])-1])
+        OpeMod.append(app["summary"]["openCountsAtTimePeriodEnd"]["TOTAL"]["MODERATE"]["rng"][len(app["summary"]["openCountsAtTimePeriodEnd"]["TOTAL"]["MODERATE"]["rng"])-1])
+        OpeSev.append(app["summary"]["openCountsAtTimePeriodEnd"]["TOTAL"]["SEVERE"]["rng"][len(app["summary"]["openCountsAtTimePeriodEnd"]["TOTAL"]["SEVERE"]["rng"])-1])
+        OpeCri.append(app["summary"]["openCountsAtTimePeriodEnd"]["TOTAL"]["CRITICAL"]["rng"][len(app["summary"]["openCountsAtTimePeriodEnd"]["TOTAL"]["CRITICAL"]["rng"])-1])
+    
+    make_stacked_chart(
+        orgName,
+        [
+            OpeLow,
+            OpeMod,
+            OpeSev,
+            OpeCri
+        ],
+       ['Low', 'Moderate', 'Severe', 'Critical'],
+       "Current_Open_Orgs.png", 
+       "Current Total Number of Open vulnerabilities by organisation",
+        xtitle[2]
+    )
+    pages.append("Current_Open_Orgs.png")
+    j +=1
+    printProgressBar(j,graphNo)
+    #---------------------------------------------------------------------
+    for app in apps:
         appName.append(app["applicationName"])
         OpeLow.append(app["summary"]["openCountsAtTimePeriodEnd"]["TOTAL"]["LOW"]["rng"][len(app["summary"]["openCountsAtTimePeriodEnd"]["TOTAL"]["LOW"]["rng"])-1])
         OpeMod.append(app["summary"]["openCountsAtTimePeriodEnd"]["TOTAL"]["MODERATE"]["rng"][len(app["summary"]["openCountsAtTimePeriodEnd"]["TOTAL"]["MODERATE"]["rng"])-1])
@@ -273,11 +316,13 @@ def remediation():
             OpeCri
         ],
        ['Low', 'Moderate', 'Severe', 'Critical'],
-       "Current_Open_Count.png", 
-       "Current Total Number of Open vulnerabilities",
+       "Current_Open_Apps.png", 
+       "Current Total Number of Open vulnerabilities by application",
         xtitle[1]
     )
-    pages.append("Current_Open_Count.png")
+    pages.append("Current_Open_Apps.png")
+    j +=1
+    printProgressBar(j,graphNo)
     #---------------------------------------------------------------------
     make_stacked_chart(
         summary['weeks'],
@@ -292,6 +337,8 @@ def remediation():
         xtitle[0]
     )
     pages.append("Total_DisFixWaiCount.png")
+    j +=1
+    printProgressBar(j,graphNo)
     #---------------------------------------------------------------------
     make_stacked_chart(
         summary['weeks'], 
@@ -302,6 +349,8 @@ def remediation():
         xtitle[0]
     )
     pages.append("Discovered_breakdown.png")
+    j +=1
+    printProgressBar(j,graphNo)
     #---------------------------------------------------------------------
     make_stacked_chart(
         summary['weeks'], 
@@ -312,6 +361,8 @@ def remediation():
         xtitle[0]
     )
     pages.append("Fixed_breakdown.png")
+    j +=1
+    printProgressBar(j,graphNo)
     #---------------------------------------------------------------------
     make_stacked_chart(
         summary['weeks'], 
@@ -322,16 +373,8 @@ def remediation():
         xtitle[0]
     )
     pages.append("Waived_breakdown.png")
-    #---------------------------------------------------------------------
-    make_chart(
-        summary['weeks'],
-        summary['openCountsAtTimePeriodEnd']['TOTAL'],
-        "OpenBacklog.png",
-        "Number of open vulnerabilities (backlog) per week",
-        "0",
-        xtitle[0]
-    )
-    pages.append('OpenBacklog.png')
+    j +=1
+    printProgressBar(j,graphNo)
     #---------------------------------------------------------------------
     output_pdf(pages, "remediation_report.pdf")
 
