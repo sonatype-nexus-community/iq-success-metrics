@@ -30,7 +30,7 @@ config = {
 
 def main():
         parser = argparse.ArgumentParser(description='get some Success Metrics')
-        parser.add_argument('-a','--auth',   help='', default="admin:admin321", required=False)
+        parser.add_argument('-a','--auth',   help='', default="admin:admin123", required=False)
         parser.add_argument('-s','--scope',  help='', type=int, default="6", required=False)
         parser.add_argument('-u','--url',    help='', default="http://localhost:8070", required=False)
         parser.add_argument('-i','--appId',  help='', required=False)
@@ -54,81 +54,78 @@ def main():
                 print("No results found.")
                 raise SystemExit
 
-        #cnt is used to aggregate totals from the filtered set of applications.
+        #reportCounts is used to aggregate totals from the filtered set of applications.
         #reportSummary will return the final results.
-        cnt, reportSummary = {}, {"appNames":[], "orgNames":[], "weeks":[], "timePeriodStart" : []}
+        reportCounts, reportSummary = {}, {"appNames":[], "orgNames":[], "weeks":[], "timePeriodStart" : []}
 
         # set the weeks range in the report summary for the required scope.
-        for ii in range(0, args["scope"]):
-                recency = args["scope"]-ii
+        for recency in range(args["scope"], 0, -1):
                 reportSummary["timePeriodStart"].append( get_week_start( recency ) ) 
                 reportSummary["weeks"].append( get_week_only( recency ) ) 
         
         # set empty range for scope
         for tt in ["appNumberScan", "appOnboard", "weeklyScans"]:
-                cnt.update({ tt : zeros(reportSummary["weeks"]) })
-
-        # building aggregated set of fields.
-        for tt in config["status"]:
-                cnt.update({ tt: {} })
-                for rr in config["risk"]:
-                        cnt[tt].update({ rr: zeros(reportSummary["weeks"]) })
-                cnt[tt].update({ "TOTAL" : zeros(reportSummary["weeks"]) })
+                reportCounts.update({ tt : zeros(reportSummary["weeks"]) })
 
         # building aggregated set of fields for MTTR
-        for tt in config["mttr"]:
-                cnt.update({tt: {} })
-                for rr in config["risk"]:
-                        cnt[tt].update({ rr: zeros(reportSummary["weeks"]) })
-                cnt[tt].update({"TOTAL" : zeros(reportSummary["weeks"])})
+        for mttr in config["mttr"]:
+                reportCounts.update({mttr: zeros(reportSummary["weeks"]) })
+
+        # building aggregated set of fields.
+        for status in config["status"]:
+                reportCounts.update({ status: {} })
+                for risk in config["risk"]:
+                        reportCounts[status].update({ risk: zeros(reportSummary["weeks"]) })
+                reportCounts[status].update({ "TOTAL" : zeros(reportSummary["weeks"]) })
+
+
 
         # loop through applications in success metric data.
         for app in data:
                 reportSummary['appNames'].append( app["applicationName"] )
                 reportSummary['orgNames'].append( app["organizationName"] )
                 
-                s = get_aggs_list() # zeroed summary template.
-                for a in app["aggregations"]:
+                app_summary = get_aggs_list() # zeroed summary template.
+                for aggregation in app["aggregations"]:
                         # process the weekly reports for application.
-                        process_week(a, s)
+                        process_week(aggregation, app_summary)
 
-                compute_summary(s)
-                app.update({"summary": s})
+                compute_summary(app_summary)
+                app.update( {"summary": app_summary} )
 
-                j = 0
-                for w in s["weeks"]:
-                        cnt["appOnboard"][w] += 1
-                        if s["evaluationCount"]["rng"][j] != 0:
-                                cnt["appNumberScan"][w] += 1
-                                cnt["weeklyScans"][w] += s["evaluationCount"]["rng"][j] 
+                jj = 0
+                for week_no in app_summary["weeks"]:
+                        reportCounts["appOnboard"][week_no] += 1
+                        if app_summary["evaluationCount"]["rng"][jj] != 0:
+                                reportCounts["appNumberScan"][week_no] += 1
+                                reportCounts["weeklyScans"][week_no] += app_summary["evaluationCount"]["rng"][jj] 
 
-                        for tt in config["status"]:
-                                for rr in config["risk"]:
-                                        cnt[tt][rr][w] += s[tt]["TOTAL"][rr]["rng"][j]
-                                cnt[tt]["TOTAL"][w] += s[tt]["TOTAL"]["rng"][j]
+                        for status in config["status"]:
+                                for risk in config["risk"]:
+                                        reportCounts[status][risk][week_no] += app_summary[status]["TOTAL"][risk]["rng"][jj]
+                                reportCounts[status]["TOTAL"][week_no] += app_summary[status]["TOTAL"]["rng"][jj]
                                 
-                        #for tt in config["mttr"]:
-                                #cnt[tt][w] += s[tt]["rng"][j]
-                        j += 1
+                        for mttr in config["mttr"]:
+                                reportCounts[mttr][week_no] += app_summary[mttr]["rng"][jj]
+                        jj += 1
 
         #convert the dicts to arrays.
         for tt in ["appNumberScan", "appOnboard", "weeklyScans"]:
-                reportSummary.update({ tt : list( cnt[tt].values() ) })
+                reportSummary.update({ tt : list( reportCounts[tt].values() ) })
 
-        for tt in config["status"]:
-                reportSummary.update({ tt: {} })
-                for rr in config["risk"]:
-                        reportSummary[tt].update({ rr: list( cnt[tt][rr].values() ) })
-                reportSummary[tt].update({ "LIST" : list( reportSummary[tt].values() ) })        
-                reportSummary[tt].update({ "TOTAL" : list( cnt[tt]["TOTAL"].values() ) })
+        for mttr in config["mttr"]:
+                reportSummary.update({ mttr: list( reportCounts[mttr].values() ) })  
 
-        for tt in config["mttr"]:
-                reportSummary.update({ tt: {} })
-                reportSummary[tt].update({ "LIST" : list( reportSummary[tt].values() ) })        
-                reportSummary[tt].update({ "TOTAL" : list( cnt[tt]["TOTAL"].values() ) })
+        for status in config["status"]:
+                reportSummary.update({ status: {} })
+                for risk in config["risk"]:
+                        reportSummary[status].update({ risk: list( reportCounts[status][risk].values() ) })
+                reportSummary[status].update({ "LIST" : list( reportSummary[status].values() ) })        
+                reportSummary[status].update({ "TOTAL" : list( reportCounts[status]["TOTAL"].values() ) })
 
-        #for x in cnt.keys():
-                #reportSummary.update({ x: list( cnt[x].values() ) })
+
+        for xx in reportCounts.keys():
+                reportSummary.update({ xx: list( reportCounts[xx].values() ) })
 
         # Final report with summary and data objects.
         report = {"summary": reportSummary, "apps": data}
@@ -208,7 +205,7 @@ def zeros(n): return dict.fromkeys( n, 0)
 
 def ms_days(v): #convert ms to days
 	if v is None: return 0
-	else: return round( v/86400000)
+	else: return round(v/86400000)
 
 
 def get_aggs_list():
@@ -281,7 +278,8 @@ def process_week(a, s):
 	for m in config["mttr"]:
 		if m in a:
 			v = a[m]
-			if m != "evaluationCount": v = ms_days(v)
+			if m != "evaluationCount": 
+                                v = ms_days(v)
 			s[m]["rng"].append(v)
 	
 	#looping arrays to pull data from metrics api.
