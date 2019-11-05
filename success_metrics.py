@@ -36,7 +36,7 @@ def main():
         parser.add_argument('-i','--appId',  help='', required=False)
         parser.add_argument('-o','--orgId',  help='', required=False)
         parser.add_argument('-p','--pretty', help='', action='store_true', required=False)
-        parser.add_argument('-v','--save',   help='', action='store_true', required=False)
+
         args = vars(parser.parse_args())
         creds = args["auth"].split(":")
         iq_session.auth = HTTPBasicAuth(creds[0], creds[1] )
@@ -55,21 +55,22 @@ def main():
                 raise SystemExit
 
         #reportCounts is used to aggregate totals from the filtered set of applications.
+        #reportAverages will calculate averages for MTTR. 
         #reportSummary will return the final results.
-        reportCounts, reportSummary = {}, {"appNames":[], "orgNames":[], "weeks":[], "timePeriodStart" : []}
+        reportAverages, reportCounts, reportSummary = {}, {}, {"appNames":[], "orgNames":[], "weeks":[], "timePeriodStart" : []}
 
         # set the weeks range in the report summary for the required scope.
         for recency in range(args["scope"], 0, -1):
                 reportSummary["timePeriodStart"].append( get_week_start( recency ) ) 
                 reportSummary["weeks"].append( get_week_only( recency ) ) 
         
-        # set empty range for scope
-        for tt in ["appNumberScan", "appOnboard", "weeklyScans"]:
-                reportCounts.update({ tt : zeros(reportSummary["weeks"]) })
-
         # building aggregated set of fields for MTTR
         for mttr in config["mttr"]:
-                reportCounts.update({mttr: zeros(reportSummary["weeks"]) })
+                reportAverages.update({mttr: empties(reportSummary["weeks"]) })
+
+        # set empty range for scope
+        for fields in ["appNumberScan", "appOnboard", "weeklyScans"]:
+                reportCounts.update({ fields : zeros(reportSummary["weeks"]) })
 
         # building aggregated set of fields.
         for status in config["status"]:
@@ -93,54 +94,55 @@ def main():
                 compute_summary(app_summary)
                 app.update( {"summary": app_summary} )
 
-                jj = 0
                 for week_no in app_summary["weeks"]:
+                        position = app_summary["weeks"].index(week_no)
                         reportCounts["appOnboard"][week_no] += 1
-                        if app_summary["evaluationCount"]["rng"][jj] != 0:
+
+                        # only include the app's week when they have a value
+                        for mttr in config["mttr"]:
+                                value = app_summary[mttr]["rng"][position]
+                                if not value is None:
+                                        reportAverages[mttr][week_no].append( value )
+
+                        if app_summary["evaluationCount"]["rng"][position] != 0:
                                 reportCounts["appNumberScan"][week_no] += 1
-                                reportCounts["weeklyScans"][week_no] += app_summary["evaluationCount"]["rng"][jj] 
+                                reportCounts["weeklyScans"][week_no] += app_summary["evaluationCount"]["rng"][position] 
 
                         for status in config["status"]:
                                 for risk in config["risk"]:
-                                        reportCounts[status][risk][week_no] += app_summary[status]["TOTAL"][risk]["rng"][jj]
-                                reportCounts[status]["TOTAL"][week_no] += app_summary[status]["TOTAL"]["rng"][jj]
-                                
-                        for mttr in config["mttr"]:
-                                reportCounts[mttr][week_no] += app_summary[mttr]["rng"][jj]
-                        jj += 1
+                                        reportCounts[status][risk][week_no] += app_summary[status]["TOTAL"][risk]["rng"][position]
+                                reportCounts[status]["TOTAL"][week_no] += app_summary[status]["TOTAL"]["rng"][position]
 
         #convert the dicts to arrays.
-        for tt in ["appNumberScan", "appOnboard", "weeklyScans"]:
-                reportSummary.update({ tt : list( reportCounts[tt].values() ) })
+        for fields in ["appNumberScan", "appOnboard", "weeklyScans"]:
+                reportSummary.update({ fields : list( reportCounts[fields].values() ) })
 
+        # calculate the averages for each week.  Returns None when no values are available for a given week. 
         for mttr in config["mttr"]:
-                reportSummary.update({ mttr: list( reportCounts[mttr].values() ) })  
-
+                reportSummary.update({ mttr: list( avg(value) for value in reportAverages[mttr].values()) })  
+        
         for status in config["status"]:
                 reportSummary.update({ status: {} })
+
                 for risk in config["risk"]:
                         reportSummary[status].update({ risk: list( reportCounts[status][risk].values() ) })
+
                 reportSummary[status].update({ "LIST" : list( reportSummary[status].values() ) })        
                 reportSummary[status].update({ "TOTAL" : list( reportCounts[status]["TOTAL"].values() ) })
-
-
-        for xx in reportCounts.keys():
-                reportSummary.update({ xx: list( reportCounts[xx].values() ) })
 
         # Final report with summary and data objects.
         report = {"summary": reportSummary, "apps": data}
 
-        if args["pretty"]:
-                print( json.dumps(report, indent=4) )
-
-        if args["save"]:
-                with open("successmetrics.json",'w') as f:
+        #-----------------------------------------------------------------------------------
+        # Setting the default to output to json file with the option to format it to human readable.
+        with open("successmetrics.json",'w') as f:
+                if args["pretty"]:
+                        f.write(json.dumps(report, indent=4))
+                else:
                         json.dump(report, f)
-                        print( "saved to successmetrics.json" )
-
-        else:
-                print("Please use -v option to save to json file and/or -p option to display indented output on screen.")
-                print("e.g. $> python3 success_metrics.py -v -p")
+        print( "saved to successmetrics.json" )
+        #-----------------------------------------------------------------------------------
+        #-----------------------------------------------------------------------------------
 
 #-----------------------------------------------------------------------------------
 def searchApps(search, iq_url):
@@ -198,10 +200,12 @@ def get_metrics(iq_url, scope = 6, appId = [], orgId = []): # scope is number of
 	return response.json()
 
 def rnd(n): return round(n,2)
-def avg(n): return rnd(sum(n)/len(n))
+def avg(n): 
+        if len(n) > 0: return rnd(sum(n)/len(n))
 def rate(n, d): return 0 if d == 0 else (n/d)
 def percent(n, d): return rnd(rate(n, d)*100)
 def zeros(n): return dict.fromkeys( n, 0)
+def empties(keys): return { key : list([]) for key in keys }
 
 def ms_days(v): #convert ms to days
 	if v is None: return 0
@@ -275,32 +279,32 @@ def calc_TotalSonatypeValue(d):
 #------------------------------------------------------------------------------------
 
 def process_week(a, s):
-	for m in config["mttr"]:
-		if m in a:
-			v = a[m]
-			if m != "evaluationCount": 
-                                v = ms_days(v)
-			s[m]["rng"].append(v)
+	for mttr in config["mttr"]:
+		if mttr in a:
+			value = a[mttr]
+			if mttr != "evaluationCount" and not value is None: 
+                                value = ms_days(value)
+			s[mttr]["rng"].append(value)
 	
 	#looping arrays to pull data from metrics api.
-	for t in config["status"]:
-		for c in config["category"]:
-			T = 0
-			for r in config["risk"]:
-				if t in a and c in a[t] and r in a[t][c]:
-					v = a[t][c][r]
-					s[t][c][r]["rng"].append(v)
-					T += v
-			s[t][c]["TOTAL"]["rng"].append(T)
+	for status in config["status"]:
+		for category in config["category"]:
+			Totals = 0
+			for risk in config["risk"]:
+				if status in a and category in a[status] and risk in a[status][category]:
+					value = a[status][category][risk]
+					s[status][category][risk]["rng"].append(value)
+					Totals += value
+			s[status][category]["TOTAL"]["rng"].append(Totals)
 		# Totals for status including risk levels
-		T = 0 
-		for r in config["risk"]:
-			v = 0
-			for c in config["category"]:
-				v += s[t][c][r]["rng"][-1]
-			s[t]["TOTAL"][r]["rng"].append(v)
-			T += v
-		s[t]["TOTAL"]["rng"].append(T)
+		Totals = 0 
+		for risk in config["risk"]:
+			value = 0
+			for category in config["category"]:
+				value += s[status][category][risk]["rng"][-1]
+			s[status]["TOTAL"][risk]["rng"].append(value)
+			Totals += value
+		s[status]["TOTAL"]["rng"].append(Totals)
 
 	s["weeks"].append( get_week_date( a["timePeriodStart"]) ) #set week list for images
 	s["fixedRate"].append( calc_FixedRate(s, True) )
@@ -308,19 +312,16 @@ def process_week(a, s):
 	s["dealtRate"].append( calc_DealtRate(s, True) )
 
 def compute_summary(s):
-	for m in config["mttr"]:
-		s[m]["avg"] = avg(s[m]["rng"])
+	for status in config["status"]:
+		for category in config["category"]:
+			for risk in config["risk"]:
+				s[status][category][risk]["avg"] = avg(s[status][category][risk]["rng"])
+			s[status][category]["TOTAL"]["avg"] = avg(s[status][category]["TOTAL"]["rng"])
 
-	for t in config["status"]:
-		for c in config["category"]:
-			for r in config["risk"]:
-				s[t][c][r]["avg"] = avg(s[t][c][r]["rng"])
-			s[t][c]["TOTAL"]["avg"] = avg(s[t][c]["TOTAL"]["rng"])
+		for risk in config["risk"]:
+			s[status]["TOTAL"][risk]["avg"] = avg(s[status]["TOTAL"][risk]["rng"])
 
-		for r in config["risk"]:
-			s[t]["TOTAL"][r]["avg"] = avg(s[t]["TOTAL"][r]["rng"])
-
-		s[t]["TOTAL"]["avg"] = avg(s[t]["TOTAL"]["rng"])
+		s[status]["TOTAL"]["avg"] = avg(s[status]["TOTAL"]["rng"])
 
 	s["FixRate"] = calc_FixedRate(s, False)
 	s["WaiveRate"] = calc_WaivedRate(s, False)
