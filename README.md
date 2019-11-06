@@ -184,7 +184,6 @@ The optional arguments are:
 -i APPID, --appId APPID (list of application IDs, application Names, application Public IDs or combination thereof to filter from all available data. Default is all available data)
 -o ORGID, --orgId ORGID (list of organization IDs, organization Names or combination thereof to filter from all available data. Default is all available data)
 -p, --pretty (indents the JSON printout 4 spaces. Default is no indentation)
--v, --save (saves all data into JSON file successmetrics.json. Default is to print out on screen)
 ```
 
 Two valid examples would be:
@@ -193,7 +192,7 @@ Two valid examples would be:
 
 This collects the past six weeks of data for all applications in all organizations, processes them and prints them in non-indented JSON format on screen. This assumes the default user, password and IQ server's URL.
 
-`python3 success_metrics.py -a administrator:password1234 -s 10 -u 'http://123.456.789.0:8070' -i 'd8f63854f4ea4405a9600e34f4d4514e','Test App1','MyApp3' -o 'c6f2775a45d44d43a32621536e638a8e', 'My Org' -p -v`
+`python3 success_metrics.py -a administrator:password1234 -s 10 -u 'http://123.456.789.0:8070' -i 'd8f63854f4ea4405a9600e34f4d4514e','Test App1','MyApp3' -o 'c6f2775a45d44d43a32621536e638a8e', 'My Org' -p`
 
 This collects the past ten weeks of data for the three applications listed ('d8f63854f4ea4405a9600e34f4d4514e','Test App1','MyApp3'), irrespective of them belonging to any particular organization. In addition, this also collects the past ten weeks of data for all the applications under organizations 'c6f2775a45d44d43a32621536e638a8e' and 'My Org'. The filtering does an OR filtering, so the collected data will be the union of the three apps with the two organizations. Then it processes the data, prints out the results in the "pretty" format (indented 4 spaces) and saves the non-indented data into the JSON file successmetrics.json 
 
