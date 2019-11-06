@@ -21,10 +21,10 @@ from requests.auth import HTTPBasicAuth
 #---------------------------------
 iq_session = Session()
 config = {
-	"VulDisTime" : 2, "FixManTime" : 2, "FixAutoTime" : 0.3, "WaiManTime" : 7, "WaiAutoTime" : 0.3, "ProductiveHoursDay" : 7, "AvgHourCost" : 100,
-	"risk" : ["LOW", "MODERATE", "SEVERE", "CRITICAL"], "category" : ["SECURITY", "LICENSE", "QUALITY", "OTHER"],
-	"status" : ["discoveredCounts", "fixedCounts", "waivedCounts", "openCountsAtTimePeriodEnd"],
-	"mttr" : ["mttrLowThreat", "mttrModerateThreat", "mttrSevereThreat", "mttrCriticalThreat", "evaluationCount"],
+        "VulDisTime" : 2, "FixManTime" : 2, "FixAutoTime" : 0.3, "WaiManTime" : 7, "WaiAutoTime" : 0.3, "ProductiveHoursDay" : 7, "AvgHourCost" : 100,
+        "risk" : ["LOW", "MODERATE", "SEVERE", "CRITICAL"], "category" : ["SECURITY", "LICENSE", "QUALITY", "OTHER"],
+        "status" : ["discoveredCounts", "fixedCounts", "waivedCounts", "openCountsAtTimePeriodEnd"],
+        "mttr" : ["mttrLowThreat", "mttrModerateThreat", "mttrSevereThreat", "mttrCriticalThreat", "evaluationCount"],
         "statRates": ["FixRate", "WaiveRate", "DealtRate", "FixPercent", "WaiPercent"]
 }
 
@@ -54,6 +54,7 @@ def main():
                 print("No results found.")
                 raise SystemExit
 
+        #-----------------------------------------------------------------------------------
         #reportCounts is used to aggregate totals from the filtered set of applications.
         #reportAverages will calculate averages for MTTR. 
         #reportSummary will return the final results.
@@ -79,8 +80,7 @@ def main():
                         reportCounts[status].update({ risk: zeros(reportSummary["weeks"]) })
                 reportCounts[status].update({ "TOTAL" : zeros(reportSummary["weeks"]) })
 
-
-
+        #-----------------------------------------------------------------------------------
         # loop through applications in success metric data.
         for app in data:
                 reportSummary['appNames'].append( app["applicationName"] )
@@ -113,6 +113,7 @@ def main():
                                         reportCounts[status][risk][week_no] += app_summary[status]["TOTAL"][risk]["rng"][position]
                                 reportCounts[status]["TOTAL"][week_no] += app_summary[status]["TOTAL"]["rng"][position]
 
+        #-----------------------------------------------------------------------------------
         #convert the dicts to arrays.
         for fields in ["appNumberScan", "appOnboard", "weeklyScans"]:
                 reportSummary.update({ fields : list( reportCounts[fields].values() ) })
@@ -192,43 +193,42 @@ def get_week_date(s):
         return period
 
 def get_metrics(iq_url, scope = 6, appId = [], orgId = []): # scope is number of week prior to current week.
-	url = "{}/api/v2/reports/metrics".format(iq_url)
-	iq_header = {'Content-Type':'application/json', 'Accept':'application/json'}
-	r_body = {"timePeriod": "WEEK", "firstTimePeriod": get_week(scope) ,"lastTimePeriod": get_week(1), #use get_week(0) instead if looking for Year-To-Date data instead of fully completed weeks
-		"applicationIds": appId, "organizationIds": orgId}
-	response = iq_session.post( url, json=r_body, headers=iq_header)
-	return response.json()
+        url = "{}/api/v2/reports/metrics".format(iq_url)
+        iq_header = {'Content-Type':'application/json', 'Accept':'application/json'}
+        r_body = {"timePeriod": "WEEK", "firstTimePeriod": get_week(scope) ,"lastTimePeriod": get_week(1), #use get_week(0) instead if looking for Year-To-Date data instead of fully completed weeks
+                "applicationIds": appId, "organizationIds": orgId}
+        response = iq_session.post( url, json=r_body, headers=iq_header)
+        return response.json()
 
 def rnd(n): return round(n,2)
-def avg(n): 
-        if len(n) > 0: return rnd(sum(n)/len(n))
+def avg(n): return 0 if len(n) == 0 else rnd(sum(n)/len(n))
 def rate(n, d): return 0 if d == 0 else (n/d)
 def percent(n, d): return rnd(rate(n, d)*100)
 def zeros(n): return dict.fromkeys( n, 0)
 def empties(keys): return { key : list([]) for key in keys }
 
 def ms_days(v): #convert ms to days
-	if v is None: return 0
-	else: return round(v/86400000)
+        if v is None: return 0
+        else: return round(v/86400000)
 
 
 def get_aggs_list():
-	s = {"weeks":[], "fixedRate":[], "waivedRate":[], "dealtRate":[]}
-	s.update(zeros(config["statRates"]))
-	for m in config["mttr"]:
-		s.update({m:{"avg":0,"rng":[]}})
-	for t in config["status"]:
-		g = {"TOTAL":{"avg":0,"rng":[]}}
-		for c in config["category"]:
-			k = {"TOTAL":{"avg":0,"rng":[]}}
-			for r in config["risk"]:
-				k.update({r:{"avg":0,"rng":[]}})
-			g.update({c:k})	
-		for r in config["risk"]:
-			g["TOTAL"].update({r:{"avg":0,"rng":[]}})
-		s.update({t:g})
+        s = {"weeks":[], "fixedRate":[], "waivedRate":[], "dealtRate":[]}
+        s.update(zeros(config["statRates"]))
+        for m in config["mttr"]:
+                s.update({m:{"avg":0,"rng":[]}})
+        for t in config["status"]:
+                g = {"TOTAL":{"avg":0,"rng":[]}}
+                for c in config["category"]:
+                        k = {"TOTAL":{"avg":0,"rng":[]}}
+                        for r in config["risk"]:
+                                k.update({r:{"avg":0,"rng":[]}})
+                        g.update({c:k}) 
+                for r in config["risk"]:
+                        g["TOTAL"].update({r:{"avg":0,"rng":[]}})
+                s.update({t:g})
 
-	return s
+        return s
 
 #----------------------------------
 # Helpers
@@ -239,100 +239,107 @@ def get_fCnt(d): return d["fixedCounts"]["TOTAL"]["rng"]
 def get_wCnt(d): return d["waivedCounts"]["TOTAL"]["rng"]
 
 def calc_FixedRate(d, last=True):
-	f, o = get_fCnt(d), get_oCnt(d)
-	if last: f, o = f[-1], o[-1]
-	else: f, o = sum(f), sum(o)
-	return percent(f, o)
+        f, o = get_fCnt(d), get_oCnt(d)
+        if last: f, o = f[-1], o[-1]
+        else: f, o = sum(f), sum(o)
+        return percent(f, o)
 
 def calc_WaivedRate(d, last=True):
-	w, o = get_wCnt(d), get_oCnt(d)
-	if last: w, o = w[-1], o[-1]
-	else: w, o = sum(w), sum(o)
-	return percent(w, o)
+        w, o = get_wCnt(d), get_oCnt(d)
+        if last: w, o = w[-1], o[-1]
+        else: w, o = sum(w), sum(o)
+        return percent(w, o)
 
 def calc_DealtRate(d, last=True):
-	f, w, o = get_fCnt(d), get_wCnt(d), get_oCnt(d)
-	if last: f, w, o = f[-1], w[-1], o[-1]
-	else: f, w, o = sum(f), sum(w), sum(o)
-	return percent(f+w, o)
+        f, w, o = get_fCnt(d), get_wCnt(d), get_oCnt(d)
+        if last: f, w, o = f[-1], w[-1], o[-1]
+        else: f, w, o = sum(f), sum(w), sum(o)
+        return percent(f+w, o)
 
 def calc_FixPercent(d): 
-	f, w = sum(get_fCnt(d)), sum(get_wCnt(d))
-	return 0 if (f+w) == 0 else (f/(f+w))
+        f, w = sum(get_fCnt(d)), sum(get_wCnt(d))
+        return 0 if (f+w) == 0 else (f/(f+w))
 
 def calc_WaiPercent(d):
-	f, w = sum( get_fCnt(d)), sum(get_wCnt(d))
-	return 0 if (f+w) == 0 else (w/(f+w))
+        f, w = sum( get_fCnt(d)), sum(get_wCnt(d))
+        return 0 if (f+w) == 0 else (w/(f+w))
 
 def calc_DisManCost(d):
-	return sum(get_dCnt(d)) * config["AvgHourCost"] * config["VulDisTime"]
+        return sum(get_dCnt(d)) * config["AvgHourCost"] * config["VulDisTime"]
 
 def calc_DebtManCost(d):
-	return sum(get_oCnt(d)) * config["AvgHourCost"] * ( (calc_FixPercent(d) * config["FixManTime"]) + ( calc_WaiPercent(d) * config["WaiManTime"] ) )
+        return sum(get_oCnt(d)) * config["AvgHourCost"] * ( (calc_FixPercent(d) * config["FixManTime"]) + ( calc_WaiPercent(d) * config["WaiManTime"] ) )
 
 def calc_DebtAutoCost(d):
-	return sum(get_oCnt(d)) * config["AvgHourCost"] * ( (calc_FixPercent(d) * config["FixAutoTime"]) + ( calc_WaiPercent(d) * config["WaiAutoTime"] ) )
+        return sum(get_oCnt(d)) * config["AvgHourCost"] * ( (calc_FixPercent(d) * config["FixAutoTime"]) + ( calc_WaiPercent(d) * config["WaiAutoTime"] ) )
 
 def calc_TotalSonatypeValue(d):
-	return calc_DisManCost(d) + ( calc_DebtManCost(d) - calc_DebtAutoCost(d) )
+        return calc_DisManCost(d) + ( calc_DebtManCost(d) - calc_DebtAutoCost(d) )
 
 #------------------------------------------------------------------------------------
 
 def process_week(a, s):
-	for mttr in config["mttr"]:
-		if mttr in a:
-			value = a[mttr]
-			if mttr != "evaluationCount" and not value is None: 
+        for mttr in config["mttr"]:
+                if mttr in a:
+                        value = a[mttr]
+                        if mttr != "evaluationCount" and not value is None: 
                                 value = ms_days(value)
-			s[mttr]["rng"].append(value)
-	
-	#looping arrays to pull data from metrics api.
-	for status in config["status"]:
-		for category in config["category"]:
-			Totals = 0
-			for risk in config["risk"]:
-				if status in a and category in a[status] and risk in a[status][category]:
-					value = a[status][category][risk]
-					s[status][category][risk]["rng"].append(value)
-					Totals += value
-			s[status][category]["TOTAL"]["rng"].append(Totals)
-		# Totals for status including risk levels
-		Totals = 0 
-		for risk in config["risk"]:
-			value = 0
-			for category in config["category"]:
-				value += s[status][category][risk]["rng"][-1]
-			s[status]["TOTAL"][risk]["rng"].append(value)
-			Totals += value
-		s[status]["TOTAL"]["rng"].append(Totals)
+                        s[mttr]["rng"].append(value)
+        
+        #looping arrays to pull data from metrics api.
+        for status in config["status"]:
+                for category in config["category"]:
+                        Totals = 0
+                        for risk in config["risk"]:
+                                if status in a and category in a[status] and risk in a[status][category]:
+                                        value = a[status][category][risk]
+                                        s[status][category][risk]["rng"].append(value)
+                                        Totals += value
+                        s[status][category]["TOTAL"]["rng"].append(Totals)
+                # Totals for status including risk levels
+                Totals = 0 
+                for risk in config["risk"]:
+                        value = 0
+                        for category in config["category"]:
+                                value += s[status][category][risk]["rng"][-1]
+                        s[status]["TOTAL"][risk]["rng"].append(value)
+                        Totals += value
+                s[status]["TOTAL"]["rng"].append(Totals)
 
-	s["weeks"].append( get_week_date( a["timePeriodStart"]) ) #set week list for images
-	s["fixedRate"].append( calc_FixedRate(s, True) )
-	s["waivedRate"].append( calc_WaivedRate(s, True) )
-	s["dealtRate"].append( calc_DealtRate(s, True) )
+        s["weeks"].append( get_week_date( a["timePeriodStart"]) ) #set week list for images
+        s["fixedRate"].append( calc_FixedRate(s, True) )
+        s["waivedRate"].append( calc_WaivedRate(s, True) )
+        s["dealtRate"].append( calc_DealtRate(s, True) )
 
 def compute_summary(s):
-	for status in config["status"]:
-		for category in config["category"]:
-			for risk in config["risk"]:
-				s[status][category][risk]["avg"] = avg(s[status][category][risk]["rng"])
-			s[status][category]["TOTAL"]["avg"] = avg(s[status][category]["TOTAL"]["rng"])
+        for mttr in config["mttr"]:
+                t = []
+                for w in s[mttr]["rng"]:
+                        if not w is None:
+                                t.append(w)
+                s[mttr]["avg"] = avg(t)
 
-		for risk in config["risk"]:
-			s[status]["TOTAL"][risk]["avg"] = avg(s[status]["TOTAL"][risk]["rng"])
+        for status in config["status"]:
+                for category in config["category"]:
+                        for risk in config["risk"]:
+                                s[status][category][risk]["avg"] = avg(s[status][category][risk]["rng"])
+                        s[status][category]["TOTAL"]["avg"] = avg(s[status][category]["TOTAL"]["rng"])
 
-		s[status]["TOTAL"]["avg"] = avg(s[status]["TOTAL"]["rng"])
+                for risk in config["risk"]:
+                        s[status]["TOTAL"][risk]["avg"] = avg(s[status]["TOTAL"][risk]["rng"])
 
-	s["FixRate"] = calc_FixedRate(s, False)
-	s["WaiveRate"] = calc_WaivedRate(s, False)
-	s["DealtRate"] = calc_DealtRate(s, False)
-	s["FixPercent"] = calc_FixPercent(s)
-	s["WaiPercent"] = calc_WaiPercent(s)
+                s[status]["TOTAL"]["avg"] = avg(s[status]["TOTAL"]["rng"])
+
+        s["FixRate"] = calc_FixedRate(s, False)
+        s["WaiveRate"] = calc_WaivedRate(s, False)
+        s["DealtRate"] = calc_DealtRate(s, False)
+        s["FixPercent"] = calc_FixPercent(s)
+        s["WaiPercent"] = calc_WaiPercent(s)
 
 
 #------------------------------------------------------------------------------------
 
 if __name__ == "__main__":
-	main()
+        main()
 #raise SystemExit
 
