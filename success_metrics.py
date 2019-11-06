@@ -16,15 +16,14 @@ import datetime
 import json
 import sys
 import argparse
-from requests import Session
-from requests.auth import HTTPBasicAuth
+import requests
 #---------------------------------
-iq_session = Session()
+iq_session = requests.Session()
 config = {
         "VulDisTime" : 2, "FixManTime" : 2, "FixAutoTime" : 0.3, "WaiManTime" : 7, "WaiAutoTime" : 0.3, "ProductiveHoursDay" : 7, "AvgHourCost" : 100,
         "risk" : ["LOW", "MODERATE", "SEVERE", "CRITICAL"], "category" : ["SECURITY", "LICENSE", "QUALITY", "OTHER"],
         "status" : ["discoveredCounts", "fixedCounts", "waivedCounts", "openCountsAtTimePeriodEnd"],
-        "mttr" : ["mttrLowThreat", "mttrModerateThreat", "mttrSevereThreat", "mttrCriticalThreat", "evaluationCount"],
+        "mttr" : ["mttrLowThreat", "mttrModerateThreat", "mttrSevereThreat", "mttrCriticalThreat"],
         "statRates": ["FixRate", "WaiveRate", "DealtRate", "FixPercent", "WaiPercent"]
 }
 
@@ -39,7 +38,7 @@ def main():
 
         args = vars(parser.parse_args())
         creds = args["auth"].split(":")
-        iq_session.auth = HTTPBasicAuth(creds[0], creds[1] )
+        iq_session.auth = requests.auth.HTTPBasicAuth(creds[0], creds[1] )
 
         #search for applicationId
         appId = searchApps(args["appId"], args["url"])
@@ -215,8 +214,11 @@ def ms_days(v): #convert ms to days
 def get_aggs_list():
         s = {"weeks":[], "fixedRate":[], "waivedRate":[], "dealtRate":[]}
         s.update(zeros(config["statRates"]))
+        s.update({"evaluationCount":{"rng":[]}})
+
         for m in config["mttr"]:
                 s.update({m:{"avg":0,"rng":[]}})
+
         for t in config["status"]:
                 g = {"TOTAL":{"avg":0,"rng":[]}}
                 for c in config["category"]:
@@ -282,11 +284,10 @@ def process_week(a, s):
         for mttr in config["mttr"]:
                 if mttr in a:
                         value = a[mttr]
-                        if mttr != "evaluationCount" and not value is None: 
+                        if not value is None: 
                                 value = ms_days(value)
                         s[mttr]["rng"].append(value)
         
-        #looping arrays to pull data from metrics api.
         for status in config["status"]:
                 for category in config["category"]:
                         Totals = 0
@@ -306,6 +307,7 @@ def process_week(a, s):
                         Totals += value
                 s[status]["TOTAL"]["rng"].append(Totals)
 
+        s["evaluationCount"]["rng"].append( a["evaluationCount"] )
         s["weeks"].append( get_week_date( a["timePeriodStart"]) ) #set week list for images
         s["fixedRate"].append( calc_FixedRate(s, True) )
         s["waivedRate"].append( calc_WaivedRate(s, True) )
