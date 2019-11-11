@@ -259,7 +259,7 @@ def prevention():
 #would it take to deal with it at current dealt-with rate (for informational purposes).
 #-------------------------------------------------------------------------
 def remediation():
-    pages, j, graphNo = [], 0, 7
+    pages, j, graphNo = [], 0, 11
     appName, orgName, OpeLow, OpeMod, OpeSev, OpeCri = [],[],[],[],[],[]
 
     printProgressBar(j,graphNo)
@@ -375,6 +375,54 @@ def remediation():
     pages.append("Waived_breakdown.png")
     j +=1
     printProgressBar(j,graphNo)
+     #---------------------------------------------------------------------
+    make_chart( 
+        summary['weeks'], 
+        summary['mttrLowThreat'], 
+        "MTTR_Low.png", 
+        "MTTR (in days) for all Low Threat vulnerabilities week-on-week", 
+        "0", 
+        xtitle[0]
+    )
+    pages.append('MTTR_Low.png')
+    j +=1
+    printProgressBar(j, graphNo)
+     #---------------------------------------------------------------------
+    make_chart( 
+        summary['weeks'], 
+        summary['mttrModerateThreat'], 
+        "MTTR_Moderate.png", 
+        "MTTR (in days) for all Moderate Threat vulnerabilities week-on-week", 
+        "0", 
+        xtitle[0]
+    )
+    pages.append('MTTR_Moderate.png')
+    j +=1
+    printProgressBar(j, graphNo)
+     #---------------------------------------------------------------------
+    make_chart( 
+        summary['weeks'], 
+        summary['mttrSevereThreat'], 
+        "MTTR_Severe.png", 
+        "MTTR (in days) for all Severe Threat vulnerabilities week-on-week", 
+        "0", 
+        xtitle[0]
+    )
+    pages.append('MTTR_Severe.png')
+    j +=1
+    printProgressBar(j, graphNo)
+     #---------------------------------------------------------------------
+    make_chart( 
+        summary['weeks'], 
+        summary['mttrCriticalThreat'], 
+        "MTTR_Critical.png", 
+        "MTTR (in days) for all Critical Threat vulnerabilities week-on-week", 
+        "0", 
+        xtitle[0]
+    )
+    pages.append('MTTR_Critical.png')
+    j +=1
+    printProgressBar(j, graphNo)
     #---------------------------------------------------------------------
     output_pdf(pages, "remediation_report.pdf")
 

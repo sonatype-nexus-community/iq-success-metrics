@@ -24,7 +24,8 @@ config = {
         "risk" : ["LOW", "MODERATE", "SEVERE", "CRITICAL"], "category" : ["SECURITY", "LICENSE", "QUALITY", "OTHER"],
         "status" : ["discoveredCounts", "fixedCounts", "waivedCounts", "openCountsAtTimePeriodEnd"],
         "mttr" : ["mttrLowThreat", "mttrModerateThreat", "mttrSevereThreat", "mttrCriticalThreat"],
-        "statRates": ["FixRate", "WaiveRate", "DealtRate", "FixPercent", "WaiPercent"]
+        "statRates": ["FixRate", "WaiveRate", "DealtRate", "FixPercent", "WaiPercent"],
+        "rates": ["fixedRate","waivedRate","dealtRate"]
 }
 
 def main():
@@ -112,6 +113,11 @@ def main():
                                         reportCounts[status][risk][week_no] += app_summary[status]["TOTAL"][risk]["rng"][position]
                                 reportCounts[status]["TOTAL"][week_no] += app_summary[status]["TOTAL"]["rng"][position]
 
+                        #for rates in config["rates"]:
+                        #        for risk in config["risk"]:
+                        #                reportCounts[rates][risk][week_no] += app_summary[rates]["TOTAL"][risk]["rng"][position]
+                        #        reportCounts[rates]["TOTAL"][week_no] += app_summary[rates]["TOTAL"]["rng"][position]
+
         #-----------------------------------------------------------------------------------
         #convert the dicts to arrays.
         for fields in ["appNumberScan", "appOnboard", "weeklyScans"]:
@@ -129,6 +135,15 @@ def main():
 
                 reportSummary[status].update({ "LIST" : list( reportSummary[status].values() ) })        
                 reportSummary[status].update({ "TOTAL" : list( reportCounts[status]["TOTAL"].values() ) })
+
+        #for rates in config["rates"]:
+        #        reportSummary.update({ rates: {} })
+        #
+        #        for risk in config["risk"]:
+        #                reportSummary[rates].update({ risk: list( reportCounts[rates][risk].values() ) })
+        #
+        #        reportSummary[rates].update({ "LIST" : list( reportSummary[rates].values() ) })        
+        #        reportSummary[rates].update({ "TOTAL" : list( reportCounts[rates]["TOTAL"].values() ) })
 
         # Final report with summary and data objects.
         report = {"summary": reportSummary, "apps": data}
@@ -230,6 +245,16 @@ def get_aggs_list():
                         g["TOTAL"].update({r:{"avg":0,"rng":[]}})
                 s.update({t:g})
 
+        #for rates in config["rates"]:
+        #        g = {"TOTAL":{"avg":0,"rng":[]}}
+        #        for c in config["category"]:
+        #                k = {"TOTAL":{"avg":0,"rng":[]}}
+        #                for r in config["risk"]:
+        #                        k.update({r:{"avg":0,"rng":[]}})
+        #                g.update({c:k}) 
+        #        for r in config["risk"]:
+        #                g["TOTAL"].update({r:{"avg":0,"rng":[]}})
+        #        s.update({rates:g})
         return s
 
 #----------------------------------
@@ -307,6 +332,8 @@ def process_week(a, s):
                         Totals += value
                 s[status]["TOTAL"]["rng"].append(Totals)
 
+        #INCLUDE fixedRate, waivedRate, dealtRate loop here?
+
         s["evaluationCount"]["rng"].append( a["evaluationCount"] )
         s["weeks"].append( get_week_date( a["timePeriodStart"]) ) #set week list for images
         s["fixedRate"].append( calc_FixedRate(s, True) )
@@ -331,6 +358,8 @@ def compute_summary(s):
                         s[status]["TOTAL"][risk]["avg"] = avg(s[status]["TOTAL"][risk]["rng"])
 
                 s[status]["TOTAL"]["avg"] = avg(s[status]["TOTAL"]["rng"])
+
+        #INCLUDE fixedRate, waivedRate, dealtRate loop here?
 
         s["FixRate"] = calc_FixedRate(s, False)
         s["WaiveRate"] = calc_WaivedRate(s, False)
