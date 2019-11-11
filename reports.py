@@ -259,8 +259,8 @@ def prevention():
 #would it take to deal with it at current dealt-with rate (for informational purposes).
 #-------------------------------------------------------------------------
 def remediation():
-    pages, j, graphNo = [], 0, 11
-    appName, orgName, OpeLow, OpeMod, OpeSev, OpeCri = [],[],[],[],[],[]
+    pages, j, graphNo = [], 0, 13
+    appName, orgName, OpeLow, OpeMod, OpeSev, OpeCri, mttrLow, mttrMod, mttrSev, mttrCri = [],[],[],[],[],[],[],[],[],[]
 
     printProgressBar(j,graphNo)
     #---------------------------------------------------------------------
@@ -323,6 +323,32 @@ def remediation():
     pages.append("Current_Open_Apps.png")
     j +=1
     printProgressBar(j,graphNo)
+    #---------------------------------------------------------------------
+    for app in apps:
+        make_chart( 
+            summary['weeks'], 
+            app["summary"]['fixedRate'], 
+            "Fixed_Rate_"+app["applicationName"]+".png", 
+            "Fixed rate for "+app["applicationName"]+" week-on-week", 
+            "0", 
+            xtitle[0]
+        )
+        pages.append("Fixed_Rate_"+app["applicationName"]+".png")
+    j +=1
+    printProgressBar(j, graphNo)
+    #---------------------------------------------------------------------
+    for app in apps:
+        make_chart( 
+            summary['weeks'], 
+            app["summary"]['waivedRate'], 
+            "Waived_Rate_"+app["applicationName"]+".png", 
+            "Waived rate for "+app["applicationName"]+" week-on-week", 
+            "0", 
+            xtitle[0]
+        )
+        pages.append("Waived_Rate_"+app["applicationName"]+".png")
+    j +=1
+    printProgressBar(j, graphNo)
     #---------------------------------------------------------------------
     make_stacked_chart(
         summary['weeks'],
