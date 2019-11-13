@@ -58,33 +58,47 @@ def main():
         #reportCounts is used to aggregate totals from the filtered set of applications.
         #reportAverages will calculate averages for MTTR. 
         #reportSummary will return the final results.
+        #reportLic will return the final results for Licences
         reportAverages, reportCounts, reportSummary = {}, {}, {"appNames":[], "orgNames":[], "weeks":[], "timePeriodStart" : []}
-
+        reportAveragesLic, reportCountsLic, reportLic = {}, {}, {"appNames":[], "orgNames":[], "weeks":[], "timePeriodStart" : []}
+        
         # set the weeks range in the report summary for the required scope.
         for recency in range(args["scope"], 0, -1):
-                reportSummary["timePeriodStart"].append( get_week_start( recency ) ) 
-                reportSummary["weeks"].append( get_week_only( recency ) ) 
+                reportSummary["timePeriodStart"].append( get_week_start( recency ) )
+                reportLic["timePeriodStart"].append( get_week_start( recency ) )
+                reportSummary["weeks"].append( get_week_only( recency ) )
+                reportLic["weeks"].append( get_week_only( recency ) )
+                
         
         # building aggregated set of fields for MTTR
         for mttr in config["mttr"]:
                 reportAverages.update({mttr: empties(reportSummary["weeks"]) })
+                reportAveragesLic.update({mttr: empties(reportLic["weeks"]) })
+                
 
         # set empty range for scope
         for fields in ["appNumberScan", "appOnboard", "weeklyScans"]:
                 reportCounts.update({ fields : zeros(reportSummary["weeks"]) })
+                reportCountsLic.update({ fields : zeros(reportLic["weeks"]) })
 
         # building aggregated set of fields.
         for status in config["status"]:
                 reportCounts.update({ status: {} })
+                reportCountsLic.update({ status: {} })
+                
                 for risk in config["risk"]:
                         reportCounts[status].update({ risk: zeros(reportSummary["weeks"]) })
+                        reportCountsLic[status].update({ risk: zeros(reportLic["weeks"]) })
                 reportCounts[status].update({ "TOTAL" : zeros(reportSummary["weeks"]) })
+                reportCountsLic[status].update({ "TOTAL" : zeros(reportLic["weeks"]) })
 
         #-----------------------------------------------------------------------------------
         # loop through applications in success metric data.
         for app in data:
                 reportSummary['appNames'].append( app["applicationName"] )
+                reportLic['appNames'].append( app["applicationName"] )
                 reportSummary['orgNames'].append( app["organizationName"] )
+                reportLic['orgNames'].append( app["organizationName"] )
                 
                 app_summary = get_aggs_list() # zeroed summary template.
                 for aggregation in app["aggregations"]:
@@ -93,10 +107,13 @@ def main():
 
                 compute_summary(app_summary)
                 app.update( {"summary": app_summary} )
+                app.update( {"licences": app_summary} )
+                
 
                 for week_no in app_summary["weeks"]:
                         position = app_summary["weeks"].index(week_no)
                         reportCounts["appOnboard"][week_no] += 1
+                        reportCountsLic["appOnboard"][week_no] += 1
 
                         # only include the app's week when they have a value
                         for mttr in config["mttr"]:
@@ -106,12 +123,16 @@ def main():
 
                         if app_summary["evaluationCount"]["rng"][position] != 0:
                                 reportCounts["appNumberScan"][week_no] += 1
+                                reportCountsLic["appNumberScan"][week_no] += 1
                                 reportCounts["weeklyScans"][week_no] += app_summary["evaluationCount"]["rng"][position] 
+                                reportCountsLic["weeklyScans"][week_no] += app_summary["evaluationCount"]["rng"][position] 
 
                         for status in config["status"]:
                                 for risk in config["risk"]:
                                         reportCounts[status][risk][week_no] += app_summary[status]["TOTAL"][risk]["rng"][position]
+                                        reportCountsLic[status][risk][week_no] += app_summary[status]["LICENSE"][risk]["rng"][position]
                                 reportCounts[status]["TOTAL"][week_no] += app_summary[status]["TOTAL"]["rng"][position]
+                                reportCountsLic[status]["TOTAL"][week_no] += app_summary[status]["LICENSE"]["TOTAL"]["rng"][position]
 
                         #for rates in config["rates"]:
                         #        for risk in config["risk"]:
@@ -122,19 +143,24 @@ def main():
         #convert the dicts to arrays.
         for fields in ["appNumberScan", "appOnboard", "weeklyScans"]:
                 reportSummary.update({ fields : list( reportCounts[fields].values() ) })
+                reportLic.update({ fields : list( reportCountsLic[fields].values() ) })
 
         # calculate the averages for each week.  Returns None when no values are available for a given week. 
         for mttr in config["mttr"]:
-                reportSummary.update({ mttr: list( avg(value) for value in reportAverages[mttr].values()) })  
+                reportSummary.update({ mttr: list( avg(value) for value in reportAverages[mttr].values()) })
+                reportLic.update({ mttr: list( avg(value) for value in reportAveragesLic[mttr].values()) })
         
         for status in config["status"]:
                 reportSummary.update({ status: {} })
+                reportLic.update({ status: {} })
 
                 for risk in config["risk"]:
                         reportSummary[status].update({ risk: list( reportCounts[status][risk].values() ) })
-
-                reportSummary[status].update({ "LIST" : list( reportSummary[status].values() ) })        
+                        reportLic[status].update({ risk: list( reportCountsLic[status][risk].values() ) })
+                reportSummary[status].update({ "LIST" : list( reportSummary[status].values() ) })
+                reportLic[status].update({ "LIST" : list( reportLic[status].values() ) })    
                 reportSummary[status].update({ "TOTAL" : list( reportCounts[status]["TOTAL"].values() ) })
+                reportLic[status].update({ "TOTAL" : list( reportCountsLic[status]["TOTAL"].values() ) })
 
         #for rates in config["rates"]:
         #        reportSummary.update({ rates: {} })
@@ -146,7 +172,7 @@ def main():
         #        reportSummary[rates].update({ "TOTAL" : list( reportCounts[rates]["TOTAL"].values() ) })
 
         # Final report with summary and data objects.
-        report = {"summary": reportSummary, "apps": data}
+        report = {"summary": reportSummary, "apps": data, "licences": reportLic}
 
         #-----------------------------------------------------------------------------------
         # Setting the default to output to json file with the option to format it to human readable.

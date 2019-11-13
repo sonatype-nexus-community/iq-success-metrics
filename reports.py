@@ -24,6 +24,7 @@ with open(filename, 'r') as f:
     report = json.load(f)
     summary = report["summary"]
     apps = report["apps"]
+    licences = report["licences"]
     appCount = len(apps)
 
 # Print iterations progress
@@ -242,13 +243,6 @@ def adoption(target=0):
     #------------------------------------
     output_pdf(pages, "adoption_report.pdf")
 
-#---------------------------------
-#PREVENTION: "To reduce the number of vulnerabilities passed from build to release"
-#Generates open counts at build and at release per week (total, per org, per app) and compares them
-#Tracks compliance percentage of maximum number of vulnerabilities at release stage per threat level
-def prevention():
-    print("Prevention report soon to be implemented")
-
 
 #-------------------------------------------------------------------------
 #REMEDIATION: "To reduce the number of vulnerabilities by x percentage"
@@ -452,6 +446,16 @@ def remediation():
     #---------------------------------------------------------------------
     output_pdf(pages, "remediation_report.pdf")
 
+
+#---------------------------------
+#PREVENTION: "To reduce the number of vulnerabilities passed from build to release"
+#Generates open counts at build and at release per week (total, per org, per app) and compares them
+#Tracks compliance percentage of maximum number of vulnerabilities at release stage per threat level
+def prevention():
+    print("Prevention report soon to be implemented")
+
+
+
 #---------------------------------
 #ENFORCEMENT: To control a specific metric regularly, for example: 
 # number of waivers, MTTR at certain value per threat level, 
@@ -470,13 +474,150 @@ def hygiene():
 
 #---------------------------------
 
+
+#-------------------------------------------------------------------------
+#LICENCE: "To reduce the number of licensing vulnerabilities by x percentage"
+#Same as Remediation report but only for Licensing vulnerabilities
+#Generates discovered, fixed & waived counts/week (total, per org, per app). 
+#Tracks compliance percentage of fix, waive & dealt-with percentage per week and threat level
+#Generates open counts/week (total, per org, per app). 
+#Displays current technical debt, and tracks how long (in hours) 
+#would it take to deal with it at current dealt-with rate (for informational purposes).
+#-------------------------------------------------------------------------
+def licence():
+    pages, j, graphNo = [], 0, 7
+    appName, orgName, OpeLow, OpeMod, OpeSev, OpeCri, mttrLow, mttrMod, mttrSev, mttrCri = [],[],[],[],[],[],[],[],[],[]
+
+    printProgressBar(j,graphNo)
+    #---------------------------------------------------------------------
+    make_stacked_chart(
+        licences['weeks'],
+        licences['openCountsAtTimePeriodEnd']['LIST'],
+        ['Low','Moderate','Severe','Critical'],
+        "Open_Backlog_Lic.png",
+        "Number of open vulnerabilities (backlog) per week",
+        xtitle[0]
+    )
+    pages.append('Open_Backlog_Lic.png')
+    j +=1
+    printProgressBar(j,graphNo)
+    #---------------------------------------------------------------------
+    for app in apps:
+        orgName.append(app["organizationName"])
+        OpeLow.append(app["licences"]["openCountsAtTimePeriodEnd"]["LICENSE"]["LOW"]["rng"][len(app["licences"]["openCountsAtTimePeriodEnd"]["LICENSE"]["LOW"]["rng"])-1])
+        OpeMod.append(app["licences"]["openCountsAtTimePeriodEnd"]["LICENSE"]["MODERATE"]["rng"][len(app["licences"]["openCountsAtTimePeriodEnd"]["LICENSE"]["MODERATE"]["rng"])-1])
+        OpeSev.append(app["licences"]["openCountsAtTimePeriodEnd"]["LICENSE"]["SEVERE"]["rng"][len(app["licences"]["openCountsAtTimePeriodEnd"]["LICENSE"]["SEVERE"]["rng"])-1])
+        OpeCri.append(app["licences"]["openCountsAtTimePeriodEnd"]["LICENSE"]["CRITICAL"]["rng"][len(app["licences"]["openCountsAtTimePeriodEnd"]["LICENSE"]["CRITICAL"]["rng"])-1])
+    
+    make_stacked_chart(
+        orgName,
+        [
+            OpeLow,
+            OpeMod,
+            OpeSev,
+            OpeCri
+        ],
+       ['Low', 'Moderate', 'Severe', 'Critical'],
+       "Current_Open_Orgs_Lic.png", 
+       "Current Total Number of Open vulnerabilities by organisation",
+        xtitle[2]
+    )
+    pages.append("Current_Open_Orgs_Lic.png")
+    j +=1
+    printProgressBar(j,graphNo)
+    #---------------------------------------------------------------------
+    for app in apps:
+        appName.append(app["applicationName"])
+        OpeLow.append(app["licences"]["openCountsAtTimePeriodEnd"]["LICENSE"]["LOW"]["rng"][len(app["licences"]["openCountsAtTimePeriodEnd"]["LICENSE"]["LOW"]["rng"])-1])
+        OpeMod.append(app["licences"]["openCountsAtTimePeriodEnd"]["LICENSE"]["MODERATE"]["rng"][len(app["licences"]["openCountsAtTimePeriodEnd"]["LICENSE"]["MODERATE"]["rng"])-1])
+        OpeSev.append(app["licences"]["openCountsAtTimePeriodEnd"]["LICENSE"]["SEVERE"]["rng"][len(app["licences"]["openCountsAtTimePeriodEnd"]["LICENSE"]["SEVERE"]["rng"])-1])
+        OpeCri.append(app["licences"]["openCountsAtTimePeriodEnd"]["LICENSE"]["CRITICAL"]["rng"][len(app["licences"]["openCountsAtTimePeriodEnd"]["LICENSE"]["CRITICAL"]["rng"])-1])
+    
+    make_stacked_chart(
+        appName,
+        [
+            OpeLow,
+            OpeMod,
+            OpeSev,
+            OpeCri
+        ],
+       ['Low', 'Moderate', 'Severe', 'Critical'],
+       "Current_Open_Apps_Lic.png", 
+       "Current Total Number of Open vulnerabilities by application",
+        xtitle[1]
+    )
+    pages.append("Current_Open_Apps_Lic.png")
+    j +=1
+    printProgressBar(j,graphNo)
+    #---------------------------------------------------------------------
+    #---------------------------------------------------------------------
+    make_stacked_chart(
+        licences['weeks'],
+        [
+            licences['discoveredCounts']['TOTAL'],
+            licences['fixedCounts']['TOTAL'],
+            licences['waivedCounts']['TOTAL']
+        ],
+       ['Discovered', 'Fixed', 'Waived'],
+       "Total_DisFixWaiCount_Lic.png", 
+       "Total Number of Discovered, Fixed & Waived vulnerabilities week-on-week",
+        xtitle[0]
+    )
+    pages.append("Total_DisFixWaiCount_Lic.png")
+    j +=1
+    printProgressBar(j,graphNo)
+    #---------------------------------------------------------------------
+    make_stacked_chart(
+        licences['weeks'], 
+        licences['discoveredCounts']['LIST'],
+        ['Discovered Low', 'Discovered Moderate', 'Discovered Severe', 'Discovered Critical'],
+        "Discovered_breakdown_Lic.png",
+        "Total Number of Discovered vulnerabilities by severity week-on-week",
+        xtitle[0]
+    )
+    pages.append("Discovered_breakdown_Lic.png")
+    j +=1
+    printProgressBar(j,graphNo)
+    #---------------------------------------------------------------------
+    make_stacked_chart(
+        licences['weeks'], 
+        licences['fixedCounts']['LIST'],
+        ['Fixed Low', 'Fixed Moderate', 'Fixed Severe', 'Fixed Critical'],
+        "Fixed_breakdown_Lic.png",
+        "Total Number of Fixed vulnerabilities by severity week-on-week",
+        xtitle[0]
+    )
+    pages.append("Fixed_breakdown_Lic.png")
+    j +=1
+    printProgressBar(j,graphNo)
+    #---------------------------------------------------------------------
+    make_stacked_chart(
+        licences['weeks'], 
+        licences['waivedCounts']['LIST'],
+        ['Waived Low', 'Waived Moderate', 'Waived Severe', 'Waived Critical'],
+        "Waived_breakdown_Lic.png",
+        "Total Number of Waived vulnerabilities by severity week-on-week",
+        xtitle[0]
+    )
+    pages.append("Waived_breakdown_Lic.png")
+    j +=1
+    printProgressBar(j,graphNo)
+     #---------------------------------------------------------------------
+    #---------------------------------------------------------------------
+    output_pdf(pages, "licence_report.pdf")
+
+#-------------------------------------------------------------------------
+
+
+
 i = True
 while i==True:
     choice = input("\nFor Adoption report, press 1: \n"+
-                   "For Prevention report, press 2: \n"+
-                   "For Remediation report, press 3: \n"+
-                   "For Enforcement report, press 4: \n"+
+                   "For Remediation report, press 2: \n"+
+                   "For Enforcement report, press 3: \n"+
+                   "For Prevention report, press 4: \n"+
                    "For Hygiene report, press 5: \n"+
+                   "For Licence report, press 6: \n"+
                    "To exit, press 0: \n")
 
     if choice == "1":
@@ -495,16 +636,19 @@ while i==True:
             print("Incorrect option selected")
 
     if choice == "2":
-        prevention()
-
-    if choice == "3":
         remediation()
 
-    if choice == "4":
+    if choice == "3":
         enforcement()
+
+    if choice == "4":
+        prevention()
 
     if choice == "5":
         hygiene()
+
+    if choice == "6":
+        licence()
 
     if choice == "0":
         i = False
