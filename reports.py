@@ -25,6 +25,7 @@ with open(filename, 'r') as f:
     summary = report["summary"]
     apps = report["apps"]
     licences = report["licences"]
+    security = report["security"]
     appCount = len(apps)
 
 # Print iterations progress
@@ -603,8 +604,138 @@ def licence():
     j +=1
     printProgressBar(j,graphNo)
      #---------------------------------------------------------------------
-    #---------------------------------------------------------------------
     output_pdf(pages, "licence_report.pdf")
+#-------------------------------------------------------------------------
+#SECURITY: "To reduce the number of security vulnerabilities by x percentage"
+#Same as Remediation report but only for security vulnerabilities
+#Generates discovered, fixed & waived counts/week (total, per org, per app). 
+#Tracks compliance percentage of fix, waive & dealt-with percentage per week and threat level
+#Generates open counts/week (total, per org, per app). 
+#Displays current technical debt, and tracks how long (in hours) 
+#would it take to deal with it at current dealt-with rate (for informational purposes).
+#-------------------------------------------------------------------------
+def Security():
+    pages, j, graphNo = [], 0, 7
+    appName, orgName, OpeLow, OpeMod, OpeSev, OpeCri, mttrLow, mttrMod, mttrSev, mttrCri = [],[],[],[],[],[],[],[],[],[]
+
+    printProgressBar(j,graphNo)
+    #---------------------------------------------------------------------
+    make_stacked_chart(
+        security['weeks'],
+        security['openCountsAtTimePeriodEnd']['LIST'],
+        ['Low','Moderate','Severe','Critical'],
+        "Open_Backlog_Sec.png",
+        "Number of open vulnerabilities (backlog) per week",
+        xtitle[0]
+    )
+    pages.append('Open_Backlog_Sec.png')
+    j +=1
+    printProgressBar(j,graphNo)
+    #---------------------------------------------------------------------
+    for app in apps:
+        orgName.append(app["organizationName"])
+        OpeLow.append(app["security"]["openCountsAtTimePeriodEnd"]["SECURITY"]["LOW"]["rng"][len(app["security"]["openCountsAtTimePeriodEnd"]["SECURITY"]["LOW"]["rng"])-1])
+        OpeMod.append(app["security"]["openCountsAtTimePeriodEnd"]["SECURITY"]["MODERATE"]["rng"][len(app["security"]["openCountsAtTimePeriodEnd"]["SECURITY"]["MODERATE"]["rng"])-1])
+        OpeSev.append(app["security"]["openCountsAtTimePeriodEnd"]["SECURITY"]["SEVERE"]["rng"][len(app["security"]["openCountsAtTimePeriodEnd"]["SECURITY"]["SEVERE"]["rng"])-1])
+        OpeCri.append(app["security"]["openCountsAtTimePeriodEnd"]["SECURITY"]["CRITICAL"]["rng"][len(app["security"]["openCountsAtTimePeriodEnd"]["SECURITY"]["CRITICAL"]["rng"])-1])
+    
+    make_stacked_chart(
+        orgName,
+        [
+            OpeLow,
+            OpeMod,
+            OpeSev,
+            OpeCri
+        ],
+       ['Low', 'Moderate', 'Severe', 'Critical'],
+       "Current_Open_Orgs_Sec.png", 
+       "Current Total Number of Open vulnerabilities by organisation",
+        xtitle[2]
+    )
+    pages.append("Current_Open_Orgs_Sec.png")
+    j +=1
+    printProgressBar(j,graphNo)
+    #---------------------------------------------------------------------
+    for app in apps:
+        appName.append(app["applicationName"])
+        OpeLow.append(app["security"]["openCountsAtTimePeriodEnd"]["SECURITY"]["LOW"]["rng"][len(app["security"]["openCountsAtTimePeriodEnd"]["SECURITY"]["LOW"]["rng"])-1])
+        OpeMod.append(app["security"]["openCountsAtTimePeriodEnd"]["SECURITY"]["MODERATE"]["rng"][len(app["security"]["openCountsAtTimePeriodEnd"]["SECURITY"]["MODERATE"]["rng"])-1])
+        OpeSev.append(app["security"]["openCountsAtTimePeriodEnd"]["SECURITY"]["SEVERE"]["rng"][len(app["security"]["openCountsAtTimePeriodEnd"]["SECURITY"]["SEVERE"]["rng"])-1])
+        OpeCri.append(app["security"]["openCountsAtTimePeriodEnd"]["SECURITY"]["CRITICAL"]["rng"][len(app["security"]["openCountsAtTimePeriodEnd"]["SECURITY"]["CRITICAL"]["rng"])-1])
+    
+    make_stacked_chart(
+        appName,
+        [
+            OpeLow,
+            OpeMod,
+            OpeSev,
+            OpeCri
+        ],
+       ['Low', 'Moderate', 'Severe', 'Critical'],
+       "Current_Open_Apps_Sec.png", 
+       "Current Total Number of Open vulnerabilities by application",
+        xtitle[1]
+    )
+    pages.append("Current_Open_Apps_Sec.png")
+    j +=1
+    printProgressBar(j,graphNo)
+    #---------------------------------------------------------------------
+    #---------------------------------------------------------------------
+    make_stacked_chart(
+        security['weeks'],
+        [
+            security['discoveredCounts']['TOTAL'],
+            security['fixedCounts']['TOTAL'],
+            security['waivedCounts']['TOTAL']
+        ],
+       ['Discovered', 'Fixed', 'Waived'],
+       "Total_DisFixWaiCount_Sec.png", 
+       "Total Number of Discovered, Fixed & Waived vulnerabilities week-on-week",
+        xtitle[0]
+    )
+    pages.append("Total_DisFixWaiCount_Sec.png")
+    j +=1
+    printProgressBar(j,graphNo)
+    #---------------------------------------------------------------------
+    make_stacked_chart(
+        security['weeks'], 
+        security['discoveredCounts']['LIST'],
+        ['Discovered Low', 'Discovered Moderate', 'Discovered Severe', 'Discovered Critical'],
+        "Discovered_breakdown_Sec.png",
+        "Total Number of Discovered vulnerabilities by severity week-on-week",
+        xtitle[0]
+    )
+    pages.append("Discovered_breakdown_Sec.png")
+    j +=1
+    printProgressBar(j,graphNo)
+    #---------------------------------------------------------------------
+    make_stacked_chart(
+        security['weeks'], 
+        security['fixedCounts']['LIST'],
+        ['Fixed Low', 'Fixed Moderate', 'Fixed Severe', 'Fixed Critical'],
+        "Fixed_breakdown_Sec.png",
+        "Total Number of Fixed vulnerabilities by severity week-on-week",
+        xtitle[0]
+    )
+    pages.append("Fixed_breakdown_Sec.png")
+    j +=1
+    printProgressBar(j,graphNo)
+    #---------------------------------------------------------------------
+    make_stacked_chart(
+        security['weeks'], 
+        security['waivedCounts']['LIST'],
+        ['Waived Low', 'Waived Moderate', 'Waived Severe', 'Waived Critical'],
+        "Waived_breakdown_Sec.png",
+        "Total Number of Waived vulnerabilities by severity week-on-week",
+        xtitle[0]
+    )
+    pages.append("Waived_breakdown_Sec.png")
+    j +=1
+    printProgressBar(j,graphNo)
+     #---------------------------------------------------------------------
+    #---------------------------------------------------------------------
+
+    output_pdf(pages, "security_report.pdf")
 
 #-------------------------------------------------------------------------
 
@@ -618,6 +749,7 @@ while i==True:
                    "For Prevention report, press 4: \n"+
                    "For Hygiene report, press 5: \n"+
                    "For Licence report, press 6: \n"+
+                   "For Security report, press 7: \n"+
                    "To exit, press 0: \n")
 
     if choice == "1":
@@ -649,6 +781,9 @@ while i==True:
 
     if choice == "6":
         licence()
+
+    if choice == "7":
+        Security()
 
     if choice == "0":
         i = False
