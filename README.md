@@ -217,19 +217,46 @@ By entering the desired number, a targeted report will be produced in .pdf forma
 
 ### Understanding the `successmetrics.json` file
 
-The JSON file will be a list of applications and inside each element of that list (each app), there is a dictionary containing all the data. A sample of the tree structure of the JSON file for four apps is shown below:
+The successmetrics.json file is currently composed of four dictionaries: 
 
-We can see that first element in the list (number 0), has an `applicationId, applicationPublicId, applicationName, organizationId, organizationName` to be able to identify this particular application within a specific organization.
+* `summary`: this is the overall summary that collates and aggregates all the data together, giving the global view. This dictionary is the main one used for generating the global reports.
+* `apps`: this is a list of all the applications within scope. It contains the raw data coming from the API call (`aggregations`) and also a `summary` view for that app, a `licences` view and a `security` view.
+* `licences`: this is the same as `summary` but exclusively for licence violations.
+* `security`: this is the same as `summary` but exclusively for security violations.
+
+NOTE: adding the `licences` and `security` data together will not produce the overall `summary` data because there are also `quality` and `other` types of violations that are included in `summary` but not in `licences` or `security`.
+
+### Understanding `summary`
+
+If we go inside `summary` we can see the following:
+
+* `appNames`: this is a list of all the application names within scope.
+* `orgNames`: this is a list of all the organization names within scope. The entries match one-for-one each one of the applications, so there will be duplicate organization names.
+* `weeks`: this is the range of weeks in scope, in ISO format (week number). This was selected when running the success_metrics.py script and was set by default to 6 weeks, so if we were in the middle of week 38, we would request the IQ server for weeks 32, 33, 34, 35, 36 and 37 (the past six fully completed weeks).
+* `timePeriodStart`: this is a list of the weeks in scope in normal date format instead of ISO format.
+* `appNumberScan`: this is a list of the number of applications that have been scanned in each of the weeks in scope. 
+* `appOnboard`: this is a list of the number of applications onboarded in the IQ server in each of the weeks in scope. 
+* `weeklyScans`: this is a list of the total number of scans per week in scope.
+* `mttrLowThreat`: this is a list of the overall MTTR (Mean Time To Resolution) measured in days for all Low Threat vulnerabilities per week.
+* `mttrModerateThreat`: this is a list of the overall MTTR (Mean Time To Resolution) measured in days for all Moderate Threat vulnerabilities per week.
+* `mttrSevereThreat`: this is a list of the overall MTTR (Mean Time To Resolution) measured in days for all Severe Threat vulnerabilities per week.
+* `mttrCriticalThreat`: this is a list of the overall MTTR (Mean Time To Resolution) measured in days for all Critical Threat vulnerabilities per week.
+* `discoveredCounts`: this is a dictionary containing all the combined (Security, License, Quality & Other) discovered vulnerabilities for each threat level. `LIST` is the aggregation of all threat level violations where each element of the list is one of the applications in scope. `TOTAL` is a list aggregating all threat level violations for all applications in scope combined where each element of the list is one of the weeks in scope.
+* `fixedCounts`: this is a dictionary containing all the combined (Security, License, Quality & Other) fixed vulnerabilities for each threat level. `LIST` is the aggregation of all threat level violations where each element of the list is one of the applications in scope. `TOTAL` is a list aggregating all threat level violations for all applications in scope combined where each element of the list is one of the weeks in scope.
+* `waivedCounts`: this is a dictionary containing all the combined (Security, License, Quality & Other) waived vulnerabilities for each threat level. `LIST` is the aggregation of all threat level violations where each element of the list is one of the applications in scope. `TOTAL` is a list aggregating all threat level violations for all applications in scope combined where each element of the list is one of the weeks in scope.
+* `openCountsAtTimePeriodEnd`: this is a dictionary containing all the combined (Security, License, Quality & Other) vulnerabilities for each threat level that have not yet been fixed or waived (this is the current backlog or risk exposure). `LIST` is the aggregation of all threat level violations where each element of the list is one of the applications in scope. `TOTAL` is a list aggregating all threat level violations for all applications in scope combined where each element of the list is one of the weeks in scope.
+
+
+### Understanding `apps`
+
+If we go inside `apps`, we can see that first element in the list (number 0), has an `applicationId, applicationPublicId, applicationName, organizationId, organizationName` to be able to identify this particular application within a specific organization.
 
 Then we can see the following:
 
 * `aggregations`: this is the raw data collected by the API call. All the values inside aggregations have been explained in section 2. Explaining the Success Metrics Data API
 * `summary`: this is the summary of all the outcome-based success metrics resulting from processing the raw data from the API call. More information later below.
-* `weeksInScope`: this is the range of weeks in scope, in ISO format (week number). This was selected when running the success_metrics.py script and was set by default to 6 weeks, so if we were in the middle of week 38, we would request the IQ server for weeks 32, 33, 34, 35, 36 and 37 (the past six fully completed weeks).
-* `orgNames`: this is a list of all the organization names within scope.
-* `appNames`: this is a list of all the application names within scope.
-* `appNumberScan`: this is a list of the number of applications that have been scanned in each of the weeks in scope. IMPORTANT: due to the looping nature of the code, the overall accurate result is only available in the appNumberScan property of the last element in the list, in this case the fourth element in the list (number 3).
-* `appOnboard`: this is a list of the number of applications onboarded in the IQ server in each of the weeks in scope. IMPORTANT: due to the looping nature of the code, the overall accurate result is only available in the appOnboard property of the last element in the list, in this case the fourth element in the list (number 3).
+* `licences`: this is the same as `summary` but exclusively for licence violations (for this particular app)
+* `security`: this is the same as `summary` but exclusively for security violations (for this particular app)
 
 Now it is time to explore the summary dictionary in more detail:
 
@@ -252,6 +279,15 @@ The following metrics are dictionaries and inside them, they have the avg (avera
 * `fixedCounts`: this is the number of fixed vulnerabilities of a particular type (TOTAL, SECURITY, LICENSE, QUALITY, OTHER), of a particular threat level (TOTAL, LOW, MODERATE, SEVERE, CRITICAL) for that particular app. avg provides the overall average number of vulnerabilities of that type and threat level and rng provides the isolated number per week.
 * `waivedCounts`: this is the number of waived vulnerabilities of a particular type (TOTAL, SECURITY, LICENSE, QUALITY, OTHER), of a particular threat level (TOTAL, LOW, MODERATE, SEVERE, CRITICAL) for that particular app. avg provides the overall average number of vulnerabilities of that type and threat level and rng provides the isolated number per week.
 * `openCountsAtTimePeriodEnd`: this is the number of open vulnerabilities of a particular type (TOTAL, SECURITY, LICENSE, QUALITY, OTHER), of a particular threat level (TOTAL, LOW, MODERATE, SEVERE, CRITICAL) for that particular app. avg provides the overall average number of vulnerabilities of that type and threat level and rng provides the isolated number per week. Open counts accumulate from previous time periods (weeks/months) and constitute the technical debt backlog to fix/remediate. For example, if you discovered 10 Security Critical violations each week for 3 weeks (total of 30 violations) and you fixed and/or waived a total of 10 Security Critical violations at the end of those 3 weeks, the openCountAtTimePeriodEndSecurityCritical counter would show 20 (Security Critical open violations).
+
+
+### Understanding `licences`
+
+The structure is identical to `summary` with data being exclusive to licence violations.
+
+### Understanding `security`
+
+The structure is identical to `summary` with data being exclusive to security violations.
 
 ### Understanding the successmetrics.pdf report
 
