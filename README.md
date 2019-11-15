@@ -297,7 +297,7 @@ TBD
 
 ```
 docker build -t iq-success-metrics:latest .
-docker run -d -p 5000:5000 dockerdemo_py:latest
+docker run -it --rm -v `pwd`/demo:/usr/src/app/output iq-success-metrics:latest -a admin:admin123 -u http://host.docker.internal:8070
 ```
 
 NOTE: optionally specify ```docker build --build-arg ALT_DOCKER_REGISTRY=host.docker.internal:19443 --build-arg ALT_PYPI_REGISTRY=http://host.docker.internal:8083/nexus/repository/pypi-python.org-proxy/simple -t iq-success-metrics:latest .``` to download images from a location other than docker hub
