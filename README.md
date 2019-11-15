@@ -303,6 +303,16 @@ docker build -t iq-success-metrics:latest .
 docker run -d -p 5000:5000 iq-success-metrics:latest
 ```
 
+To keep the docker container running after its main process finishes, instead run the container with this command:
+```
+docker run -dit -p 5000:5000 iq-success-metrics:latest
+```
+The above command should print a container id, similar to `bc1d9d006052b433761a0b03453e0f5c069bcb3ebb2af0a6d9ccbaa3278ddf83`.
+You can attach to the running container using that id with a command like this:
+```
+docker attach bc1d9d006052b433761a0b03453e0f5c069bcb3ebb2af0a6d9ccbaa3278ddf83
+```
+
 NOTE: optionally specify ```docker build --build-arg ALT_DOCKER_REGISTRY=host.docker.internal:19443 --build-arg ALT_PYPI_REGISTRY=http://host.docker.internal:8083/nexus/repository/pypi-python.org-proxy/simple -t iq-success-metrics:latest .``` to download images from a location other than docker hub
 
 ## Contributing

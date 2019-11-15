@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
+set -e
 
 source .venv/bin/activate
 
-python3 -m unittest discover
+# uncomment line below to enforce Python formating
+#pylint .
+
+#python3 -m unittest discover
+python -m xmlrunner discover -o test-results/
