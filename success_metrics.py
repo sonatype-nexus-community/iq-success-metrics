@@ -201,7 +201,7 @@ def main():
         # Setting the default to output to json file with the option to format it to human readable.
 
         ## make an output directory
-        os.mkdir("output")
+        os.makedirs("output", exist_ok=True)
 
         with open("output/successmetrics.json",'w') as f:
                 if args["pretty"]:
