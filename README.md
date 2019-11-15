@@ -261,6 +261,15 @@ The following metrics are dictionaries and inside them, they have the avg (avera
 
 TBD
 
+## Building the Docker Image
+
+```
+docker build -t iq-success-metrics:latest .
+docker run -d -p 5000:5000 dockerdemo_py:latest
+```
+
+NOTE: optionally specify ```docker build --build-arg ALT_DOCKER_REGISTRY=host.docker.internal:19443 --build-arg ALT_PYPI_REGISTRY=http://host.docker.internal:8083/nexus/repository/pypi-python.org-proxy/simple -t iq-success-metrics:latest .``` to download images from a location other than docker hub
+
 ## Contributing
 
 If you as well want to speed up the pace of software development by working on this project, jump on in! Before you start work, create

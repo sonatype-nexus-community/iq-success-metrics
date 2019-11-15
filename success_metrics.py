@@ -17,6 +17,7 @@ import json
 import sys
 import argparse
 import requests
+import os
 #---------------------------------
 iq_session = requests.Session()
 config = {
@@ -198,12 +199,16 @@ def main():
 
         #-----------------------------------------------------------------------------------
         # Setting the default to output to json file with the option to format it to human readable.
-        with open("successmetrics.json",'w') as f:
+
+        ## make an output directory
+        os.mkdir("output")
+
+        with open("output/successmetrics.json",'w') as f:
                 if args["pretty"]:
                         f.write(json.dumps(report, indent=4))
                 else:
                         json.dump(report, f)
-        print( "saved to successmetrics.json" )
+        print( "saved to output/successmetrics.json" )
         #-----------------------------------------------------------------------------------
         #-----------------------------------------------------------------------------------
 
