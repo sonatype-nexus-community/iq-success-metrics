@@ -300,8 +300,13 @@ TBD
 
 ```
 docker build -t iq-success-metrics:latest .
-docker run -it --rm -v `pwd`/demo:/usr/src/app/output iq-success-metrics:latest -a admin:admin123 -u http://host.docker.internal:8070
+docker run -d -p 5000:5000 iq iq-success-metrics:latest
 ```
+
+<!--
+Is more setup needed (running IQ server, etc) for the command below to work? Could we doc the steps?
+docker run -it --rm -v `pwd`/demo:/usr/src/app/output iq-success-metrics:latest -a admin:admin123 -u http://host.docker.internal:8070
+-->
 
 To keep the docker container running after its main process finishes, instead run the container with this command:
 ```
