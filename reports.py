@@ -274,7 +274,7 @@ def remediation():
     #---------------------------------------------------------------------
     for app in apps:
         make_chart( 
-            summary['weeks'], 
+            app["summary"]['weeks'], 
             app["summary"]['fixedRate'], 
             "Fixed_Rate_"+app["applicationName"]+".png", 
             "Fixed rate for "+app["applicationName"]+" week-on-week", 
@@ -286,7 +286,7 @@ def remediation():
     #---------------------------------------------------------------------
     for app in apps:
         make_chart( 
-            summary['weeks'], 
+            app["summary"]['weeks'], 
             app["summary"]['waivedRate'], 
             "Waived_Rate_"+app["applicationName"]+".png", 
             "Waived rate for "+app["applicationName"]+" week-on-week", 
