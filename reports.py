@@ -19,7 +19,7 @@ import argparse
 
 
 xtitle = ["ISO week number", "Applications", "Organisations"]
-filename = "successmetrics.json"
+filename = "./output/successmetrics.json"
 
 with open(filename, 'r') as f:
     report = json.load(f)
@@ -123,33 +123,33 @@ def adoption():
     make_chart( 
         summary['weeks'], 
         summary['appOnboard'], 
-        "AppsOnboarded.png", 
+        "./output/AppsOnboarded.png", 
         "Number of apps onboarded (weekly view)", 
         xtitle[0]
     )
-    pages.append('AppsOnboarded.png')
+    pages.append('./output/AppsOnboarded.png')
     j +=1
     printProgressBar(j, graphNo)
     #------------------------------------
     make_chart(
         summary['weeks'], 
         summary['appNumberScan'], 
-        "AppsScanning.png", 
+        "./output/AppsScanning.png", 
         "Number of apps scanned per week", 
         xtitle[0]
     )
-    pages.append('AppsScanning.png')
+    pages.append('./output/AppsScanning.png')
     j +=1
     printProgressBar(j, graphNo)
     #------------------------------------
     make_chart( 
         summary['weeks'], 
         summary['weeklyScans'], 
-        "WeeklyScans.png", 
+        "./output/WeeklyScans.png", 
         "Total number of scans per week", 
         xtitle[0]
     )
-    pages.append('WeeklyScans.png')
+    pages.append('./output/WeeklyScans.png')
     j +=1
     printProgressBar(j, graphNo)
     #------------------------------------
@@ -162,11 +162,11 @@ def adoption():
         make_chart( 
             summary['weeks'], 
             app['summary']['evaluationCount']['rng'], 
-            f"{appName}_EvalCount.png", 
+            f"./output/{appName}_EvalCount.png", 
             f"Number of scans/week for app {appName}", 
             xtitle[0]
         )
-        pages.append( f"{appName}_EvalCount.png" )
+        pages.append( f"./output/{appName}_EvalCount.png" )
 
         make_stacked_chart(
             summary['weeks'],
@@ -176,26 +176,26 @@ def adoption():
                 app['summary']['waivedCounts']['TOTAL']['rng']
             ],
             ['Discovered','Fixed','Waived'],
-            f"{appName}_DisFixWaiCount.png",
+            f"./output/{appName}_DisFixWaiCount.png",
             f"Number of Discovered, Fixed, & Waived vulnerabilities for app {appName}",
             xtitle[0]
         )
-        pages.append(f"{appName}_DisFixWaiCount.png")
+        pages.append(f"./output/{appName}_DisFixWaiCount.png")
     j +=1
     printProgressBar(j, graphNo)
     #------------------------------------
     make_chart( 
         list(scans.keys()), 
         list(scans.values()), 
-        "AppsTotalScans.png", 
+        "./output/AppsTotalScans.png", 
         "Total number of scans per app", 
         xtitle[1]
     )
-    pages.append('AppsTotalScans.png')
+    pages.append('./output/AppsTotalScans.png')
     j +=1
     printProgressBar(j, graphNo)
     #------------------------------------
-    output_pdf(pages, "adoption_report.pdf")
+    output_pdf(pages, "./output/adoption_report.pdf")
 
 
 #-------------------------------------------------------------------------
@@ -216,11 +216,11 @@ def remediation():
         summary['weeks'],
         summary['openCountsAtTimePeriodEnd']['LIST'],
         ['Low','Moderate','Severe','Critical'],
-        "OpenBacklog.png",
+        "./output/OpenBacklog.png",
         "Number of open vulnerabilities (backlog) per week",
         xtitle[0]
     )
-    pages.append('OpenBacklog.png')
+    pages.append('./output/OpenBacklog.png')
     j +=1
     printProgressBar(j,graphNo)
     #---------------------------------------------------------------------
@@ -240,11 +240,11 @@ def remediation():
             OpeCri
         ],
        ['Low', 'Moderate', 'Severe', 'Critical'],
-       "Current_Open_Orgs.png", 
+       "./output/Current_Open_Orgs.png", 
        "Current Total Number of Open vulnerabilities by organisation",
         xtitle[2]
     )
-    pages.append("Current_Open_Orgs.png")
+    pages.append("./output/Current_Open_Orgs.png")
     j +=1
     printProgressBar(j,graphNo)
     #---------------------------------------------------------------------
@@ -264,11 +264,11 @@ def remediation():
             OpeCri
         ],
        ['Low', 'Moderate', 'Severe', 'Critical'],
-       "Current_Open_Apps.png", 
+       "./output/Current_Open_Apps.png", 
        "Current Total Number of Open vulnerabilities by application",
         xtitle[1]
     )
-    pages.append("Current_Open_Apps.png")
+    pages.append("./output/Current_Open_Apps.png")
     j +=1
     printProgressBar(j,graphNo)
     #---------------------------------------------------------------------
@@ -276,11 +276,11 @@ def remediation():
         make_chart( 
             app["summary"]['weeks'], 
             app["summary"]['fixedRate'], 
-            "Fixed_Rate_"+app["applicationName"]+".png", 
+            "./output/Fixed_Rate_"+app["applicationName"]+".png", 
             "Fixed rate for "+app["applicationName"]+" week-on-week", 
             xtitle[0]
         )
-        pages.append("Fixed_Rate_"+app["applicationName"]+".png")
+        pages.append("./output/Fixed_Rate_"+app["applicationName"]+".png")
     j +=1
     printProgressBar(j, graphNo)
     #---------------------------------------------------------------------
@@ -288,11 +288,11 @@ def remediation():
         make_chart( 
             app["summary"]['weeks'], 
             app["summary"]['waivedRate'], 
-            "Waived_Rate_"+app["applicationName"]+".png", 
+            "./output/Waived_Rate_"+app["applicationName"]+".png", 
             "Waived rate for "+app["applicationName"]+" week-on-week", 
             xtitle[0]
         )
-        pages.append("Waived_Rate_"+app["applicationName"]+".png")
+        pages.append("./output/Waived_Rate_"+app["applicationName"]+".png")
     j +=1
     printProgressBar(j, graphNo)
     #---------------------------------------------------------------------
@@ -304,11 +304,11 @@ def remediation():
             summary['waivedCounts']['TOTAL']
         ],
        ['Discovered', 'Fixed', 'Waived'],
-       "Total_DisFixWaiCount.png", 
+       "./output/Total_DisFixWaiCount.png", 
        "Total Number of Discovered, Fixed & Waived vulnerabilities week-on-week",
         xtitle[0]
     )
-    pages.append("Total_DisFixWaiCount.png")
+    pages.append("./output/Total_DisFixWaiCount.png")
     j +=1
     printProgressBar(j,graphNo)
     #---------------------------------------------------------------------
@@ -316,11 +316,11 @@ def remediation():
         summary['weeks'], 
         summary['discoveredCounts']['LIST'],
         ['Discovered Low', 'Discovered Moderate', 'Discovered Severe', 'Discovered Critical'],
-        "Discovered_breakdown.png",
+        "./output/Discovered_breakdown.png",
         "Total Number of Discovered vulnerabilities by severity week-on-week",
         xtitle[0]
     )
-    pages.append("Discovered_breakdown.png")
+    pages.append("./output/Discovered_breakdown.png")
     j +=1
     printProgressBar(j,graphNo)
     #---------------------------------------------------------------------
@@ -328,11 +328,11 @@ def remediation():
         summary['weeks'], 
         summary['fixedCounts']['LIST'],
         ['Fixed Low', 'Fixed Moderate', 'Fixed Severe', 'Fixed Critical'],
-        "Fixed_breakdown.png",
+        "./output/Fixed_breakdown.png",
         "Total Number of Fixed vulnerabilities by severity week-on-week",
         xtitle[0]
     )
-    pages.append("Fixed_breakdown.png")
+    pages.append("./output/Fixed_breakdown.png")
     j +=1
     printProgressBar(j,graphNo)
     #---------------------------------------------------------------------
@@ -340,59 +340,59 @@ def remediation():
         summary['weeks'], 
         summary['waivedCounts']['LIST'],
         ['Waived Low', 'Waived Moderate', 'Waived Severe', 'Waived Critical'],
-        "Waived_breakdown.png",
+        "./output/Waived_breakdown.png",
         "Total Number of Waived vulnerabilities by severity week-on-week",
         xtitle[0]
     )
-    pages.append("Waived_breakdown.png")
+    pages.append("./output/Waived_breakdown.png")
     j +=1
     printProgressBar(j,graphNo)
      #---------------------------------------------------------------------
     make_chart( 
         summary['weeks'], 
         summary['mttrLowThreat'], 
-        "MTTR_Low.png", 
+        "./output/MTTR_Low.png", 
         "MTTR (in days) for all Low Threat vulnerabilities week-on-week", 
         xtitle[0]
     )
-    pages.append('MTTR_Low.png')
+    pages.append('./output/MTTR_Low.png')
     j +=1
     printProgressBar(j, graphNo)
      #---------------------------------------------------------------------
     make_chart( 
         summary['weeks'], 
         summary['mttrModerateThreat'], 
-        "MTTR_Moderate.png", 
+        "./output/MTTR_Moderate.png", 
         "MTTR (in days) for all Moderate Threat vulnerabilities week-on-week", 
         xtitle[0]
     )
-    pages.append('MTTR_Moderate.png')
+    pages.append('./output/MTTR_Moderate.png')
     j +=1
     printProgressBar(j, graphNo)
      #---------------------------------------------------------------------
     make_chart( 
         summary['weeks'], 
         summary['mttrSevereThreat'], 
-        "MTTR_Severe.png", 
+        "./output/MTTR_Severe.png", 
         "MTTR (in days) for all Severe Threat vulnerabilities week-on-week", 
         xtitle[0]
     )
-    pages.append('MTTR_Severe.png')
+    pages.append('./output/MTTR_Severe.png')
     j +=1
     printProgressBar(j, graphNo)
      #---------------------------------------------------------------------
     make_chart( 
         summary['weeks'], 
         summary['mttrCriticalThreat'], 
-        "MTTR_Critical.png", 
+        "./output/MTTR_Critical.png", 
         "MTTR (in days) for all Critical Threat vulnerabilities week-on-week", 
         xtitle[0]
     )
-    pages.append('MTTR_Critical.png')
+    pages.append('./output/MTTR_Critical.png')
     j +=1
     printProgressBar(j, graphNo)
     #---------------------------------------------------------------------
-    output_pdf(pages, "remediation_report.pdf")
+    output_pdf(pages, "./output/remediation_report.pdf")
 
 
 #---------------------------------
@@ -442,11 +442,11 @@ def licence():
         licences['weeks'],
         licences['openCountsAtTimePeriodEnd']['LIST'],
         ['Low','Moderate','Severe','Critical'],
-        "Open_Backlog_Lic.png",
+        "./output/Open_Backlog_Lic.png",
         "Number of open vulnerabilities (backlog) per week",
         xtitle[0]
     )
-    pages.append('Open_Backlog_Lic.png')
+    pages.append('./output/Open_Backlog_Lic.png')
     j +=1
     printProgressBar(j,graphNo)
     #---------------------------------------------------------------------
@@ -466,11 +466,11 @@ def licence():
             OpeCri
         ],
        ['Low', 'Moderate', 'Severe', 'Critical'],
-       "Current_Open_Orgs_Lic.png", 
+       "./output/Current_Open_Orgs_Lic.png", 
        "Current Total Number of Open vulnerabilities by organisation",
         xtitle[2]
     )
-    pages.append("Current_Open_Orgs_Lic.png")
+    pages.append("./output/Current_Open_Orgs_Lic.png")
     j +=1
     printProgressBar(j,graphNo)
     #---------------------------------------------------------------------
@@ -490,11 +490,11 @@ def licence():
             OpeCri
         ],
        ['Low', 'Moderate', 'Severe', 'Critical'],
-       "Current_Open_Apps_Lic.png", 
+       "./output/Current_Open_Apps_Lic.png", 
        "Current Total Number of Open vulnerabilities by application",
         xtitle[1]
     )
-    pages.append("Current_Open_Apps_Lic.png")
+    pages.append("./output/Current_Open_Apps_Lic.png")
     j +=1
     printProgressBar(j,graphNo)
     #---------------------------------------------------------------------
@@ -507,11 +507,11 @@ def licence():
             licences['waivedCounts']['TOTAL']
         ],
        ['Discovered', 'Fixed', 'Waived'],
-       "Total_DisFixWaiCount_Lic.png", 
+       "./output/Total_DisFixWaiCount_Lic.png", 
        "Total Number of Discovered, Fixed & Waived vulnerabilities week-on-week",
         xtitle[0]
     )
-    pages.append("Total_DisFixWaiCount_Lic.png")
+    pages.append("./output/Total_DisFixWaiCount_Lic.png")
     j +=1
     printProgressBar(j,graphNo)
     #---------------------------------------------------------------------
@@ -519,11 +519,11 @@ def licence():
         licences['weeks'], 
         licences['discoveredCounts']['LIST'],
         ['Discovered Low', 'Discovered Moderate', 'Discovered Severe', 'Discovered Critical'],
-        "Discovered_breakdown_Lic.png",
+        "./output/Discovered_breakdown_Lic.png",
         "Total Number of Discovered vulnerabilities by severity week-on-week",
         xtitle[0]
     )
-    pages.append("Discovered_breakdown_Lic.png")
+    pages.append("./output/Discovered_breakdown_Lic.png")
     j +=1
     printProgressBar(j,graphNo)
     #---------------------------------------------------------------------
@@ -531,11 +531,11 @@ def licence():
         licences['weeks'], 
         licences['fixedCounts']['LIST'],
         ['Fixed Low', 'Fixed Moderate', 'Fixed Severe', 'Fixed Critical'],
-        "Fixed_breakdown_Lic.png",
+        "./output/Fixed_breakdown_Lic.png",
         "Total Number of Fixed vulnerabilities by severity week-on-week",
         xtitle[0]
     )
-    pages.append("Fixed_breakdown_Lic.png")
+    pages.append("./output/Fixed_breakdown_Lic.png")
     j +=1
     printProgressBar(j,graphNo)
     #---------------------------------------------------------------------
@@ -543,15 +543,15 @@ def licence():
         licences['weeks'], 
         licences['waivedCounts']['LIST'],
         ['Waived Low', 'Waived Moderate', 'Waived Severe', 'Waived Critical'],
-        "Waived_breakdown_Lic.png",
+        "./output/Waived_breakdown_Lic.png",
         "Total Number of Waived vulnerabilities by severity week-on-week",
         xtitle[0]
     )
-    pages.append("Waived_breakdown_Lic.png")
+    pages.append("./output/Waived_breakdown_Lic.png")
     j +=1
     printProgressBar(j,graphNo)
      #---------------------------------------------------------------------
-    output_pdf(pages, "licence_report.pdf")
+    output_pdf(pages, "./output/licence_report.pdf")
 #-------------------------------------------------------------------------
 #SECURITY: "To reduce the number of security vulnerabilities by x percentage"
 #Same as Remediation report but only for security vulnerabilities
@@ -571,11 +571,11 @@ def security():
         Security['weeks'],
         Security['openCountsAtTimePeriodEnd']['LIST'],
         ['Low','Moderate','Severe','Critical'],
-        "Open_Backlog_Sec.png",
+        "./output/Open_Backlog_Sec.png",
         "Number of open vulnerabilities (backlog) per week",
         xtitle[0]
     )
-    pages.append('Open_Backlog_Sec.png')
+    pages.append('./output/Open_Backlog_Sec.png')
     j +=1
     printProgressBar(j,graphNo)
     #---------------------------------------------------------------------
@@ -595,11 +595,11 @@ def security():
             OpeCri
         ],
        ['Low', 'Moderate', 'Severe', 'Critical'],
-       "Current_Open_Orgs_Sec.png", 
+       "./output/Current_Open_Orgs_Sec.png", 
        "Current Total Number of Open vulnerabilities by organisation",
         xtitle[2]
     )
-    pages.append("Current_Open_Orgs_Sec.png")
+    pages.append("./output/Current_Open_Orgs_Sec.png")
     j +=1
     printProgressBar(j,graphNo)
     #---------------------------------------------------------------------
@@ -619,11 +619,11 @@ def security():
             OpeCri
         ],
        ['Low', 'Moderate', 'Severe', 'Critical'],
-       "Current_Open_Apps_Sec.png", 
+       "./output/Current_Open_Apps_Sec.png", 
        "Current Total Number of Open vulnerabilities by application",
         xtitle[1]
     )
-    pages.append("Current_Open_Apps_Sec.png")
+    pages.append("./output/Current_Open_Apps_Sec.png")
     j +=1
     printProgressBar(j,graphNo)
     #---------------------------------------------------------------------
@@ -636,11 +636,11 @@ def security():
             Security['waivedCounts']['TOTAL']
         ],
        ['Discovered', 'Fixed', 'Waived'],
-       "Total_DisFixWaiCount_Sec.png", 
+       "./output/Total_DisFixWaiCount_Sec.png", 
        "Total Number of Discovered, Fixed & Waived vulnerabilities week-on-week",
         xtitle[0]
     )
-    pages.append("Total_DisFixWaiCount_Sec.png")
+    pages.append("./output/Total_DisFixWaiCount_Sec.png")
     j +=1
     printProgressBar(j,graphNo)
     #---------------------------------------------------------------------
@@ -648,11 +648,11 @@ def security():
         Security['weeks'], 
         Security['discoveredCounts']['LIST'],
         ['Discovered Low', 'Discovered Moderate', 'Discovered Severe', 'Discovered Critical'],
-        "Discovered_breakdown_Sec.png",
+        "./output/Discovered_breakdown_Sec.png",
         "Total Number of Discovered vulnerabilities by severity week-on-week",
         xtitle[0]
     )
-    pages.append("Discovered_breakdown_Sec.png")
+    pages.append("./output/Discovered_breakdown_Sec.png")
     j +=1
     printProgressBar(j,graphNo)
     #---------------------------------------------------------------------
@@ -660,11 +660,11 @@ def security():
         Security['weeks'], 
         Security['fixedCounts']['LIST'],
         ['Fixed Low', 'Fixed Moderate', 'Fixed Severe', 'Fixed Critical'],
-        "Fixed_breakdown_Sec.png",
+        "./output/Fixed_breakdown_Sec.png",
         "Total Number of Fixed vulnerabilities by severity week-on-week",
         xtitle[0]
     )
-    pages.append("Fixed_breakdown_Sec.png")
+    pages.append("./output/Fixed_breakdown_Sec.png")
     j +=1
     printProgressBar(j,graphNo)
     #---------------------------------------------------------------------
@@ -672,17 +672,17 @@ def security():
         Security['weeks'], 
         Security['waivedCounts']['LIST'],
         ['Waived Low', 'Waived Moderate', 'Waived Severe', 'Waived Critical'],
-        "Waived_breakdown_Sec.png",
+        "./output/Waived_breakdown_Sec.png",
         "Total Number of Waived vulnerabilities by severity week-on-week",
         xtitle[0]
     )
-    pages.append("Waived_breakdown_Sec.png")
+    pages.append("./output/Waived_breakdown_Sec.png")
     j +=1
     printProgressBar(j,graphNo)
      #---------------------------------------------------------------------
     #---------------------------------------------------------------------
 
-    output_pdf(pages, "security_report.pdf")
+    output_pdf(pages, "./output/security_report.pdf")
 
 #-------------------------------------------------------------------------
 

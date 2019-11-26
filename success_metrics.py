@@ -41,6 +41,8 @@ def main():
         args = vars(parser.parse_args())
         creds = args["auth"].split(":")
         iq_session.auth = requests.auth.HTTPBasicAuth(creds[0], creds[1] )
+        if not os.path.exists("output"):
+            os.mkdir("output")
 
         #search for applicationId
         appId = searchApps(args["appId"], args["url"])
