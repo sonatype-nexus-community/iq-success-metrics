@@ -212,7 +212,7 @@ def adoption():
         scans.update({ appName: sum(app["summary"]["evaluationCount"]["rng"]) })
 
         make_chart( 
-            summary['weeks'], 
+            app['summary']['weeks'], 
             app['summary']['evaluationCount']['rng'], 
             f"./output/{appName}_EvalCount.png", 
             f"Number of scans/week for app {appName}", 
@@ -221,7 +221,7 @@ def adoption():
         pages.append( f"./output/{appName}_EvalCount.png" )
 
         make_stacked_chart(
-            summary['weeks'],
+            app['summary']['weeks'],
             [
                 app['summary']['discoveredCounts']['TOTAL']['rng'],
                 app['summary']['fixedCounts']['TOTAL']['rng'],
