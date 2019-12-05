@@ -88,12 +88,64 @@ def make_stacked_chart(period, data, legend, filename, title, xtitle):
         )
     fig.update_xaxes(tickvals=period,automargin=True)
     fig.write_image(filename)
+#---------------------------------
+
+class PDF(FPDF):
+    def header(self):
+        # Logo
+        self.image('sonatype_logo.png', 10, 8, 33)
+        # Times bold 15
+        self.set_font('Times', 'B', 15)
+        # Move to the right
+        self.cell(80)
+        # Title
+        self.cell(60, 10, 'POC report', 1, 0, 'C')
+        # Line break
+        self.ln(20)
+
+        # Page footer
+    def footer(self):
+        # Position at 1.5 cm from bottom
+        self.set_y(-15)
+        # Arial italic 8
+        self.set_font('Times', 'I', 8)
+        # Page number
+        self.cell(0, 10, 'Page ' + str(self.page_no()) + '/{nb}', 0, 0, 'C')
+
+        #Chapter title
+    def chapter_title(self, title):
+        # Arial 12
+        self.set_font('Times', 'B', 12)
+        # Background color
+        self.set_fill_color(200, 220, 255)
+        # Title
+        self.cell(0, 6, '%s' % (title), 0, 1, 'L', 1)
+        # Line break
+        self.ln(4)
+
+        #Chapter body
+    def chapter_body(self, content_dict):
+        # Times 12
+        self.set_font('Times', '', 12)
+        # Output justified text
+        #self.multi_cell(0, 5, content)
+        for field in content_dict:
+            self.cell(0, 10, field+": "+content_dict[field], 1, 1)
+        # Line break
+        self.ln()
+
+        #Print chapter
+    def print_chapter(self, title, content):
+        self.add_page()
+        self.chapter_title(title)
+        self.chapter_body(content)
 
 
+#---------------------------------
 
 def output_pdf(pages, filename):
 	pdf = FPDF()
-	pdf.set_font('arial','B',12)
+	pdf.set_font('Times','B',12)
 	for image in pages:
 		pdf.add_page('L')
 		pdf.set_xy(0,0)
@@ -160,7 +212,7 @@ def adoption():
         scans.update({ appName: sum(app["summary"]["evaluationCount"]["rng"]) })
 
         make_chart( 
-            summary['weeks'], 
+            app['summary']['weeks'], 
             app['summary']['evaluationCount']['rng'], 
             f"./output/{appName}_EvalCount.png", 
             f"Number of scans/week for app {appName}", 
@@ -169,7 +221,7 @@ def adoption():
         pages.append( f"./output/{appName}_EvalCount.png" )
 
         make_stacked_chart(
-            summary['weeks'],
+            app['summary']['weeks'],
             [
                 app['summary']['discoveredCounts']['TOTAL']['rng'],
                 app['summary']['fixedCounts']['TOTAL']['rng'],
@@ -685,6 +737,23 @@ def security():
     output_pdf(pages, "./output/security_report.pdf")
 
 #-------------------------------------------------------------------------
+#POC: "To provide a report at the end of a Proof-of-Concept (POC)"
+#-------------------------------------------------------------------------
+    
+# Instantiation of inherited class
+def poc():
+    pdf = PDF()
+    pdf.alias_nb_pages()
+    dict1 = {"Apps onboarded" : "20", "Number of scans" : "34"}
+    dict2 = {"Open vulnerabilities" : "502" , "Fixed vulnerabilities" : "234", "Waived vulnerabilities" : "39"}
+    pdf.print_chapter('Adoption Report', dict1)
+    pdf.print_chapter('Remediation Report', dict2)
+    pdf.output('./output/poc_report.pdf', 'F')
+
+
+#-------------------------------------------------------------------------
+
+
 
 def main():
     parser = argparse.ArgumentParser(description='get some reports')
@@ -695,6 +764,8 @@ def main():
     parser.add_argument('-hyg','--hygiene',  help='generate hygiene report', action='store_true', required=False)
     parser.add_argument('-l','--licence', help='generate remediation report only for licence violations', action='store_true', required=False)
     parser.add_argument('-s','--security', help='generate remediation report only for security violations', action='store_true', required=False)
+    parser.add_argument('-poc','--poc', help='generate a Proof-of-Concept report', action='store_true', required=False)
+
 
     args = vars(parser.parse_args())
     

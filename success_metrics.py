@@ -415,6 +415,7 @@ def compute_summary(s):
                 s[status]["TOTAL"]["avg"] = avg(s[status]["TOTAL"]["rng"])
 
         #INCLUDE fixedRate, waivedRate, dealtRate loop here?
+        s["SonatypeValue"] = calc_TotalSonatypeValue(s)
 
         s["FixRate"] = calc_FixedRate(s, False)
         s["WaiveRate"] = calc_WaivedRate(s, False)
