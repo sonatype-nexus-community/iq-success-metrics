@@ -61,7 +61,8 @@ def main():
         #reportCounts is used to aggregate totals from the filtered set of applications.
         #reportAverages will calculate averages for MTTR. 
         #reportSummary will return the final results.
-        #reportLic will return the final results for Licences
+        #reportLic will return the final results for Licence vulnerabilities only
+        #reportSec will return the final results for security vulnerabilities only
         reportAverages, reportCounts, reportSummary = {}, {}, {"appNames":[], "orgNames":[], "weeks":[], "timePeriodStart" : []}
         reportAveragesLic, reportCountsLic, reportLic = {}, {}, {"appNames":[], "orgNames":[], "weeks":[], "timePeriodStart" : []}
         reportAveragesSec, reportCountsSec, reportSec = {}, {}, {"appNames":[], "orgNames":[], "weeks":[], "timePeriodStart" : []}

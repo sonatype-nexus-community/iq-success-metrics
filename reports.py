@@ -99,7 +99,7 @@ class PDF(FPDF):
         # Move to the right
         self.cell(80)
         # Title
-        self.cell(60, 10, 'POC report', 1, 0, 'C')
+        self.cell(100, 10, 'POC report', 1, 0, 'C')
         # Line break
         self.ln(20)
 
@@ -136,9 +136,47 @@ class PDF(FPDF):
 
         #Print chapter
     def print_chapter(self, title, content):
-        self.add_page()
+        self.add_page('L')
         self.chapter_title(title)
         self.chapter_body(content)
+
+    def print_list(self,data):
+        self.cell()
+
+    def fancy_table(this,header,data):
+        #Colors, line width and bold font
+        this.set_fill_color(255,0,0)
+        this.set_text_color(255)
+        this.set_draw_color(128,0,0)
+        this.set_line_width(.3)
+        this.set_font('Times','B')
+        #Header
+        w=[]
+        column_no = len(header)
+        page_width = 277 #magic number for A4 in mm
+        column_width = page_width/column_no
+        for i in range(0,column_no):
+            w.append(column_width)
+        for i in range(0,column_no):
+                this.cell(w[i],7,header[i],1,0,'C',1)
+        this.ln()
+        #Color and font restoration
+        this.set_fill_color(224,235,255)
+        this.set_text_color(0)
+        this.set_font('Times')
+        #Data
+        fill=0
+        #print("This data: ")
+        #print(len(data))
+        #print(len(w))
+        #print(column_no)
+        for row in data:
+            for i in range(0,column_no):
+                this.cell(w[i],6,row[i],'LR',0,'C',fill)
+                #print(row[i])
+            this.ln()
+            fill=not fill
+        this.cell(sum(w),0,'','T')
 
 
 #---------------------------------
@@ -744,10 +782,83 @@ def security():
 def poc():
     pdf = PDF()
     pdf.alias_nb_pages()
-    dict1 = {"Apps onboarded" : "20", "Number of scans" : "34"}
-    dict2 = {"Open vulnerabilities" : "502" , "Fixed vulnerabilities" : "234", "Waived vulnerabilities" : "39"}
-    pdf.print_chapter('Adoption Report', dict1)
-    pdf.print_chapter('Remediation Report', dict2)
+
+#    header_App_Onboard = ['Metric'] + summary['weeks']
+#    aux = [str(i) for i in summary['appOnboard']]
+#    data_App_Onboard = [['Apps Onboarded'] + aux]
+#    dict1 = {"Apps onboarded" : "20", "Number of scans" : "34"}
+#    dict2 = {"Total Open vulnerabilities" : str(summary['openCountsAtTimePeriodEnd']['TOTAL'][-1]) ,
+#             "Fixed vulnerabilities" : "223",
+#             "Waived vulnerabilities" : "39"}
+    
+    #-------------------------------------------------------------------------
+    pdf.print_chapter('Number of apps onboarded (weekly view)',"")
+    make_chart( 
+        summary['weeks'], 
+        summary['appOnboard'], 
+        "./output/AppsOnboarded.png", 
+        "Number of apps onboarded (weekly view)", 
+        xtitle[0])
+    pdf.image("./output/AppsOnboarded.png",10,36,270)
+
+    #-------------------------------------------------------------------------
+    pdf.print_chapter('Number of scans per week',"")
+    make_chart( 
+        summary['weeks'], 
+        summary['weeklyScans'], 
+        "./output/WeeklyScans.png", 
+        "Total number of scans per week", 
+        xtitle[0])
+    pdf.image("./output/WeeklyScans.png",10,36,270)
+
+
+    #-------------------------------------------------------------------------
+    header_most_scanned = ['Application','Total number of scans']
+    data_most_scanned, aux = [],[]
+    for app in apps:
+        appName = app["applicationName"]
+        scans = sum(app["summary"]["evaluationCount"]["rng"])
+        aux = [appName,scans]
+        data_most_scanned.append(aux)
+    data_most_scanned.sort(key = lambda data_most_scanned: data_most_scanned[1], reverse = True)
+    aux = []
+    for i in range(0,len(data_most_scanned)):
+        aux.append([data_most_scanned[i][0],str(data_most_scanned[i][1])])
+    data_most_scanned = aux
+    pdf.print_chapter('Most scanned applications','')
+    pdf.fancy_table(header_most_scanned, data_most_scanned)
+
+
+    #-------------------------------------------------------------------------
+    pdf.print_chapter('Current open backlog', "")
+    make_stacked_chart(
+        summary['weeks'],
+        summary['openCountsAtTimePeriodEnd']['LIST'],
+        ['Low','Moderate','Severe','Critical'],
+        "./output/OpenBacklog.png",
+        "Number of open vulnerabilities (backlog) per week",
+        xtitle[0])
+    pdf.image("./output/OpenBacklog.png",10,36,270)
+
+    #-------------------------------------------------------------------------
+    header_Open_App = ['Application', 'Critical','Severe','Moderate','Low']
+    data_Open_App= []
+    for app in apps:
+        critical = app['summary']['openCountsAtTimePeriodEnd']['TOTAL']['CRITICAL']['rng'][-1]
+        severe = app['summary']['openCountsAtTimePeriodEnd']['TOTAL']['SEVERE']['rng'][-1]
+        moderate = app['summary']['openCountsAtTimePeriodEnd']['TOTAL']['MODERATE']['rng'][-1]
+        low = app['summary']['openCountsAtTimePeriodEnd']['TOTAL']['LOW']['rng'][-1]
+        #aux = [str(critical),str(severe),str(moderate),str(low)]
+        aux = [critical,severe,moderate,low]
+        data_Open_App.append([app['applicationName']] + aux)
+    data_Open_App.sort(key = lambda data_Open_App: data_Open_App[1], reverse = True)
+    aux=[]
+    for i in range(0,len(data_Open_App)):
+        aux.append([data_Open_App[i][0],str(data_Open_App[i][1]),str(data_Open_App[i][2]),str(data_Open_App[i][3]),str(data_Open_App[i][4])])
+    data_Open_App = aux
+    pdf.print_chapter('Current risk per application sorted by criticality',"")
+    pdf.fancy_table(header_Open_App, data_Open_App)
+
     pdf.output('./output/poc_report.pdf', 'F')
 
 
