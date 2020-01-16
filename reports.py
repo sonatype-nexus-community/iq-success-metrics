@@ -99,7 +99,7 @@ class PDF(FPDF):
         # Move to the right
         self.cell(80)
         # Title
-        self.cell(100, 10, 'POC report', 1, 0, 'C')
+        self.cell(100, 10, 'Success Metrics report', 1, 0, 'C')
         # Line break
         self.ln(20)
 
@@ -775,21 +775,16 @@ def security():
     output_pdf(pages, "./output/security_report.pdf")
 
 #-------------------------------------------------------------------------
-#POC: "To provide a report at the end of a Proof-of-Concept (POC)"
+#TABLES: "To provide a report in table format to accommodate for customers with thousands of applications"
 #-------------------------------------------------------------------------
     
 # Instantiation of inherited class
-def poc():
+def tables():
+    pages, t, graphNo = [], 0, 6
+    printProgressBar(t,graphNo)
+    
     pdf = PDF()
     pdf.alias_nb_pages()
-
-#    header_App_Onboard = ['Metric'] + summary['weeks']
-#    aux = [str(i) for i in summary['appOnboard']]
-#    data_App_Onboard = [['Apps Onboarded'] + aux]
-#    dict1 = {"Apps onboarded" : "20", "Number of scans" : "34"}
-#    dict2 = {"Total Open vulnerabilities" : str(summary['openCountsAtTimePeriodEnd']['TOTAL'][-1]) ,
-#             "Fixed vulnerabilities" : "223",
-#             "Waived vulnerabilities" : "39"}
     
     #-------------------------------------------------------------------------
     pdf.print_chapter('Number of apps onboarded (weekly view)',"")
@@ -800,7 +795,8 @@ def poc():
         "Number of apps onboarded (weekly view)", 
         xtitle[0])
     pdf.image("./output/AppsOnboarded.png",10,36,270)
-
+    t +=1
+    printProgressBar(t,graphNo)
     #-------------------------------------------------------------------------
     pdf.print_chapter('Number of scans per week',"")
     make_chart( 
@@ -810,7 +806,8 @@ def poc():
         "Total number of scans per week", 
         xtitle[0])
     pdf.image("./output/WeeklyScans.png",10,36,270)
-
+    t +=1
+    printProgressBar(t,graphNo)
 
     #-------------------------------------------------------------------------
     header_most_scanned = ['Application','Total number of scans']
@@ -827,7 +824,8 @@ def poc():
     data_most_scanned = aux
     pdf.print_chapter('Most scanned applications','')
     pdf.fancy_table(header_most_scanned, data_most_scanned)
-
+    t +=1
+    printProgressBar(t,graphNo)
 
     #-------------------------------------------------------------------------
     pdf.print_chapter('Current open backlog', "")
@@ -839,7 +837,9 @@ def poc():
         "Number of open vulnerabilities (backlog) per week",
         xtitle[0])
     pdf.image("./output/OpenBacklog.png",10,36,270)
-
+    t +=1
+    printProgressBar(t,graphNo)
+    
     #-------------------------------------------------------------------------
     header_Open_App = ['Application', 'Critical','Severe','Moderate','Low']
     data_Open_App= []
@@ -848,7 +848,6 @@ def poc():
         severe = app['summary']['openCountsAtTimePeriodEnd']['TOTAL']['SEVERE']['rng'][-1]
         moderate = app['summary']['openCountsAtTimePeriodEnd']['TOTAL']['MODERATE']['rng'][-1]
         low = app['summary']['openCountsAtTimePeriodEnd']['TOTAL']['LOW']['rng'][-1]
-        #aux = [str(critical),str(severe),str(moderate),str(low)]
         aux = [critical,severe,moderate,low]
         data_Open_App.append([app['applicationName']] + aux)
     data_Open_App.sort(key = lambda data_Open_App: data_Open_App[1], reverse = True)
@@ -858,7 +857,63 @@ def poc():
     data_Open_App = aux
     pdf.print_chapter('Current risk per application sorted by criticality',"")
     pdf.fancy_table(header_Open_App, data_Open_App)
+    t +=1
+    printProgressBar(t,graphNo)
+    
+    #-------------------------------------------------------------------------
+    for app in apps:
+        pdf.print_chapter('Report for Application: '+app["applicationName"],'')
 
+        header_evolution = ['Metric',app['aggregations'][-4]['timePeriodStart'],app['aggregations'][-3]['timePeriodStart'],app['aggregations'][-2]['timePeriodStart'],app['aggregations'][-1]['timePeriodStart']]
+        metrics = ['MTTR Critical','MTTR Severe', 'MTTR Moderate','MTTR Low','Discovered Critical','Discovered Severe','Discovered Moderate','Discovered Low',
+                   'Fixed Critical','Fixed Severe','Fixed Moderate','Fixed Low','Waived Critical','Waived Severe','Waived Moderate','Waived Low',
+                   'Open Critical','Open Severe','Open Moderate','Open Low']
+        measures = ['discoveredCounts','fixedCounts','waivedCounts','openCountsAtTimePeriodEnd']
+        mttr = ['mttrCriticalThreat','mttrSevereThreat','mttrModerateThreat','mttrLowThreat']
+        levels = ['CRITICAL','SEVERE','MODERATE','LOW']
+        shift = [-4,-3,-2,-1]
+        no_shift = [0,1,2,3]
+        data_evolution = []
+
+        for i in range(0,len(metrics)):
+            data_evolution.append([metrics[i]])
+            for j in range(0,len(shift)):
+                if i <= 3:
+                    data_evolution[i].append(str(app['summary'][mttr[i]]['rng'][shift[j]]))
+                if 4 <= i <= 7:
+                    data_evolution[i].append(str(app['summary'][measures[0]]['TOTAL'][levels[i-4]]['rng'][shift[j]]))
+                if 8 <= i <= 11:
+                    data_evolution[i].append(str(app['summary'][measures[1]]['TOTAL'][levels[i-8]]['rng'][shift[j]]))
+                if 12 <= i <= 15:
+                    data_evolution[i].append(str(app['summary'][measures[2]]['TOTAL'][levels[i-12]]['rng'][shift[j]]))
+                if 16 <= i <= 19:
+                    data_evolution[i].append(str(app['summary'][measures[3]]['TOTAL'][levels[i-16]]['rng'][shift[j]]))
+
+        #print(data_evolution)
+        pdf.fancy_table(header_evolution,data_evolution)
+
+
+        pdf.ln(10)
+        
+        header_last_week = ['Last week Open backlog','Critical','Severe','Moderate','Low']
+        metrics = ['Discovered','Fixed','Waived','Open']
+        measures = ['discoveredCounts','fixedCounts','waivedCounts','openCountsAtTimePeriodEnd']
+        levels = ['CRITICAL','SEVERE','MODERATE','LOW']
+                
+        data_last_week = []
+
+        for i in range(0,len(metrics)):
+            data_last_week.append([metrics[i]])
+            for j in levels:
+                data_last_week[i].append(str(app['summary'][measures[i]]['TOTAL'][j]['rng'][-1]))
+                #print(app['applicationName']+":"+str(metrics[i])+":"+str(j)+":"+str(app['summary'][measures[i]]['TOTAL'][j]['rng'][-1]))
+        #print(data_last_week)
+
+        pdf.fancy_table(header_last_week,data_last_week)
+    t +=1
+    printProgressBar(t,graphNo)
+    
+    #-------------------------------------------------------------------------
     pdf.output('./output/poc_report.pdf', 'F')
 
 
@@ -868,14 +923,14 @@ def poc():
 
 def main():
     parser = argparse.ArgumentParser(description='get some reports')
-    parser.add_argument('-a','--adoption',   help='generate adoption report', action='store_true', required=False)
-    parser.add_argument('-r','--remediation',  help='generate remediation report', action='store_true', required=False)
-    parser.add_argument('-e','--enforcement',    help='generate enforcement report', action='store_true', required=False)
-    parser.add_argument('-p','--prevention',  help='generate prevention report', action='store_true', required=False)
-    parser.add_argument('-hyg','--hygiene',  help='generate hygiene report', action='store_true', required=False)
-    parser.add_argument('-l','--licence', help='generate remediation report only for licence violations', action='store_true', required=False)
-    parser.add_argument('-s','--security', help='generate remediation report only for security violations', action='store_true', required=False)
-    parser.add_argument('-poc','--poc', help='generate a Proof-of-Concept report', action='store_true', required=False)
+    parser.add_argument('-a','--adoption',   help='generates adoption report', action='store_true', required=False)
+    parser.add_argument('-r','--remediation',  help='generates remediation report', action='store_true', required=False)
+    parser.add_argument('-e','--enforcement',    help='generates enforcement report', action='store_true', required=False)
+    parser.add_argument('-p','--prevention',  help='generates prevention report', action='store_true', required=False)
+    parser.add_argument('-hyg','--hygiene',  help='generates hygiene report', action='store_true', required=False)
+    parser.add_argument('-l','--licence', help='generates remediation report only for licence violations', action='store_true', required=False)
+    parser.add_argument('-s','--security', help='generates remediation report only for security violations', action='store_true', required=False)
+    parser.add_argument('-t','--tables', help='generates a report in table format', action='store_true', required=False)
 
 
     args = vars(parser.parse_args())

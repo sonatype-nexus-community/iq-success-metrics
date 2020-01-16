@@ -85,7 +85,7 @@ def main():
                 
 
         # set empty range for scope
-        for fields in ["appNumberScan", "appOnboard", "weeklyScans"]:
+        for fields in ["appNumberScan", "appOnboard", "weeklyScans","riskRatio"]:
                 reportCounts.update({ fields : zeros(reportSummary["weeks"]) })
                 reportCountsLic.update({ fields : zeros(reportLic["weeks"]) })
                 reportCountsSec.update({ fields : zeros(reportSec["weeks"]) })
@@ -159,9 +159,12 @@ def main():
                         #                reportCounts[rates][risk][week_no] += app_summary[rates]["TOTAL"][risk]["rng"][position]
                         #        reportCounts[rates]["TOTAL"][week_no] += app_summary[rates]["TOTAL"]["rng"][position]
 
+        """ for week_no in reportSummary["weeks']:
+                riskRatio[week_no]=Open[week_no]/len(apps[week_no])                             
+        """
         #-----------------------------------------------------------------------------------
         #convert the dicts to arrays.
-        for fields in ["appNumberScan", "appOnboard", "weeklyScans"]:
+        for fields in ["appNumberScan", "appOnboard", "weeklyScans","riskRatio"]:
                 reportSummary.update({ fields : list( reportCounts[fields].values() ) })
                 reportLic.update({ fields : list( reportCountsLic[fields].values() ) })
                 reportSec.update({ fields : list( reportCountsSec[fields].values() ) })
