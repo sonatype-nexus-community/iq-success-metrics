@@ -206,13 +206,14 @@ Usage: python3 reports.py [-h] [-a] [-r] [-e] [-p] [-hyg] [-l] [-s]
 
 The optional arguments are:
   -h, --help         show this help message and exit
-  -a, --adoption     generate adoption report
-  -r, --remediation  generate remediation report
-  -e, --enforcement  generate enforcement report
-  -p, --prevention   generate prevention report
-  -hyg, --hygiene    generate hygiene report
-  -l, --licence      generate remediation report only for licence violations
-  -s, --security     generate remediation report only for security violations
+  -a, --adoption     generates adoption report
+  -r, --remediation  generates remediation report
+  -e, --enforcement  generates enforcement report
+  -p, --prevention   generates prevention report
+  -hyg, --hygiene    generates hygiene report
+  -l, --licence      generates remediation report only for licence violations
+  -s, --security     generates remediation report only for security violations
+  -t, --tables       generates a report in table format
 ```
 
 By using the correct switches, a targeted report will be produced in .pdf format and all graphs contained in the report will also be individually generated as .png files for later use in presentations. 
@@ -249,6 +250,11 @@ If we go inside `summary` we can see the following:
 * `fixedCounts`: this is a dictionary containing all the combined (Security, License, Quality & Other) fixed vulnerabilities for each threat level. `LIST` is the aggregation of all threat level violations where each element of the list is one of the applications in scope. `TOTAL` is a list aggregating all threat level violations for all applications in scope combined where each element of the list is one of the weeks in scope.
 * `waivedCounts`: this is a dictionary containing all the combined (Security, License, Quality & Other) waived vulnerabilities for each threat level. `LIST` is the aggregation of all threat level violations where each element of the list is one of the applications in scope. `TOTAL` is a list aggregating all threat level violations for all applications in scope combined where each element of the list is one of the weeks in scope.
 * `openCountsAtTimePeriodEnd`: this is a dictionary containing all the combined (Security, License, Quality & Other) vulnerabilities for each threat level that have not yet been fixed or waived (this is the current backlog or risk exposure). `LIST` is the aggregation of all threat level violations where each element of the list is one of the applications in scope. `TOTAL` is a list aggregating all threat level violations for all applications in scope combined where each element of the list is one of the weeks in scope.
+* `riskRatioCritical`: this is a list calculating the Critical risk ratio (number of Critical vulnerabilities divided by the total number of applications onboarded) for each week in scope.
+* `riskRatioSevere`: this is a list calculating the Severe risk ratio (number of Severe vulnerabilities divided by the total number of applications onboarded) for each week in scope.
+* `riskRatioModerate`: this is a list calculating the Moderate risk ratio (number of Critical vulnerabilities divided by the total number of applications onboarded) for each week in scope.
+* `riskRatioLow`: this is a list calculating the Low risk ratio (number of Critical vulnerabilities divided by the total number of applications onboarded) for each week in scope.
+
 
 
 ### Understanding `apps`
