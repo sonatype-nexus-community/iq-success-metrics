@@ -780,7 +780,7 @@ def security():
     
 # Instantiation of inherited class
 def tables():
-    pages, t, graphNo = [], 0, 6
+    pages, t, graphNo = [], 0, 7
     printProgressBar(t,graphNo)
     
     pdf = PDF()
@@ -859,6 +859,22 @@ def tables():
     pdf.fancy_table(header_Open_App, data_Open_App)
     t +=1
     printProgressBar(t,graphNo)
+
+    
+ #-------------------------------------------------------------------------
+    header_riskRatio = ['Risk Ratio', summary['timePeriodStart'][-4], summary['timePeriodStart'][-3], summary['timePeriodStart'][-2], summary['timePeriodStart'][-1]]
+    levels = ['Critical','Severe','Moderate','Low']
+    measures = ['riskRatioCritical','riskRatioSevere','riskRatioModerate','riskRatioLow']
+    data_riskRatio= []
+    shift = [-4,-3,-2,-1]
+    for i in range(0,len(levels)):
+        data_riskRatio.append([levels[i]])
+        for j in range(0, len(shift)):
+            data_riskRatio[i].append(str(summary[measures[i]][shift[j]]))
+    pdf.print_chapter('Risk Ratio (number of vulnerabilities / apps onboarded) by severity',"")
+    pdf.fancy_table(header_riskRatio, data_riskRatio)
+    t +=1
+    printProgressBar(t,graphNo)
     
     #-------------------------------------------------------------------------
     for app in apps:
@@ -872,7 +888,6 @@ def tables():
         mttr = ['mttrCriticalThreat','mttrSevereThreat','mttrModerateThreat','mttrLowThreat']
         levels = ['CRITICAL','SEVERE','MODERATE','LOW']
         shift = [-4,-3,-2,-1]
-        no_shift = [0,1,2,3]
         data_evolution = []
 
         for i in range(0,len(metrics)):
@@ -889,7 +904,6 @@ def tables():
                 if 16 <= i <= 19:
                     data_evolution[i].append(str(app['summary'][measures[3]]['TOTAL'][levels[i-16]]['rng'][shift[j]]))
 
-        #print(data_evolution)
         pdf.fancy_table(header_evolution,data_evolution)
 
 
@@ -906,8 +920,6 @@ def tables():
             data_last_week.append([metrics[i]])
             for j in levels:
                 data_last_week[i].append(str(app['summary'][measures[i]]['TOTAL'][j]['rng'][-1]))
-                #print(app['applicationName']+":"+str(metrics[i])+":"+str(j)+":"+str(app['summary'][measures[i]]['TOTAL'][j]['rng'][-1]))
-        #print(data_last_week)
 
         pdf.fancy_table(header_last_week,data_last_week)
     t +=1

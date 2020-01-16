@@ -85,7 +85,7 @@ def main():
                 
 
         # set empty range for scope
-        for fields in ["appNumberScan", "appOnboard", "weeklyScans","riskRatio"]:
+        for fields in ["appNumberScan", "appOnboard", "weeklyScans","riskRatioCritical","riskRatioSevere","riskRatioModerate","riskRatioLow"]:
                 reportCounts.update({ fields : zeros(reportSummary["weeks"]) })
                 reportCountsLic.update({ fields : zeros(reportLic["weeks"]) })
                 reportCountsSec.update({ fields : zeros(reportSec["weeks"]) })
@@ -159,12 +159,9 @@ def main():
                         #                reportCounts[rates][risk][week_no] += app_summary[rates]["TOTAL"][risk]["rng"][position]
                         #        reportCounts[rates]["TOTAL"][week_no] += app_summary[rates]["TOTAL"]["rng"][position]
 
-        """ for week_no in reportSummary["weeks']:
-                riskRatio[week_no]=Open[week_no]/len(apps[week_no])                             
-        """
         #-----------------------------------------------------------------------------------
         #convert the dicts to arrays.
-        for fields in ["appNumberScan", "appOnboard", "weeklyScans","riskRatio"]:
+        for fields in ["appNumberScan", "appOnboard", "weeklyScans"]:
                 reportSummary.update({ fields : list( reportCounts[fields].values() ) })
                 reportLic.update({ fields : list( reportCountsLic[fields].values() ) })
                 reportSec.update({ fields : list( reportCountsSec[fields].values() ) })
@@ -200,6 +197,23 @@ def main():
         #        reportSummary[rates].update({ "LIST" : list( reportSummary[rates].values() ) })        
         #        reportSummary[rates].update({ "TOTAL" : list( reportCounts[rates]["TOTAL"].values() ) })
 
+        riskRatioCri, riskRatioSev, riskRatioMod, riskRatioLow = [],[],[],[]
+        for week_no in range(0,len(reportSummary['weeks'])):
+                if reportSummary['appOnboard'][week_no] != 0:
+                        riskRatioCri.append(str(round((reportSummary['openCountsAtTimePeriodEnd']['CRITICAL'][week_no])/(reportSummary['appOnboard'][week_no]),2)))
+                        riskRatioSev.append(str(round((reportSummary['openCountsAtTimePeriodEnd']['SEVERE'][week_no])/(reportSummary['appOnboard'][week_no]),2)))
+                        riskRatioMod.append(str(round((reportSummary['openCountsAtTimePeriodEnd']['MODERATE'][week_no])/(reportSummary['appOnboard'][week_no]),2)))
+                        riskRatioLow.append(str(round((reportSummary['openCountsAtTimePeriodEnd']['LOW'][week_no])/(reportSummary['appOnboard'][week_no]),2)))
+                else:
+                        riskRatioCri.append(str(0))
+                        riskRatioSev.append(str(0))
+                        riskRatioMod.append(str(0))
+                        riskRatioLow.append(str(0))
+        reportSummary.update({'riskRatioCritical' : riskRatioCri})
+        reportSummary.update({'riskRatioSevere' : riskRatioSev})
+        reportSummary.update({'riskRatioModerate' : riskRatioMod})
+        reportSummary.update({'riskRatioLow' : riskRatioLow})
+        
         # Final report with summary and data objects.
         report = {"summary": reportSummary, "apps": data, "licences": reportLic, "security": reportSec}
 
