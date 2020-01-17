@@ -926,7 +926,7 @@ def tables():
     printProgressBar(t,graphNo)
     
     #-------------------------------------------------------------------------
-    pdf.output('./output/poc_report.pdf', 'F')
+    pdf.output('./output/tables_report.pdf', 'F')
 
 
 #-------------------------------------------------------------------------
