@@ -136,6 +136,8 @@ The script is actually two different files: `success_metrics.py`  and `reports.p
 
 ### Pre-requisites
 
+First of all, it is indispensable to enable Success Metrics collection in your IQ server. To do this, go to System Preferences (the little cog) and select Success Metrics from the options. Then click on Enable.
+
 This script utilizes Python 3. If you don't have Python 3 installed, you can follow [this step-by-step guide.](https://realpython.com/installing-python/)
 
 
@@ -191,7 +193,7 @@ Two valid examples would be:
 
 This collects the past six weeks of data for all applications in all organizations, processes them and saves them in non-indented JSON format in successmetrics.json. This assumes the default user, password and IQ server's URL.
 
-`python3 success_metrics.py -a administrator:password1234 -s 10 -u 'http://123.456.789.0:8070' -i 'd8f63854f4ea4405a9600e34f4d4514e','Test App1','MyApp3' -o 'c6f2775a45d44d43a32621536e638a8e','My Org' -p`
+`python3 success_metrics.py -a administrator:password1234 -s 10 -u http://123.456.789.0:8070 -i 'd8f63854f4ea4405a9600e34f4d4514e','Test App1','MyApp3' -o 'c6f2775a45d44d43a32621536e638a8e','My Org' -p`
 
 This collects the past ten weeks of data for the three applications listed ('d8f63854f4ea4405a9600e34f4d4514e','Test App1','MyApp3'), irrespective of them belonging to any particular organization. In addition, this also collects the past ten weeks of data for all the applications under organizations 'c6f2775a45d44d43a32621536e638a8e' and 'My Org'. The filtering does an OR filtering, so the collected data will be the union of the three apps with the two organizations. Then it processes the data, indents the results in the "pretty" format (indented 4 spaces) and saves it into the JSON file successmetrics.json 
 
