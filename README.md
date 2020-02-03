@@ -369,3 +369,19 @@ Have fun creating and using this plugin and the Nexus platform, we are glad to h
 Looking to contribute to our code but need some help? There's a few ways to get information:
 
 * Chat with us on [Gitter](https://gitter.im/sonatype/nexus-developers)
+
+## Troubleshooting
+
+### Windows
+
+If you are having trouble installing pip or the Python dependencies (plotly, fpdf, requests, psutils) due to SSL error, you can use the following commands to overcome it:
+
+To install pip:
+`python -m pip install --upgrade pip --trusted-host pypi.org --trusted-host files.pythonhosted.org`
+
+To install plotly (replace plotly with rest of dependencies like fpdf, requests and psutils):
+`python -m pip install plotly --trusted-host pypi.org --trusted-host files.pythonhosted.org`
+
+When you install Orca the first time in Windows, it will not work until you restart your machine.
+
+You will need to add python, pip and orca to your Windows `PATH` for the script to work.
