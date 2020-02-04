@@ -372,6 +372,10 @@ Looking to contribute to our code but need some help? There's a few ways to get 
 
 ## Troubleshooting
 
+### Sonatype Logo
+
+Do not forget to download `sonatype_logo.png` together with the source code. This file is available in the release assets, but it is not automatically included in the source code .zip file.
+
 ### Windows
 
 If you are having trouble installing pip or the Python dependencies (plotly, fpdf, requests, psutils) due to SSL error, you can use the following commands to overcome it:
