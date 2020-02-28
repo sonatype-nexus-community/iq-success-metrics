@@ -862,6 +862,7 @@ def tables():
 
     
  #-------------------------------------------------------------------------
+    #Below will fail if application is younger than 4 weeks. Need to deal with new applications.
     header_riskRatio = ['Risk Ratio', summary['timePeriodStart'][-4], summary['timePeriodStart'][-3], summary['timePeriodStart'][-2], summary['timePeriodStart'][-1]]
     levels = ['Critical','Severe','Moderate','Low']
     measures = ['riskRatioCritical','riskRatioSevere','riskRatioModerate','riskRatioLow']
@@ -879,7 +880,7 @@ def tables():
     #-------------------------------------------------------------------------
     for app in apps:
         pdf.print_chapter('Report for Application: '+app["applicationName"],'')
-
+        #Below will fail if application is younger than 4 weeks. Need to deal with new applications.
         header_evolution = ['Metric',app['aggregations'][-4]['timePeriodStart'],app['aggregations'][-3]['timePeriodStart'],app['aggregations'][-2]['timePeriodStart'],app['aggregations'][-1]['timePeriodStart']]
         metrics = ['MTTR Critical','MTTR Severe', 'MTTR Moderate','MTTR Low','Discovered Critical','Discovered Severe','Discovered Moderate','Discovered Low',
                    'Fixed Critical','Fixed Severe','Fixed Moderate','Fixed Low','Waived Critical','Waived Severe','Waived Moderate','Waived Low',
