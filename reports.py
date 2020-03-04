@@ -18,7 +18,7 @@ import plotly.graph_objects as go
 import argparse
 
 
-xtitle = ["ISO week number", "Applications", "Organisations"]
+xtitle = ["Date", "Applications", "Organisations"]
 filename = "./output/successmetrics.json"
 
 with open(filename, 'r') as f:
@@ -211,7 +211,7 @@ def adoption():
     printProgressBar(j, graphNo)
     #------------------------------------
     make_chart( 
-        summary['weeks'], 
+        summary['timePeriodStart'], 
         summary['appOnboard'], 
         "./output/AppsOnboarded.png", 
         "Number of apps onboarded (weekly view)", 
@@ -222,7 +222,7 @@ def adoption():
     printProgressBar(j, graphNo)
     #------------------------------------
     make_chart(
-        summary['weeks'], 
+        summary['timePeriodStart'], 
         summary['appNumberScan'], 
         "./output/AppsScanning.png", 
         "Number of apps scanned per week", 
@@ -233,7 +233,7 @@ def adoption():
     printProgressBar(j, graphNo)
     #------------------------------------
     make_chart( 
-        summary['weeks'], 
+        summary['timePeriodStart'], 
         summary['weeklyScans'], 
         "./output/WeeklyScans.png", 
         "Total number of scans per week", 
@@ -250,7 +250,7 @@ def adoption():
         scans.update({ appName: sum(app["summary"]["evaluationCount"]["rng"]) })
 
         make_chart( 
-            app['summary']['weeks'], 
+            app['summary']['dates'], 
             app['summary']['evaluationCount']['rng'], 
             f"./output/{appName}_EvalCount.png", 
             f"Number of scans/week for app {appName}", 
@@ -259,7 +259,7 @@ def adoption():
         pages.append( f"./output/{appName}_EvalCount.png" )
 
         make_stacked_chart(
-            app['summary']['weeks'],
+            app['summary']['dates'],
             [
                 app['summary']['discoveredCounts']['TOTAL']['rng'],
                 app['summary']['fixedCounts']['TOTAL']['rng'],
@@ -303,7 +303,7 @@ def remediation():
     printProgressBar(j,graphNo)
     #---------------------------------------------------------------------
     make_stacked_chart(
-        summary['weeks'],
+        summary['timePeriodStart'],
         summary['openCountsAtTimePeriodEnd']['LIST'],
         ['Low','Moderate','Severe','Critical'],
         "./output/OpenBacklog.png",
@@ -364,7 +364,7 @@ def remediation():
     #---------------------------------------------------------------------
     for app in apps:
         make_chart( 
-            app["summary"]['weeks'], 
+            app['summary']['dates'], 
             app["summary"]['fixedRate'], 
             "./output/Fixed_Rate_"+app["applicationName"]+".png", 
             "Fixed rate for "+app["applicationName"]+" week-on-week", 
@@ -376,7 +376,7 @@ def remediation():
     #---------------------------------------------------------------------
     for app in apps:
         make_chart( 
-            app["summary"]['weeks'], 
+            app['summary']['dates'], 
             app["summary"]['waivedRate'], 
             "./output/Waived_Rate_"+app["applicationName"]+".png", 
             "Waived rate for "+app["applicationName"]+" week-on-week", 
@@ -387,7 +387,7 @@ def remediation():
     printProgressBar(j, graphNo)
     #---------------------------------------------------------------------
     make_stacked_chart(
-        summary['weeks'],
+        summary['timePeriodStart'],
         [
             summary['discoveredCounts']['TOTAL'],
             summary['fixedCounts']['TOTAL'],
@@ -403,7 +403,7 @@ def remediation():
     printProgressBar(j,graphNo)
     #---------------------------------------------------------------------
     make_stacked_chart(
-        summary['weeks'], 
+        summary['timePeriodStart'], 
         summary['discoveredCounts']['LIST'],
         ['Discovered Low', 'Discovered Moderate', 'Discovered Severe', 'Discovered Critical'],
         "./output/Discovered_breakdown.png",
@@ -415,7 +415,7 @@ def remediation():
     printProgressBar(j,graphNo)
     #---------------------------------------------------------------------
     make_stacked_chart(
-        summary['weeks'], 
+        summary['timePeriodStart'], 
         summary['fixedCounts']['LIST'],
         ['Fixed Low', 'Fixed Moderate', 'Fixed Severe', 'Fixed Critical'],
         "./output/Fixed_breakdown.png",
@@ -427,7 +427,7 @@ def remediation():
     printProgressBar(j,graphNo)
     #---------------------------------------------------------------------
     make_stacked_chart(
-        summary['weeks'], 
+        summary['timePeriodStart'], 
         summary['waivedCounts']['LIST'],
         ['Waived Low', 'Waived Moderate', 'Waived Severe', 'Waived Critical'],
         "./output/Waived_breakdown.png",
@@ -439,7 +439,7 @@ def remediation():
     printProgressBar(j,graphNo)
      #---------------------------------------------------------------------
     make_chart( 
-        summary['weeks'], 
+        summary['timePeriodStart'], 
         summary['mttrLowThreat'], 
         "./output/MTTR_Low.png", 
         "MTTR (in days) for all Low Threat vulnerabilities week-on-week", 
@@ -450,7 +450,7 @@ def remediation():
     printProgressBar(j, graphNo)
      #---------------------------------------------------------------------
     make_chart( 
-        summary['weeks'], 
+        summary['timePeriodStart'], 
         summary['mttrModerateThreat'], 
         "./output/MTTR_Moderate.png", 
         "MTTR (in days) for all Moderate Threat vulnerabilities week-on-week", 
@@ -461,7 +461,7 @@ def remediation():
     printProgressBar(j, graphNo)
      #---------------------------------------------------------------------
     make_chart( 
-        summary['weeks'], 
+        summary['timePeriodStart'], 
         summary['mttrSevereThreat'], 
         "./output/MTTR_Severe.png", 
         "MTTR (in days) for all Severe Threat vulnerabilities week-on-week", 
@@ -472,7 +472,7 @@ def remediation():
     printProgressBar(j, graphNo)
      #---------------------------------------------------------------------
     make_chart( 
-        summary['weeks'], 
+        summary['timePeriodStart'], 
         summary['mttrCriticalThreat'], 
         "./output/MTTR_Critical.png", 
         "MTTR (in days) for all Critical Threat vulnerabilities week-on-week", 
@@ -503,6 +503,273 @@ def prevention():
 def enforcement():
     print("Enforcement report soon to be implemented")
 
+
+#---------------------------------
+#EXECUTIVE: Executive summary report (combination of reports but without going into app level)
+def executive():
+
+    pages, t, graphNo = [], 0, 16
+    appName, orgName, OpeLow, OpeMod, OpeSev, OpeCri, mttrLow, mttrMod, mttrSev, mttrCri = [],[],[],[],[],[],[],[],[],[]
+    printProgressBar(t,graphNo)
+    
+    pdf = PDF()
+    pdf.alias_nb_pages()
+    
+    #-------------------------------------------------------------------------
+    pdf.print_chapter('Number of apps onboarded (weekly view)',"")
+    make_chart( 
+        summary['timePeriodStart'], 
+        summary['appOnboard'], 
+        "./output/AppsOnboarded.png", 
+        "Number of apps onboarded (weekly view)", 
+        xtitle[0])
+    pdf.image("./output/AppsOnboarded.png",10,36,270)
+    t +=1
+    printProgressBar(t,graphNo)
+    #-------------------------------------------------------------------------
+    #------------------------------------
+    pdf.print_chapter('Number of scanned apps per week',"")
+    make_chart(
+        summary['timePeriodStart'], 
+        summary['appNumberScan'], 
+        "./output/AppsScanning.png", 
+        "Number of apps scanned per week", 
+        xtitle[0]
+    )
+    pdf.image("./output/AppsScanning.png",10,36,270)
+    t +=1
+    printProgressBar(t, graphNo)
+    #------------------------------------
+    
+    pdf.print_chapter('Number of scans per week',"")
+    make_chart( 
+        summary['timePeriodStart'], 
+        summary['weeklyScans'], 
+        "./output/WeeklyScans.png", 
+        "Total number of scans per week", 
+        xtitle[0])
+    pdf.image("./output/WeeklyScans.png",10,36,270)
+    t +=1
+    printProgressBar(t,graphNo)
+
+    #-------------------------------------------------------------------------
+    header_most_scanned = ['Application','Total number of scans']
+    data_most_scanned, aux = [],[]
+    for app in apps:
+        appName = app["applicationName"]
+        scans = sum(app["summary"]["evaluationCount"]["rng"])
+        aux = [appName,scans]
+        data_most_scanned.append(aux)
+    data_most_scanned.sort(key = lambda data_most_scanned: data_most_scanned[1], reverse = True)
+    aux = []
+    for i in range(0,len(data_most_scanned)):
+        aux.append([data_most_scanned[i][0],str(data_most_scanned[i][1])])
+    data_most_scanned = aux
+    pdf.print_chapter('Most scanned applications','')
+    pdf.fancy_table(header_most_scanned, data_most_scanned)
+    t +=1
+    printProgressBar(t,graphNo)
+
+    #-------------------------------------------------------------------------
+    pdf.print_chapter('Current open backlog', "")
+    make_stacked_chart(
+        summary['timePeriodStart'],
+        summary['openCountsAtTimePeriodEnd']['LIST'],
+        ['Low','Moderate','Severe','Critical'],
+        "./output/OpenBacklog.png",
+        "Number of open vulnerabilities (backlog) per week",
+        xtitle[0])
+    pdf.image("./output/OpenBacklog.png",10,36,270)
+    t +=1
+    printProgressBar(t,graphNo)
+    
+    #-------------------------------------------------------------------------
+    #---------------------------------------------------------------------
+    for app in apps:
+        orgName.append(app["organizationName"])
+        OpeLow.append(app["summary"]["openCountsAtTimePeriodEnd"]["TOTAL"]["LOW"]["rng"][len(app["summary"]["openCountsAtTimePeriodEnd"]["TOTAL"]["LOW"]["rng"])-1])
+        OpeMod.append(app["summary"]["openCountsAtTimePeriodEnd"]["TOTAL"]["MODERATE"]["rng"][len(app["summary"]["openCountsAtTimePeriodEnd"]["TOTAL"]["MODERATE"]["rng"])-1])
+        OpeSev.append(app["summary"]["openCountsAtTimePeriodEnd"]["TOTAL"]["SEVERE"]["rng"][len(app["summary"]["openCountsAtTimePeriodEnd"]["TOTAL"]["SEVERE"]["rng"])-1])
+        OpeCri.append(app["summary"]["openCountsAtTimePeriodEnd"]["TOTAL"]["CRITICAL"]["rng"][len(app["summary"]["openCountsAtTimePeriodEnd"]["TOTAL"]["CRITICAL"]["rng"])-1])
+    
+    make_stacked_chart(
+        orgName,
+        [
+            OpeLow,
+            OpeMod,
+            OpeSev,
+            OpeCri
+        ],
+       ['Low', 'Moderate', 'Severe', 'Critical'],
+       "./output/Current_Open_Orgs.png", 
+       "Current Total Number of Open vulnerabilities by organisation",
+        xtitle[2]
+    )
+    pdf.print_chapter('Current Total Number of Open vulnerabilities by organisation', "")
+    pdf.image("./output/Current_Open_Orgs.png",10,36,270)
+    t +=1
+    printProgressBar(t,graphNo)
+    #---------------------------------------------------------------------
+    
+    header_Open_App = ['Application', 'Critical','Severe','Moderate','Low']
+    data_Open_App= []
+    for app in apps:
+        critical = app['summary']['openCountsAtTimePeriodEnd']['TOTAL']['CRITICAL']['rng'][-1]
+        severe = app['summary']['openCountsAtTimePeriodEnd']['TOTAL']['SEVERE']['rng'][-1]
+        moderate = app['summary']['openCountsAtTimePeriodEnd']['TOTAL']['MODERATE']['rng'][-1]
+        low = app['summary']['openCountsAtTimePeriodEnd']['TOTAL']['LOW']['rng'][-1]
+        aux = [critical,severe,moderate,low]
+        data_Open_App.append([app['applicationName']] + aux)
+    data_Open_App.sort(key = lambda data_Open_App: data_Open_App[1], reverse = True)
+    aux=[]
+    for i in range(0,len(data_Open_App)):
+        aux.append([data_Open_App[i][0],str(data_Open_App[i][1]),str(data_Open_App[i][2]),str(data_Open_App[i][3]),str(data_Open_App[i][4])])
+    data_Open_App = aux
+    pdf.print_chapter('Current risk per application sorted by criticality',"")
+    pdf.fancy_table(header_Open_App, data_Open_App)
+    t +=1
+    printProgressBar(t,graphNo)
+
+#---------------------------------------------------------------------
+    make_stacked_chart(
+        summary['timePeriodStart'],
+        [
+            summary['discoveredCounts']['TOTAL'],
+            summary['fixedCounts']['TOTAL'],
+            summary['waivedCounts']['TOTAL']
+        ],
+       ['Discovered', 'Fixed', 'Waived'],
+       "./output/Total_DisFixWaiCount.png", 
+       "Total Number of Discovered, Fixed & Waived vulnerabilities week-on-week",
+        xtitle[0]
+    )
+    pdf.print_chapter('Total Number of Discovered, Fixed & Waived vulnerabilities week-on-week','')
+    pdf.image("./output/Total_DisFixWaiCount.png",10,36,270)
+    t +=1
+    printProgressBar(t,graphNo)
+    #---------------------------------------------------------------------
+    make_stacked_chart(
+        summary['timePeriodStart'], 
+        summary['discoveredCounts']['LIST'],
+        ['Discovered Low', 'Discovered Moderate', 'Discovered Severe', 'Discovered Critical'],
+        "./output/Discovered_breakdown.png",
+        "Total Number of Discovered vulnerabilities by severity week-on-week",
+        xtitle[0]
+    )
+    pdf.print_chapter('Total Number of Discovered vulnerabilities by severity week-on-week','')
+    pdf.image("./output/Discovered_breakdown.png",10,36,270)
+    t +=1
+    printProgressBar(t,graphNo)
+    #---------------------------------------------------------------------
+    make_stacked_chart(
+        summary['timePeriodStart'], 
+        summary['fixedCounts']['LIST'],
+        ['Fixed Low', 'Fixed Moderate', 'Fixed Severe', 'Fixed Critical'],
+        "./output/Fixed_breakdown.png",
+        "Total Number of Fixed vulnerabilities by severity week-on-week",
+        xtitle[0]
+    )
+    pdf.print_chapter('Total Number of Fixed vulnerabilities by severity week-on-week','')
+    pdf.image("./output/Fixed_breakdown.png",10,36,270)
+    t +=1
+    printProgressBar(t,graphNo)
+    #---------------------------------------------------------------------
+    make_stacked_chart(
+        summary['timePeriodStart'], 
+        summary['waivedCounts']['LIST'],
+        ['Waived Low', 'Waived Moderate', 'Waived Severe', 'Waived Critical'],
+        "./output/Waived_breakdown.png",
+        "Total Number of Waived vulnerabilities by severity week-on-week",
+        xtitle[0]
+    )
+    pdf.print_chapter('Total Number of Waived vulnerabilities by severity week-on-week','')
+    pdf.image("./output/Waived_breakdown.png",10,36,270)
+    t +=1
+    printProgressBar(t,graphNo)
+     #---------------------------------------------------------------------
+    make_chart( 
+        summary['timePeriodStart'], 
+        summary['mttrLowThreat'], 
+        "./output/MTTR_Low.png", 
+        "MTTR (in days) for all Low Threat vulnerabilities week-on-week", 
+        xtitle[0]
+    )
+    pdf.print_chapter('MTTR (in days) for all Low Threat vulnerabilities week-on-week','')
+    pdf.image('./output/MTTR_Low.png',10,36,270)
+    t +=1
+    printProgressBar(t, graphNo)
+     #---------------------------------------------------------------------
+    make_chart( 
+        summary['timePeriodStart'], 
+        summary['mttrModerateThreat'], 
+        "./output/MTTR_Moderate.png", 
+        "MTTR (in days) for all Moderate Threat vulnerabilities week-on-week", 
+        xtitle[0]
+    )
+    pdf.print_chapter('MTTR (in days) for all Moderate Threat vulnerabilities week-on-week','')
+    pdf.image('./output/MTTR_Moderate.png',10,36,270)
+    t +=1
+    printProgressBar(t, graphNo)
+     #---------------------------------------------------------------------
+    make_chart( 
+        summary['timePeriodStart'], 
+        summary['mttrSevereThreat'], 
+        "./output/MTTR_Severe.png", 
+        "MTTR (in days) for all Severe Threat vulnerabilities week-on-week", 
+        xtitle[0]
+    )
+    pdf.print_chapter('MTTR (in days) for all Severe Threat vulnerabilities week-on-week','')
+    pdf.image('./output/MTTR_Severe.png',10,36,270)
+    t +=1
+    printProgressBar(t, graphNo)
+     #---------------------------------------------------------------------
+    make_chart( 
+        summary['timePeriodStart'], 
+        summary['mttrCriticalThreat'], 
+        "./output/MTTR_Critical.png", 
+        "MTTR (in days) for all Critical Threat vulnerabilities week-on-week", 
+        xtitle[0]
+    )
+    pdf.print_chapter('MTTR (in days) for all Critical Threat vulnerabilities week-on-week','')
+    pdf.image('./output/MTTR_Critical.png',10,36,270)
+    t +=1
+    printProgressBar(t, graphNo)
+    #---------------------------------------------------------------------
+
+
+    
+ #-------------------------------------------------------------------------
+    if len(summary['timePeriodStart']) >= 4:
+        header_riskRatio = ['Risk Ratio', summary['timePeriodStart'][-4], summary['timePeriodStart'][-3], summary['timePeriodStart'][-2], summary['timePeriodStart'][-1]]
+        shift = [-4,-3,-2,-1]
+    else:
+        header_riskRatio = ['Risk Ratio']
+        shift = []
+        for k in range(0,len(summary['timePeriodStart'])):
+            header_riskRatio.append(summary['timePeriodStart'][k - len(summary['timePeriodStart'])])
+            shift.append(k - len(summary['timePeriodStart']))
+    levels = ['Critical','Severe','Moderate','Low']
+    measures = ['riskRatioCritical','riskRatioSevere','riskRatioModerate','riskRatioLow']
+    data_riskRatio= []
+    for i in range(0,len(levels)):
+        data_riskRatio.append([levels[i]])
+        for j in range(0, len(shift)):
+            data_riskRatio[i].append(str(summary[measures[i]][shift[j]]))
+    pdf.print_chapter('Risk Ratio (number of vulnerabilities / apps onboarded) by severity',"")
+    pdf.fancy_table(header_riskRatio, data_riskRatio)
+    t +=1
+    printProgressBar(t,graphNo)
+    
+    #-------------------------------------------------------------------------
+    
+    #-------------------------------------------------------------------------
+    pdf.output('./output/executive_report.pdf', 'F')
+
+
+#-------------------------------------------------------------------------
+
+
+
 #---------------------------------
 #HYGIENE: "To not use any components older than a certain age or below a certain popularity"
 #Generates age & popularity report
@@ -529,7 +796,7 @@ def licence():
     printProgressBar(j,graphNo)
     #---------------------------------------------------------------------
     make_stacked_chart(
-        licences['weeks'],
+        licences['dates'],
         licences['openCountsAtTimePeriodEnd']['LIST'],
         ['Low','Moderate','Severe','Critical'],
         "./output/Open_Backlog_Lic.png",
@@ -590,7 +857,7 @@ def licence():
     #---------------------------------------------------------------------
     #---------------------------------------------------------------------
     make_stacked_chart(
-        licences['weeks'],
+        licences['dates'],
         [
             licences['discoveredCounts']['TOTAL'],
             licences['fixedCounts']['TOTAL'],
@@ -606,7 +873,7 @@ def licence():
     printProgressBar(j,graphNo)
     #---------------------------------------------------------------------
     make_stacked_chart(
-        licences['weeks'], 
+        licences['dates'], 
         licences['discoveredCounts']['LIST'],
         ['Discovered Low', 'Discovered Moderate', 'Discovered Severe', 'Discovered Critical'],
         "./output/Discovered_breakdown_Lic.png",
@@ -618,7 +885,7 @@ def licence():
     printProgressBar(j,graphNo)
     #---------------------------------------------------------------------
     make_stacked_chart(
-        licences['weeks'], 
+        licences['dates'], 
         licences['fixedCounts']['LIST'],
         ['Fixed Low', 'Fixed Moderate', 'Fixed Severe', 'Fixed Critical'],
         "./output/Fixed_breakdown_Lic.png",
@@ -630,7 +897,7 @@ def licence():
     printProgressBar(j,graphNo)
     #---------------------------------------------------------------------
     make_stacked_chart(
-        licences['weeks'], 
+        licences['dates'], 
         licences['waivedCounts']['LIST'],
         ['Waived Low', 'Waived Moderate', 'Waived Severe', 'Waived Critical'],
         "./output/Waived_breakdown_Lic.png",
@@ -658,7 +925,7 @@ def security():
     printProgressBar(j,graphNo)
     #---------------------------------------------------------------------
     make_stacked_chart(
-        Security['weeks'],
+        Security['dates'],
         Security['openCountsAtTimePeriodEnd']['LIST'],
         ['Low','Moderate','Severe','Critical'],
         "./output/Open_Backlog_Sec.png",
@@ -719,7 +986,7 @@ def security():
     #---------------------------------------------------------------------
     #---------------------------------------------------------------------
     make_stacked_chart(
-        Security['weeks'],
+        Security['dates'],
         [
             Security['discoveredCounts']['TOTAL'],
             Security['fixedCounts']['TOTAL'],
@@ -735,7 +1002,7 @@ def security():
     printProgressBar(j,graphNo)
     #---------------------------------------------------------------------
     make_stacked_chart(
-        Security['weeks'], 
+        Security['dates'], 
         Security['discoveredCounts']['LIST'],
         ['Discovered Low', 'Discovered Moderate', 'Discovered Severe', 'Discovered Critical'],
         "./output/Discovered_breakdown_Sec.png",
@@ -747,7 +1014,7 @@ def security():
     printProgressBar(j,graphNo)
     #---------------------------------------------------------------------
     make_stacked_chart(
-        Security['weeks'], 
+        Security['dates'], 
         Security['fixedCounts']['LIST'],
         ['Fixed Low', 'Fixed Moderate', 'Fixed Severe', 'Fixed Critical'],
         "./output/Fixed_breakdown_Sec.png",
@@ -759,7 +1026,7 @@ def security():
     printProgressBar(j,graphNo)
     #---------------------------------------------------------------------
     make_stacked_chart(
-        Security['weeks'], 
+        Security['dates'], 
         Security['waivedCounts']['LIST'],
         ['Waived Low', 'Waived Moderate', 'Waived Severe', 'Waived Critical'],
         "./output/Waived_breakdown_Sec.png",
@@ -789,7 +1056,7 @@ def tables():
     #-------------------------------------------------------------------------
     pdf.print_chapter('Number of apps onboarded (weekly view)',"")
     make_chart( 
-        summary['weeks'], 
+        summary['timePeriodStart'], 
         summary['appOnboard'], 
         "./output/AppsOnboarded.png", 
         "Number of apps onboarded (weekly view)", 
@@ -800,7 +1067,7 @@ def tables():
     #-------------------------------------------------------------------------
     pdf.print_chapter('Number of scans per week',"")
     make_chart( 
-        summary['weeks'], 
+        summary['timePeriodStart'], 
         summary['weeklyScans'], 
         "./output/WeeklyScans.png", 
         "Total number of scans per week", 
@@ -830,7 +1097,7 @@ def tables():
     #-------------------------------------------------------------------------
     pdf.print_chapter('Current open backlog', "")
     make_stacked_chart(
-        summary['weeks'],
+        summary['timePeriodStart'],
         summary['openCountsAtTimePeriodEnd']['LIST'],
         ['Low','Moderate','Severe','Critical'],
         "./output/OpenBacklog.png",
@@ -886,7 +1153,6 @@ def tables():
     #-------------------------------------------------------------------------
     for app in apps:
         pdf.print_chapter('Report for Application: '+app["applicationName"],'')
-        #Below will fail if application is younger than 4 weeks. Need to deal with new applications.
         if len(app['aggregations']) >= 4:
             header_evolution = ['Metric',app['aggregations'][-4]['timePeriodStart'],app['aggregations'][-3]['timePeriodStart'],app['aggregations'][-2]['timePeriodStart'],app['aggregations'][-1]['timePeriodStart']]
             shift = [-4,-3,-2,-1]
@@ -952,7 +1218,7 @@ def main():
     parser = argparse.ArgumentParser(description='get some reports')
     parser.add_argument('-a','--adoption',   help='generates adoption report', action='store_true', required=False)
     parser.add_argument('-r','--remediation',  help='generates remediation report', action='store_true', required=False)
-    parser.add_argument('-e','--enforcement',    help='generates enforcement report', action='store_true', required=False)
+    parser.add_argument('-e','--executive',    help='generates executive report', action='store_true', required=False)
     parser.add_argument('-p','--prevention',  help='generates prevention report', action='store_true', required=False)
     parser.add_argument('-hyg','--hygiene',  help='generates hygiene report', action='store_true', required=False)
     parser.add_argument('-l','--licence', help='generates remediation report only for licence violations', action='store_true', required=False)

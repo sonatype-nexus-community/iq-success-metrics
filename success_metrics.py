@@ -63,9 +63,9 @@ def main():
         #reportSummary will return the final results.
         #reportLic will return the final results for Licence vulnerabilities only
         #reportSec will return the final results for security vulnerabilities only
-        reportAverages, reportCounts, reportSummary = {}, {}, {"appNames":[], "orgNames":[], "weeks":[], "timePeriodStart" : []}
-        reportAveragesLic, reportCountsLic, reportLic = {}, {}, {"appNames":[], "orgNames":[], "weeks":[], "timePeriodStart" : []}
-        reportAveragesSec, reportCountsSec, reportSec = {}, {}, {"appNames":[], "orgNames":[], "weeks":[], "timePeriodStart" : []}
+        reportAverages, reportCounts, reportSummary = {}, {}, {"appNames":[], "orgNames":[], "weeks":[], "dates":[], "timePeriodStart" : []}
+        reportAveragesLic, reportCountsLic, reportLic = {}, {}, {"appNames":[], "orgNames":[], "weeks":[], "dates":[], "timePeriodStart" : []}
+        reportAveragesSec, reportCountsSec, reportSec = {}, {}, {"appNames":[], "orgNames":[], "weeks":[], "dates":[], "timePeriodStart" : []}
         
         # set the weeks range in the report summary for the required scope.
         for recency in range(args["scope"], 0, -1):
@@ -300,7 +300,7 @@ def ms_days(v): #convert ms to days
 
 
 def get_aggs_list():
-        s = {"weeks":[], "fixedRate":[], "waivedRate":[], "dealtRate":[]}
+        s = {"weeks":[], "dates": [], "fixedRate":[], "waivedRate":[], "dealtRate":[]}
         s.update(zeros(config["statRates"]))
         s.update({"evaluationCount":{"rng":[]}})
 
@@ -409,6 +409,7 @@ def process_week(a, s):
 
         s["evaluationCount"]["rng"].append( a["evaluationCount"] )
         s["weeks"].append( get_week_date( a["timePeriodStart"]) ) #set week list for images
+        s["dates"].append(a["timePeriodStart"]) #set dates list for images
         s["fixedRate"].append( calc_FixedRate(s, True) )
         s["waivedRate"].append( calc_WaivedRate(s, True) )
         s["dealtRate"].append( calc_DealtRate(s, True) )
