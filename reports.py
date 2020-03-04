@@ -862,12 +862,18 @@ def tables():
 
     
  #-------------------------------------------------------------------------
-    #Below will fail if application is younger than 4 weeks. Need to deal with new applications.
-    header_riskRatio = ['Risk Ratio', summary['timePeriodStart'][-4], summary['timePeriodStart'][-3], summary['timePeriodStart'][-2], summary['timePeriodStart'][-1]]
+    if len(summary['timePeriodStart']) >= 4:
+        header_riskRatio = ['Risk Ratio', summary['timePeriodStart'][-4], summary['timePeriodStart'][-3], summary['timePeriodStart'][-2], summary['timePeriodStart'][-1]]
+        shift = [-4,-3,-2,-1]
+    else:
+        header_riskRatio = ['Risk Ratio']
+        shift = []
+        for k in range(0,len(summary['timePeriodStart'])):
+            header_riskRatio.append(summary['timePeriodStart'][k - len(summary['timePeriodStart'])])
+            shift.append(k - len(summary['timePeriodStart']))
     levels = ['Critical','Severe','Moderate','Low']
     measures = ['riskRatioCritical','riskRatioSevere','riskRatioModerate','riskRatioLow']
     data_riskRatio= []
-    shift = [-4,-3,-2,-1]
     for i in range(0,len(levels)):
         data_riskRatio.append([levels[i]])
         for j in range(0, len(shift)):
@@ -881,14 +887,22 @@ def tables():
     for app in apps:
         pdf.print_chapter('Report for Application: '+app["applicationName"],'')
         #Below will fail if application is younger than 4 weeks. Need to deal with new applications.
-        header_evolution = ['Metric',app['aggregations'][-4]['timePeriodStart'],app['aggregations'][-3]['timePeriodStart'],app['aggregations'][-2]['timePeriodStart'],app['aggregations'][-1]['timePeriodStart']]
+        if len(app['aggregations']) >= 4:
+            header_evolution = ['Metric',app['aggregations'][-4]['timePeriodStart'],app['aggregations'][-3]['timePeriodStart'],app['aggregations'][-2]['timePeriodStart'],app['aggregations'][-1]['timePeriodStart']]
+            shift = [-4,-3,-2,-1]
+        else:
+            header_evolution = ['Metric']
+            shift = []
+            for k in range(0,len(app['aggregations'])):
+                header_evolution.append(app['aggregations'][k - len(app['aggregations'])]['timePeriodStart'])
+                shift.append(k - len(app['aggregations']))
+                
         metrics = ['MTTR Critical','MTTR Severe', 'MTTR Moderate','MTTR Low','Discovered Critical','Discovered Severe','Discovered Moderate','Discovered Low',
                    'Fixed Critical','Fixed Severe','Fixed Moderate','Fixed Low','Waived Critical','Waived Severe','Waived Moderate','Waived Low',
                    'Open Critical','Open Severe','Open Moderate','Open Low']
         measures = ['discoveredCounts','fixedCounts','waivedCounts','openCountsAtTimePeriodEnd']
         mttr = ['mttrCriticalThreat','mttrSevereThreat','mttrModerateThreat','mttrLowThreat']
         levels = ['CRITICAL','SEVERE','MODERATE','LOW']
-        shift = [-4,-3,-2,-1]
         data_evolution = []
 
         for i in range(0,len(metrics)):
