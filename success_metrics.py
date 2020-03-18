@@ -136,6 +136,8 @@ def main():
                                 value = app_summary[mttr]["rng"][position]
                                 if not value is None:
                                         reportAverages[mttr][week_no].append( value )
+                                        reportAveragesLic[mttr][week_no].append( value )
+                                        reportAveragesSec[mttr][week_no].append( value )
 
                         if app_summary["evaluationCount"]["rng"][position] != 0:
                                 reportCounts["appNumberScan"][week_no] += 1
@@ -213,6 +215,41 @@ def main():
         reportSummary.update({'riskRatioSevere' : riskRatioSev})
         reportSummary.update({'riskRatioModerate' : riskRatioMod})
         reportSummary.update({'riskRatioLow' : riskRatioLow})
+#-----------------------------------------------------------------------------------------
+        riskRatioCri, riskRatioSev, riskRatioMod, riskRatioLow = [],[],[],[]
+        for week_no in range(0,len(reportLic['weeks'])):
+                if reportLic['appOnboard'][week_no] != 0:
+                        riskRatioCri.append(str(round((reportLic['openCountsAtTimePeriodEnd']['CRITICAL'][week_no])/(reportLic['appOnboard'][week_no]),2)))
+                        riskRatioSev.append(str(round((reportLic['openCountsAtTimePeriodEnd']['SEVERE'][week_no])/(reportLic['appOnboard'][week_no]),2)))
+                        riskRatioMod.append(str(round((reportLic['openCountsAtTimePeriodEnd']['MODERATE'][week_no])/(reportLic['appOnboard'][week_no]),2)))
+                        riskRatioLow.append(str(round((reportLic['openCountsAtTimePeriodEnd']['LOW'][week_no])/(reportLic['appOnboard'][week_no]),2)))
+                else:
+                        riskRatioCri.append(str(0))
+                        riskRatioSev.append(str(0))
+                        riskRatioMod.append(str(0))
+                        riskRatioLow.append(str(0))
+        reportLic.update({'riskRatioCritical' : riskRatioCri})
+        reportLic.update({'riskRatioSevere' : riskRatioSev})
+        reportLic.update({'riskRatioModerate' : riskRatioMod})
+        reportLic.update({'riskRatioLow' : riskRatioLow})
+#-----------------------------------------------------------------------------------------
+        riskRatioCri, riskRatioSev, riskRatioMod, riskRatioLow = [],[],[],[]
+        for week_no in range(0,len(reportSec['weeks'])):
+                if reportSec['appOnboard'][week_no] != 0:
+                        riskRatioCri.append(str(round((reportSec['openCountsAtTimePeriodEnd']['CRITICAL'][week_no])/(reportSec['appOnboard'][week_no]),2)))
+                        riskRatioSev.append(str(round((reportSec['openCountsAtTimePeriodEnd']['SEVERE'][week_no])/(reportSec['appOnboard'][week_no]),2)))
+                        riskRatioMod.append(str(round((reportSec['openCountsAtTimePeriodEnd']['MODERATE'][week_no])/(reportSec['appOnboard'][week_no]),2)))
+                        riskRatioLow.append(str(round((reportSec['openCountsAtTimePeriodEnd']['LOW'][week_no])/(reportSec['appOnboard'][week_no]),2)))
+                else:
+                        riskRatioCri.append(str(0))
+                        riskRatioSev.append(str(0))
+                        riskRatioMod.append(str(0))
+                        riskRatioLow.append(str(0))
+        reportSec.update({'riskRatioCritical' : riskRatioCri})
+        reportSec.update({'riskRatioSevere' : riskRatioSev})
+        reportSec.update({'riskRatioModerate' : riskRatioMod})
+        reportSec.update({'riskRatioLow' : riskRatioLow})
+#-----------------------------------------------------------------------------------------
         
         # Final report with summary and data objects.
         report = {"summary": reportSummary, "apps": data, "licences": reportLic, "security": reportSec}
