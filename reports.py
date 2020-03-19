@@ -30,6 +30,8 @@ args = vars(parser.parse_args())
 
 xtitle = ["Date", "Applications", "Organisations"]
 filename = args['jsonFile']
+sonatype_colours = ['rgb(0,106,197)','rgb(253,198,22)','rgb(246,128,4)','rgb(205,0,40)']
+disfixwai_colours = ['rgb(245,69,44)','rgb(0,209,146)','rgb(101,104,255)']
 
 
 with open(filename, 'r') as f:
@@ -73,7 +75,7 @@ def make_chart(period, data, filename, title, xtitle):
 
     fig.write_image(filename)
 
-def make_stacked_chart(period, data, legend, filename, title, xtitle):
+def make_stacked_chart(period, data, legend, filename, title, xtitle,colours):
     traces = []
     for i in range(0, len(data)):
         trace = go.Bar(
@@ -81,7 +83,8 @@ def make_stacked_chart(period, data, legend, filename, title, xtitle):
             x = period,
             y = data[i],
             text = data[i],
-            textposition = 'auto'
+            textposition = 'auto',
+            marker = dict(color=colours[i])
             )
         traces.append(trace)
 
@@ -278,7 +281,7 @@ def executive():
         ['Low','Moderate','Severe','Critical'],
         "./output/OpenBacklog.png",
         "Number of open vulnerabilities (backlog) per week",
-        xtitle[0])
+        xtitle[0],sonatype_colours)
     pdf.image("./output/OpenBacklog.png",10,36,270)
     t +=1
     printProgressBar(t,graphNo)
@@ -303,7 +306,7 @@ def executive():
        ['Low', 'Moderate', 'Severe', 'Critical'],
        "./output/Current_Open_Orgs.png", 
        "Current Total Number of Open vulnerabilities by organisation",
-        xtitle[2]
+        xtitle[2],sonatype_colours
     )
     pdf.print_chapter('Current Total Number of Open vulnerabilities by organisation', "")
     pdf.image("./output/Current_Open_Orgs.png",10,36,270)
@@ -345,7 +348,7 @@ def executive():
        ['Discovered', 'Fixed', 'Waived'],
        "./output/Total_DisFixWaiCount.png", 
        "Total Number of Discovered, Fixed & Waived vulnerabilities week-on-week",
-        xtitle[0]
+        xtitle[0],disfixwai_colours
     )
     pdf.print_chapter('Total Number of Discovered, Fixed & Waived vulnerabilities week-on-week','')
     pdf.image("./output/Total_DisFixWaiCount.png",10,36,270)
@@ -358,7 +361,7 @@ def executive():
         ['Discovered Low', 'Discovered Moderate', 'Discovered Severe', 'Discovered Critical'],
         "./output/Discovered_breakdown.png",
         "Total Number of Discovered vulnerabilities by severity week-on-week",
-        xtitle[0]
+        xtitle[0],sonatype_colours
     )
     pdf.print_chapter('Total Number of Discovered vulnerabilities by severity week-on-week','')
     pdf.image("./output/Discovered_breakdown.png",10,36,270)
@@ -371,7 +374,7 @@ def executive():
         ['Fixed Low', 'Fixed Moderate', 'Fixed Severe', 'Fixed Critical'],
         "./output/Fixed_breakdown.png",
         "Total Number of Fixed vulnerabilities by severity week-on-week",
-        xtitle[0]
+        xtitle[0],sonatype_colours
     )
     pdf.print_chapter('Total Number of Fixed vulnerabilities by severity week-on-week','')
     pdf.image("./output/Fixed_breakdown.png",10,36,270)
@@ -384,7 +387,7 @@ def executive():
         ['Waived Low', 'Waived Moderate', 'Waived Severe', 'Waived Critical'],
         "./output/Waived_breakdown.png",
         "Total Number of Waived vulnerabilities by severity week-on-week",
-        xtitle[0]
+        xtitle[0],sonatype_colours
     )
     pdf.print_chapter('Total Number of Waived vulnerabilities by severity week-on-week','')
     pdf.image("./output/Waived_breakdown.png",10,36,270)
@@ -550,7 +553,7 @@ def executiveSec():
         ['Low','Moderate','Severe','Critical'],
         "./output/OpenBacklog.png",
         "Number of open vulnerabilities (backlog) per week",
-        xtitle[0])
+        xtitle[0],sonatype_colours)
     pdf.image("./output/OpenBacklog.png",10,36,270)
     t +=1
     printProgressBar(t,graphNo)
@@ -575,7 +578,7 @@ def executiveSec():
        ['Low', 'Moderate', 'Severe', 'Critical'],
        "./output/Current_Open_Orgs.png", 
        "Current Total Number of Open vulnerabilities by organisation",
-        xtitle[2]
+        xtitle[2],sonatype_colours
     )
     pdf.print_chapter('Current Total Number of Open vulnerabilities by organisation', "")
     pdf.image("./output/Current_Open_Orgs.png",10,36,270)
@@ -617,7 +620,7 @@ def executiveSec():
        ['Discovered', 'Fixed', 'Waived'],
        "./output/Total_DisFixWaiCount.png", 
        "Total Number of Discovered, Fixed & Waived vulnerabilities week-on-week",
-        xtitle[0]
+        xtitle[0],disfixwai_colours
     )
     pdf.print_chapter('Total Number of Discovered, Fixed & Waived vulnerabilities week-on-week','')
     pdf.image("./output/Total_DisFixWaiCount.png",10,36,270)
@@ -630,7 +633,7 @@ def executiveSec():
         ['Discovered Low', 'Discovered Moderate', 'Discovered Severe', 'Discovered Critical'],
         "./output/Discovered_breakdown.png",
         "Total Number of Discovered vulnerabilities by severity week-on-week",
-        xtitle[0]
+        xtitle[0],sonatype_colours
     )
     pdf.print_chapter('Total Number of Discovered vulnerabilities by severity week-on-week','')
     pdf.image("./output/Discovered_breakdown.png",10,36,270)
@@ -643,7 +646,7 @@ def executiveSec():
         ['Fixed Low', 'Fixed Moderate', 'Fixed Severe', 'Fixed Critical'],
         "./output/Fixed_breakdown.png",
         "Total Number of Fixed vulnerabilities by severity week-on-week",
-        xtitle[0]
+        xtitle[0],sonatype_colours
     )
     pdf.print_chapter('Total Number of Fixed vulnerabilities by severity week-on-week','')
     pdf.image("./output/Fixed_breakdown.png",10,36,270)
@@ -656,7 +659,7 @@ def executiveSec():
         ['Waived Low', 'Waived Moderate', 'Waived Severe', 'Waived Critical'],
         "./output/Waived_breakdown.png",
         "Total Number of Waived vulnerabilities by severity week-on-week",
-        xtitle[0]
+        xtitle[0],sonatype_colours
     )
     pdf.print_chapter('Total Number of Waived vulnerabilities by severity week-on-week','')
     pdf.image("./output/Waived_breakdown.png",10,36,270)
@@ -822,7 +825,7 @@ def executiveLic():
         ['Low','Moderate','Severe','Critical'],
         "./output/OpenBacklog.png",
         "Number of open vulnerabilities (backlog) per week",
-        xtitle[0])
+        xtitle[0],sonatype_colours)
     pdf.image("./output/OpenBacklog.png",10,36,270)
     t +=1
     printProgressBar(t,graphNo)
@@ -847,7 +850,7 @@ def executiveLic():
        ['Low', 'Moderate', 'Severe', 'Critical'],
        "./output/Current_Open_Orgs.png", 
        "Current Total Number of Open vulnerabilities by organisation",
-        xtitle[2]
+        xtitle[2],sonatype_colours
     )
     pdf.print_chapter('Current Total Number of Open vulnerabilities by organisation', "")
     pdf.image("./output/Current_Open_Orgs.png",10,36,270)
@@ -889,7 +892,7 @@ def executiveLic():
        ['Discovered', 'Fixed', 'Waived'],
        "./output/Total_DisFixWaiCount.png", 
        "Total Number of Discovered, Fixed & Waived vulnerabilities week-on-week",
-        xtitle[0]
+        xtitle[0],disfixwai_colours
     )
     pdf.print_chapter('Total Number of Discovered, Fixed & Waived vulnerabilities week-on-week','')
     pdf.image("./output/Total_DisFixWaiCount.png",10,36,270)
@@ -902,7 +905,7 @@ def executiveLic():
         ['Discovered Low', 'Discovered Moderate', 'Discovered Severe', 'Discovered Critical'],
         "./output/Discovered_breakdown.png",
         "Total Number of Discovered vulnerabilities by severity week-on-week",
-        xtitle[0]
+        xtitle[0],sonatype_colours
     )
     pdf.print_chapter('Total Number of Discovered vulnerabilities by severity week-on-week','')
     pdf.image("./output/Discovered_breakdown.png",10,36,270)
@@ -915,7 +918,7 @@ def executiveLic():
         ['Fixed Low', 'Fixed Moderate', 'Fixed Severe', 'Fixed Critical'],
         "./output/Fixed_breakdown.png",
         "Total Number of Fixed vulnerabilities by severity week-on-week",
-        xtitle[0]
+        xtitle[0],sonatype_colours
     )
     pdf.print_chapter('Total Number of Fixed vulnerabilities by severity week-on-week','')
     pdf.image("./output/Fixed_breakdown.png",10,36,270)
@@ -928,7 +931,7 @@ def executiveLic():
         ['Waived Low', 'Waived Moderate', 'Waived Severe', 'Waived Critical'],
         "./output/Waived_breakdown.png",
         "Total Number of Waived vulnerabilities by severity week-on-week",
-        xtitle[0]
+        xtitle[0],sonatype_colours
     )
     pdf.print_chapter('Total Number of Waived vulnerabilities by severity week-on-week','')
     pdf.image("./output/Waived_breakdown.png",10,36,270)
@@ -1080,7 +1083,7 @@ def tables():
         ['Low','Moderate','Severe','Critical'],
         "./output/OpenBacklog.png",
         "Number of open vulnerabilities (backlog) per week",
-        xtitle[0])
+        xtitle[0],sonatype_colours)
     pdf.image("./output/OpenBacklog.png",10,36,270)
     t +=1
     printProgressBar(t,graphNo)
