@@ -66,7 +66,7 @@ def printProgressBar (
 
 def make_chart(period, data, filename, title, xtitle):
     fig = go.Figure(
-        data=[ go.Bar(x=period, y=data, text=data, textposition='auto') ], 
+        data=[ go.Bar(x=period, y=data, textposition='auto') ], 
         layout_title_text=title
     )
 
@@ -82,7 +82,6 @@ def make_stacked_chart(period, data, legend, filename, title, xtitle,colours):
             name = legend[i],
             x = period,
             y = data[i],
-            text = data[i],
             textposition = 'auto',
             marker = dict(color=colours[i])
             )
