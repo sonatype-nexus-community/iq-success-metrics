@@ -203,15 +203,102 @@ def output_pdf(pages, filename):
 
 
 #---------------------------------
+
+def nonzeroAvg(metric,percentage,integer):
+    nonzero = 0
+    aux = 0
+    for i in range(0,len(metric)):
+        if metric[i] != 0:
+            aux += metric[i]
+            nonzero += 1
+    if nonzero == 0:
+        nonzero = 1
+    if percentage == True:
+        output = round((aux / nonzero) * 100,1)
+    elif integer == True:
+        output = int(aux / nonzero)
+    else:
+        output = round(aux / nonzero,1)
+    return(output)
+
+#---------------------------------
+
+def average(numerator,denominator,percentage,integer):
+    if denominator == 0:
+        denominator = 1
+    if percentage == True:
+        output = round((numerator / denominator) * 100,1)
+    elif integer == True:
+        output = int(numerator / denominator)
+    else:
+        output = round(numerator / denominator,1)
+    return(output)
+
+#---------------------------------
+
 #EXECUTIVE: Executive summary report (combination of reports but without going into app level)
 def executive():
 
-    pages, t, graphNo = [], 0, 16
+    pages, t, graphNo = [], 0, 17
     appName, orgName, OpeLow, OpeMod, OpeSev, OpeCri, mttrLow, mttrMod, mttrSev, mttrCri = [],[],[],[],[],[],[],[],[],[]
     printProgressBar(t,graphNo)
     
     pdf = PDF()
     pdf.alias_nb_pages()
+
+
+    ###########################
+    
+    weeks = len(summary["weeks"])
+    onboarded = summary["appOnboard"][-1]
+    weeklyOnboard = average(onboarded,weeks,0,0)
+    scanned = sum(summary["appNumberScan"])
+    weeklyScanned = average(scanned,weeks,0,0)
+    scans = sum(summary["weeklyScans"])
+    weeklyScans = average(scans,weeks,0,0)
+    discovered = sum(summary["discoveredCounts"]["TOTAL"])
+    fixed = sum(summary["fixedCounts"]["TOTAL"])
+    waived = sum(summary["waivedCounts"]["TOTAL"])
+    dealt = fixed + waived
+    dealtRate = round((dealt / discovered) * 100,1)
+    riskRatio = [float(i) for i in summary["riskRatioCritical"]]
+    riskRatioAvg = average(sum(riskRatio),weeks,0,0)
+    mttrAvg = nonzeroAvg(summary["mttrCriticalThreat"],0,0)
+    content1 = "In the past "+str(weeks)+" weeks your organisation:"
+    content2 = "\t- Onboarded "+str(onboarded)+" applications at an average of "+str(weeklyOnboard)+" per week"
+    content3 = "\t- Scanned applications "+str(scanned)+" times at an average of "+str(weeklyScanned)+" apps scanned per week"
+    content4 = "\t- Performed "+str(scans)+" scans at an average of "+str(weeklyScans)+" scans per week"
+    content5 = "\t- Discovered "+str(discovered)+" violations, fixing "+str(fixed)+" and waiving "+str(waived)+" of them"
+    content6 = "\t  Which means that you have reduced "+str(dealtRate)+"% of your total risk"
+    content7 = "\t- On average, each application had "+str(riskRatioAvg)+" Critical violations"
+    content8 = "\t- It took an average of "+str(mttrAvg)+" days to fix Critical violations"
+    pdf.print_chapter('Outcomes Summary (all violations)',"")
+    pdf.set_font('Times', 'B', 24)
+    pdf.cell(0,0,content1,0)
+    pdf.ln(15)
+    pdf.set_font('Times', 'B', 18)
+    pdf.cell(0,0,content2,0)
+    pdf.ln(10)
+    pdf.cell(0,0,content3,0)
+    pdf.ln(10)
+    pdf.cell(0,0,content4,0)
+    pdf.ln(10)
+    pdf.cell(0,0,content5,0)
+    pdf.ln(10)
+    pdf.set_text_color(255, 0, 0)
+    pdf.cell(0,0,content6,0)
+    pdf.ln(15)
+    pdf.set_text_color(0, 0, 0)
+    pdf.cell(0,0,content7,0)
+    pdf.ln(10)
+    pdf.cell(0,0,content8,0)
+
+
+    t +=1
+    printProgressBar(t,graphNo)
+
+    ###########################
+
     
     #-------------------------------------------------------------------------
     pdf.print_chapter('Number of apps onboarded (weekly view)',"")
@@ -467,7 +554,8 @@ def executive():
     printProgressBar(t,graphNo)
     
     #-------------------------------------------------------------------------
-    
+
+
     #-------------------------------------------------------------------------
     pdf.output('./output/executive_report.pdf', 'F')
 
@@ -478,12 +566,66 @@ def executive():
 #EXECUTIVE SECURITY: Executive summary report only for Security violations (combination of reports but without going into app level)
 def executiveSec():
 
-    pages, t, graphNo = [], 0, 16
+    pages, t, graphNo = [], 0, 17
     appName, orgName, OpeLow, OpeMod, OpeSev, OpeCri, mttrLow, mttrMod, mttrSev, mttrCri = [],[],[],[],[],[],[],[],[],[]
     printProgressBar(t,graphNo)
     
     pdf = PDF()
     pdf.alias_nb_pages()
+
+
+    ###########################
+    
+    weeks = len(Security["weeks"])
+    onboarded = Security["appOnboard"][-1]
+    weeklyOnboard = average(onboarded,weeks,0,0)
+    scanned = sum(Security["appNumberScan"])
+    weeklyScanned = average(scanned,weeks,0,0)
+    scans = sum(Security["weeklyScans"])
+    weeklyScans = average(scans,weeks,0,0)
+    discovered = sum(Security["discoveredCounts"]["TOTAL"])
+    fixed = sum(Security["fixedCounts"]["TOTAL"])
+    waived = sum(Security["waivedCounts"]["TOTAL"])
+    dealt = fixed + waived
+    dealtRate = round((dealt / discovered) * 100,1)
+    riskRatio = [float(i) for i in Security["riskRatioCritical"]]
+    riskRatioAvg = average(sum(riskRatio),weeks,0,0)
+    mttrAvg = nonzeroAvg(Security["mttrCriticalThreat"],0,0)
+    content1 = "In the past "+str(weeks)+" weeks your organisation:"
+    content2 = "\t- Onboarded "+str(onboarded)+" applications at an average of "+str(weeklyOnboard)+" per week"
+    content3 = "\t- Scanned applications "+str(scanned)+" times at an average of "+str(weeklyScanned)+" apps scanned per week"
+    content4 = "\t- Performed "+str(scans)+" scans at an average of "+str(weeklyScans)+" scans per week"
+    content5 = "\t- Discovered "+str(discovered)+" violations, fixing "+str(fixed)+" and waiving "+str(waived)+" of them"
+    content6 = "\t  Which means that you have reduced "+str(dealtRate)+"% of your total risk"
+    content7 = "\t- On average, each application had "+str(riskRatioAvg)+" Critical violations"
+    content8 = "\t- It took an average of "+str(mttrAvg)+" days to fix Critical violations"
+    pdf.print_chapter('Outcomes Summary (security only)',"")
+    pdf.set_font('Times', 'B', 24)
+    pdf.cell(0,0,content1,0)
+    pdf.ln(15)
+    pdf.set_font('Times', 'B', 18)
+    pdf.cell(0,0,content2,0)
+    pdf.ln(10)
+    pdf.cell(0,0,content3,0)
+    pdf.ln(10)
+    pdf.cell(0,0,content4,0)
+    pdf.ln(10)
+    pdf.cell(0,0,content5,0)
+    pdf.ln(10)
+    pdf.set_text_color(255, 0, 0)
+    pdf.cell(0,0,content6,0)
+    pdf.ln(15)
+    pdf.set_text_color(0, 0, 0)
+    pdf.cell(0,0,content7,0)
+    pdf.ln(10)
+    pdf.cell(0,0,content8,0)
+
+
+    t +=1
+    printProgressBar(t,graphNo)
+
+    ###########################
+
     
     #-------------------------------------------------------------------------
     pdf.print_chapter('Number of apps onboarded (weekly view)',"")
@@ -750,12 +892,67 @@ def executiveSec():
 #EXECUTIVE LICENSING: Executive summary report only for Licensing violations (combination of reports but without going into app level)
 def executiveLic():
 
-    pages, t, graphNo = [], 0, 16
+    pages, t, graphNo = [], 0, 17
     appName, orgName, OpeLow, OpeMod, OpeSev, OpeCri, mttrLow, mttrMod, mttrSev, mttrCri = [],[],[],[],[],[],[],[],[],[]
     printProgressBar(t,graphNo)
     
     pdf = PDF()
     pdf.alias_nb_pages()
+
+
+###########################
+    
+    weeks = len(licences["weeks"])
+    onboarded = licences["appOnboard"][-1]
+    weeklyOnboard = average(onboarded,weeks,0,0)
+    scanned = sum(licences["appNumberScan"])
+    weeklyScanned = average(scanned,weeks,0,0)
+    scans = sum(licences["weeklyScans"])
+    weeklyScans = average(scans,weeks,0,0)
+    discovered = sum(licences["discoveredCounts"]["TOTAL"])
+    fixed = sum(licences["fixedCounts"]["TOTAL"])
+    waived = sum(licences["waivedCounts"]["TOTAL"])
+    dealt = fixed + waived
+    dealtRate = round((dealt / discovered) * 100,1)
+    riskRatio = [float(i) for i in licences["riskRatioCritical"]]
+    riskRatioAvg = average(sum(riskRatio),weeks,0,0)
+    mttrAvg = nonzeroAvg(licences["mttrCriticalThreat"],0,0)
+    content1 = "In the past "+str(weeks)+" weeks your organisation:"
+    content2 = "\t- Onboarded "+str(onboarded)+" applications at an average of "+str(weeklyOnboard)+" per week"
+    content3 = "\t- Scanned applications "+str(scanned)+" times at an average of "+str(weeklyScanned)+" apps scanned per week"
+    content4 = "\t- Performed "+str(scans)+" scans at an average of "+str(weeklyScans)+" scans per week"
+    content5 = "\t- Discovered "+str(discovered)+" violations, fixing "+str(fixed)+" and waiving "+str(waived)+" of them"
+    content6 = "\t  Which means that you have reduced "+str(dealtRate)+"% of your total risk"
+    content7 = "\t- On average, each application had "+str(riskRatioAvg)+" Critical violations"
+    content8 = "\t- It took an average of "+str(mttrAvg)+" days to fix Critical violations"
+    pdf.print_chapter('Outcomes Summary (licensing only)',"")
+    pdf.set_font('Times', 'B', 24)
+    pdf.cell(0,0,content1,0)
+    pdf.ln(15)
+    pdf.set_font('Times', 'B', 18)
+    pdf.cell(0,0,content2,0)
+    pdf.ln(10)
+    pdf.cell(0,0,content3,0)
+    pdf.ln(10)
+    pdf.cell(0,0,content4,0)
+    pdf.ln(10)
+    pdf.cell(0,0,content5,0)
+    pdf.ln(10)
+    pdf.set_text_color(255, 0, 0)
+    pdf.cell(0,0,content6,0)
+    pdf.ln(15)
+    pdf.set_text_color(0, 0, 0)
+    pdf.cell(0,0,content7,0)
+    pdf.ln(10)
+    pdf.cell(0,0,content8,0)
+
+
+    t +=1
+    printProgressBar(t,graphNo)
+
+    ###########################
+
+
     
     #-------------------------------------------------------------------------
     pdf.print_chapter('Number of apps onboarded (weekly view)',"")
