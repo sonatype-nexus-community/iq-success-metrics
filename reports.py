@@ -273,13 +273,13 @@ def executive():
     printProgressBar(t,graphNo)
 
     #-------------------------------------------------------------------------
-    pdf.print_chapter('Current open backlog', "")
+    pdf.print_chapter('Current open backlog for all violations', "")
     make_stacked_chart(
         summary['timePeriodStart'],
         summary['openCountsAtTimePeriodEnd']['LIST'],
         ['Low','Moderate','Severe','Critical'],
         "./output/OpenBacklog.png",
-        "Number of open vulnerabilities (backlog) per week",
+        "Number of open violations (backlog) per week for all violations",
         xtitle[0],sonatype_colours)
     pdf.image("./output/OpenBacklog.png",10,36,270)
     t +=1
@@ -304,10 +304,10 @@ def executive():
         ],
        ['Low', 'Moderate', 'Severe', 'Critical'],
        "./output/Current_Open_Orgs.png", 
-       "Current Total Number of Open vulnerabilities by organisation",
+       "Current Total Number of Open violations by organisation for all violations",
         xtitle[2],sonatype_colours
     )
-    pdf.print_chapter('Current Total Number of Open vulnerabilities by organisation', "")
+    pdf.print_chapter('Current Total Number of Open violations by organisation for all violations', "")
     pdf.image("./output/Current_Open_Orgs.png",10,36,270)
     t +=1
     printProgressBar(t,graphNo)
@@ -331,7 +331,7 @@ def executive():
         for i in range(0,100):
             aux.append([data_Open_App[i][0],str(data_Open_App[i][1]),str(data_Open_App[i][2]),str(data_Open_App[i][3]),str(data_Open_App[i][4])])
     data_Open_App = aux
-    pdf.print_chapter('Current risk per application sorted by criticality (Top 100)',"")
+    pdf.print_chapter('Current risk per application sorted by criticality for all violations (Top 100)',"")
     pdf.fancy_table(header_Open_App, data_Open_App)
     t +=1
     printProgressBar(t,graphNo)
@@ -346,10 +346,10 @@ def executive():
         ],
        ['Discovered', 'Fixed', 'Waived'],
        "./output/Total_DisFixWaiCount.png", 
-       "Total Number of Discovered, Fixed & Waived vulnerabilities week-on-week",
+       "Total Number of Discovered, Fixed & Waived violations week-on-week",
         xtitle[0],disfixwai_colours
     )
-    pdf.print_chapter('Total Number of Discovered, Fixed & Waived vulnerabilities week-on-week','')
+    pdf.print_chapter('Total Number of Discovered, Fixed & Waived violations week-on-week (all violations)','')
     pdf.image("./output/Total_DisFixWaiCount.png",10,36,270)
     t +=1
     printProgressBar(t,graphNo)
@@ -359,10 +359,10 @@ def executive():
         summary['discoveredCounts']['LIST'],
         ['Discovered Low', 'Discovered Moderate', 'Discovered Severe', 'Discovered Critical'],
         "./output/Discovered_breakdown.png",
-        "Total Number of Discovered vulnerabilities by severity week-on-week",
+        "Total Number of Discovered violations by severity week-on-week (all violations)",
         xtitle[0],sonatype_colours
     )
-    pdf.print_chapter('Total Number of Discovered vulnerabilities by severity week-on-week','')
+    pdf.print_chapter('Total Number of Discovered violations by severity week-on-week (all violations)','')
     pdf.image("./output/Discovered_breakdown.png",10,36,270)
     t +=1
     printProgressBar(t,graphNo)
@@ -372,10 +372,10 @@ def executive():
         summary['fixedCounts']['LIST'],
         ['Fixed Low', 'Fixed Moderate', 'Fixed Severe', 'Fixed Critical'],
         "./output/Fixed_breakdown.png",
-        "Total Number of Fixed vulnerabilities by severity week-on-week",
+        "Total Number of Fixed violations by severity week-on-week (all violations)",
         xtitle[0],sonatype_colours
     )
-    pdf.print_chapter('Total Number of Fixed vulnerabilities by severity week-on-week','')
+    pdf.print_chapter('Total Number of Fixed violations by severity week-on-week (all violations)','')
     pdf.image("./output/Fixed_breakdown.png",10,36,270)
     t +=1
     printProgressBar(t,graphNo)
@@ -385,10 +385,10 @@ def executive():
         summary['waivedCounts']['LIST'],
         ['Waived Low', 'Waived Moderate', 'Waived Severe', 'Waived Critical'],
         "./output/Waived_breakdown.png",
-        "Total Number of Waived vulnerabilities by severity week-on-week",
+        "Total Number of Waived violations by severity week-on-week",
         xtitle[0],sonatype_colours
     )
-    pdf.print_chapter('Total Number of Waived vulnerabilities by severity week-on-week','')
+    pdf.print_chapter('Total Number of Waived violations by severity week-on-week (all violations)','')
     pdf.image("./output/Waived_breakdown.png",10,36,270)
     t +=1
     printProgressBar(t,graphNo)
@@ -397,10 +397,10 @@ def executive():
         summary['timePeriodStart'], 
         summary['mttrLowThreat'], 
         "./output/MTTR_Low.png", 
-        "MTTR (in days) for all Low Threat vulnerabilities week-on-week", 
+        "MTTR (in days) for all Low Threat violations week-on-week", 
         xtitle[0]
     )
-    pdf.print_chapter('MTTR (in days) for all Low Threat vulnerabilities week-on-week','')
+    pdf.print_chapter('MTTR (in days) for all Low Threat violations week-on-week','')
     pdf.image('./output/MTTR_Low.png',10,36,270)
     t +=1
     printProgressBar(t, graphNo)
@@ -409,10 +409,10 @@ def executive():
         summary['timePeriodStart'], 
         summary['mttrModerateThreat'], 
         "./output/MTTR_Moderate.png", 
-        "MTTR (in days) for all Moderate Threat vulnerabilities week-on-week", 
+        "MTTR (in days) for all Moderate Threat violations week-on-week", 
         xtitle[0]
     )
-    pdf.print_chapter('MTTR (in days) for all Moderate Threat vulnerabilities week-on-week','')
+    pdf.print_chapter('MTTR (in days) for all Moderate Threat violations week-on-week','')
     pdf.image('./output/MTTR_Moderate.png',10,36,270)
     t +=1
     printProgressBar(t, graphNo)
@@ -421,10 +421,10 @@ def executive():
         summary['timePeriodStart'], 
         summary['mttrSevereThreat'], 
         "./output/MTTR_Severe.png", 
-        "MTTR (in days) for all Severe Threat vulnerabilities week-on-week", 
+        "MTTR (in days) for all Severe Threat violations week-on-week", 
         xtitle[0]
     )
-    pdf.print_chapter('MTTR (in days) for all Severe Threat vulnerabilities week-on-week','')
+    pdf.print_chapter('MTTR (in days) for all Severe Threat violations week-on-week','')
     pdf.image('./output/MTTR_Severe.png',10,36,270)
     t +=1
     printProgressBar(t, graphNo)
@@ -433,10 +433,10 @@ def executive():
         summary['timePeriodStart'], 
         summary['mttrCriticalThreat'], 
         "./output/MTTR_Critical.png", 
-        "MTTR (in days) for all Critical Threat vulnerabilities week-on-week", 
+        "MTTR (in days) for all Critical Threat violations week-on-week (all violations)", 
         xtitle[0]
     )
-    pdf.print_chapter('MTTR (in days) for all Critical Threat vulnerabilities week-on-week','')
+    pdf.print_chapter('MTTR (in days) for all Critical Threat violations week-on-week','')
     pdf.image('./output/MTTR_Critical.png',10,36,270)
     t +=1
     printProgressBar(t, graphNo)
@@ -461,7 +461,7 @@ def executive():
         data_riskRatio.append([levels[i]])
         for j in range(0, len(shift)):
             data_riskRatio[i].append(str(summary[measures[i]][shift[j]]))
-    pdf.print_chapter('Risk Ratio (number of vulnerabilities / apps onboarded) by severity',"")
+    pdf.print_chapter('Risk Ratio (number of violations / apps onboarded) by severity (all violations)',"")
     pdf.fancy_table(header_riskRatio, data_riskRatio)
     t +=1
     printProgressBar(t,graphNo)
@@ -545,13 +545,13 @@ def executiveSec():
     printProgressBar(t,graphNo)
 
     #-------------------------------------------------------------------------
-    pdf.print_chapter('Current open backlog', "")
+    pdf.print_chapter('Current open backlog (security only)', "")
     make_stacked_chart(
         Security['timePeriodStart'],
         Security['openCountsAtTimePeriodEnd']['LIST'],
         ['Low','Moderate','Severe','Critical'],
         "./output/OpenBacklog.png",
-        "Number of open vulnerabilities (backlog) per week",
+        "Number of open violations (backlog) per week (security only)",
         xtitle[0],sonatype_colours)
     pdf.image("./output/OpenBacklog.png",10,36,270)
     t +=1
@@ -576,10 +576,10 @@ def executiveSec():
         ],
        ['Low', 'Moderate', 'Severe', 'Critical'],
        "./output/Current_Open_Orgs.png", 
-       "Current Total Number of Open vulnerabilities by organisation",
+       "Current Total Number of Open violations by organisation (security only)",
         xtitle[2],sonatype_colours
     )
-    pdf.print_chapter('Current Total Number of Open vulnerabilities by organisation', "")
+    pdf.print_chapter('Current Total Number of Open violations by organisation (security only)', "")
     pdf.image("./output/Current_Open_Orgs.png",10,36,270)
     t +=1
     printProgressBar(t,graphNo)
@@ -603,7 +603,7 @@ def executiveSec():
         for i in range(0,100):
             aux.append([data_Open_App[i][0],str(data_Open_App[i][1]),str(data_Open_App[i][2]),str(data_Open_App[i][3]),str(data_Open_App[i][4])])
     data_Open_App = aux
-    pdf.print_chapter('Current risk per application sorted by criticality (Top 100)',"")
+    pdf.print_chapter('Current risk per application sorted by criticality (Top 100) (security only)',"")
     pdf.fancy_table(header_Open_App, data_Open_App)
     t +=1
     printProgressBar(t,graphNo)
@@ -618,10 +618,10 @@ def executiveSec():
         ],
        ['Discovered', 'Fixed', 'Waived'],
        "./output/Total_DisFixWaiCount.png", 
-       "Total Number of Discovered, Fixed & Waived vulnerabilities week-on-week",
+       "Total Number of Discovered, Fixed & Waived violations week-on-week (security only)",
         xtitle[0],disfixwai_colours
     )
-    pdf.print_chapter('Total Number of Discovered, Fixed & Waived vulnerabilities week-on-week','')
+    pdf.print_chapter('Total Number of Discovered, Fixed & Waived violations week-on-week (security only)','')
     pdf.image("./output/Total_DisFixWaiCount.png",10,36,270)
     t +=1
     printProgressBar(t,graphNo)
@@ -631,10 +631,10 @@ def executiveSec():
         Security['discoveredCounts']['LIST'],
         ['Discovered Low', 'Discovered Moderate', 'Discovered Severe', 'Discovered Critical'],
         "./output/Discovered_breakdown.png",
-        "Total Number of Discovered vulnerabilities by severity week-on-week",
+        "Total Number of Discovered violations by severity week-on-week (security only)",
         xtitle[0],sonatype_colours
     )
-    pdf.print_chapter('Total Number of Discovered vulnerabilities by severity week-on-week','')
+    pdf.print_chapter('Total Number of Discovered violations by severity week-on-week (security only)','')
     pdf.image("./output/Discovered_breakdown.png",10,36,270)
     t +=1
     printProgressBar(t,graphNo)
@@ -644,10 +644,10 @@ def executiveSec():
         Security['fixedCounts']['LIST'],
         ['Fixed Low', 'Fixed Moderate', 'Fixed Severe', 'Fixed Critical'],
         "./output/Fixed_breakdown.png",
-        "Total Number of Fixed vulnerabilities by severity week-on-week",
+        "Total Number of Fixed violations by severity week-on-week (security only)",
         xtitle[0],sonatype_colours
     )
-    pdf.print_chapter('Total Number of Fixed vulnerabilities by severity week-on-week','')
+    pdf.print_chapter('Total Number of Fixed violations by severity week-on-week (security only)','')
     pdf.image("./output/Fixed_breakdown.png",10,36,270)
     t +=1
     printProgressBar(t,graphNo)
@@ -657,10 +657,10 @@ def executiveSec():
         Security['waivedCounts']['LIST'],
         ['Waived Low', 'Waived Moderate', 'Waived Severe', 'Waived Critical'],
         "./output/Waived_breakdown.png",
-        "Total Number of Waived vulnerabilities by severity week-on-week",
+        "Total Number of Waived violations by severity week-on-week (security only)",
         xtitle[0],sonatype_colours
     )
-    pdf.print_chapter('Total Number of Waived vulnerabilities by severity week-on-week','')
+    pdf.print_chapter('Total Number of Waived violations by severity week-on-week (security only)','')
     pdf.image("./output/Waived_breakdown.png",10,36,270)
     t +=1
     printProgressBar(t,graphNo)
@@ -669,10 +669,10 @@ def executiveSec():
         Security['timePeriodStart'], 
         Security['mttrLowThreat'], 
         "./output/MTTR_Low.png", 
-        "MTTR (in days) for all Low Threat vulnerabilities week-on-week", 
+        "MTTR (in days) for all Low Threat violations week-on-week", 
         xtitle[0]
     )
-    pdf.print_chapter('MTTR (in days) for all Low Threat vulnerabilities week-on-week','')
+    pdf.print_chapter('MTTR (in days) for all Low Threat violations week-on-week','')
     pdf.image('./output/MTTR_Low.png',10,36,270)
     t +=1
     printProgressBar(t, graphNo)
@@ -681,10 +681,10 @@ def executiveSec():
         Security['timePeriodStart'], 
         Security['mttrModerateThreat'], 
         "./output/MTTR_Moderate.png", 
-        "MTTR (in days) for all Moderate Threat vulnerabilities week-on-week", 
+        "MTTR (in days) for all Moderate Threat violations week-on-week", 
         xtitle[0]
     )
-    pdf.print_chapter('MTTR (in days) for all Moderate Threat vulnerabilities week-on-week','')
+    pdf.print_chapter('MTTR (in days) for all Moderate Threat violations week-on-week','')
     pdf.image('./output/MTTR_Moderate.png',10,36,270)
     t +=1
     printProgressBar(t, graphNo)
@@ -693,10 +693,10 @@ def executiveSec():
         Security['timePeriodStart'], 
         Security['mttrSevereThreat'], 
         "./output/MTTR_Severe.png", 
-        "MTTR (in days) for all Severe Threat vulnerabilities week-on-week", 
+        "MTTR (in days) for all Severe Threat violations week-on-week", 
         xtitle[0]
     )
-    pdf.print_chapter('MTTR (in days) for all Severe Threat vulnerabilities week-on-week','')
+    pdf.print_chapter('MTTR (in days) for all Severe Threat violations week-on-week','')
     pdf.image('./output/MTTR_Severe.png',10,36,270)
     t +=1
     printProgressBar(t, graphNo)
@@ -705,10 +705,10 @@ def executiveSec():
         Security['timePeriodStart'], 
         Security['mttrCriticalThreat'], 
         "./output/MTTR_Critical.png", 
-        "MTTR (in days) for all Critical Threat vulnerabilities week-on-week", 
+        "MTTR (in days) for all Critical Threat violations week-on-week", 
         xtitle[0]
     )
-    pdf.print_chapter('MTTR (in days) for all Critical Threat vulnerabilities week-on-week','')
+    pdf.print_chapter('MTTR (in days) for all Critical Threat violations week-on-week','')
     pdf.image('./output/MTTR_Critical.png',10,36,270)
     t +=1
     printProgressBar(t, graphNo)
@@ -733,7 +733,7 @@ def executiveSec():
         data_riskRatio.append([levels[i]])
         for j in range(0, len(shift)):
             data_riskRatio[i].append(str(Security[measures[i]][shift[j]]))
-    pdf.print_chapter('Risk Ratio (number of vulnerabilities / apps onboarded) by severity',"")
+    pdf.print_chapter('Risk Ratio (number of violations / apps onboarded) by severity (security only)',"")
     pdf.fancy_table(header_riskRatio, data_riskRatio)
     t +=1
     printProgressBar(t,graphNo)
@@ -817,13 +817,13 @@ def executiveLic():
     printProgressBar(t,graphNo)
 
     #-------------------------------------------------------------------------
-    pdf.print_chapter('Current open backlog', "")
+    pdf.print_chapter('Current open backlog (licensing only)', "")
     make_stacked_chart(
         licences['timePeriodStart'],
         licences['openCountsAtTimePeriodEnd']['LIST'],
         ['Low','Moderate','Severe','Critical'],
         "./output/OpenBacklog.png",
-        "Number of open vulnerabilities (backlog) per week",
+        "Number of open violations (backlog) per week (licensing only)",
         xtitle[0],sonatype_colours)
     pdf.image("./output/OpenBacklog.png",10,36,270)
     t +=1
@@ -848,10 +848,10 @@ def executiveLic():
         ],
        ['Low', 'Moderate', 'Severe', 'Critical'],
        "./output/Current_Open_Orgs.png", 
-       "Current Total Number of Open vulnerabilities by organisation",
+       "Current Total Number of Open violations by organisation (licensing only)",
         xtitle[2],sonatype_colours
     )
-    pdf.print_chapter('Current Total Number of Open vulnerabilities by organisation', "")
+    pdf.print_chapter('Current Total Number of Open violations by organisation (licensing only)', "")
     pdf.image("./output/Current_Open_Orgs.png",10,36,270)
     t +=1
     printProgressBar(t,graphNo)
@@ -875,7 +875,7 @@ def executiveLic():
         for i in range(0,100):
             aux.append([data_Open_App[i][0],str(data_Open_App[i][1]),str(data_Open_App[i][2]),str(data_Open_App[i][3]),str(data_Open_App[i][4])])
     data_Open_App = aux
-    pdf.print_chapter('Current risk per application sorted by criticality (Top 100)',"")
+    pdf.print_chapter('Current risk per application sorted by criticality (Top 100) (licensing only)',"")
     pdf.fancy_table(header_Open_App, data_Open_App)
     t +=1
     printProgressBar(t,graphNo)
@@ -890,10 +890,10 @@ def executiveLic():
         ],
        ['Discovered', 'Fixed', 'Waived'],
        "./output/Total_DisFixWaiCount.png", 
-       "Total Number of Discovered, Fixed & Waived vulnerabilities week-on-week",
+       "Total Number of Discovered, Fixed & Waived violations week-on-week (licensing only)",
         xtitle[0],disfixwai_colours
     )
-    pdf.print_chapter('Total Number of Discovered, Fixed & Waived vulnerabilities week-on-week','')
+    pdf.print_chapter('Total Number of Discovered, Fixed & Waived violations week-on-week (licensing only)','')
     pdf.image("./output/Total_DisFixWaiCount.png",10,36,270)
     t +=1
     printProgressBar(t,graphNo)
@@ -903,10 +903,10 @@ def executiveLic():
         licences['discoveredCounts']['LIST'],
         ['Discovered Low', 'Discovered Moderate', 'Discovered Severe', 'Discovered Critical'],
         "./output/Discovered_breakdown.png",
-        "Total Number of Discovered vulnerabilities by severity week-on-week",
+        "Total Number of Discovered violations by severity week-on-week (licensing only)",
         xtitle[0],sonatype_colours
     )
-    pdf.print_chapter('Total Number of Discovered vulnerabilities by severity week-on-week','')
+    pdf.print_chapter('Total Number of Discovered violations by severity week-on-week (licensing only)','')
     pdf.image("./output/Discovered_breakdown.png",10,36,270)
     t +=1
     printProgressBar(t,graphNo)
@@ -916,10 +916,10 @@ def executiveLic():
         licences['fixedCounts']['LIST'],
         ['Fixed Low', 'Fixed Moderate', 'Fixed Severe', 'Fixed Critical'],
         "./output/Fixed_breakdown.png",
-        "Total Number of Fixed vulnerabilities by severity week-on-week",
+        "Total Number of Fixed violations by severity week-on-week (licensing only)",
         xtitle[0],sonatype_colours
     )
-    pdf.print_chapter('Total Number of Fixed vulnerabilities by severity week-on-week','')
+    pdf.print_chapter('Total Number of Fixed violations by severity week-on-week (licensing only)','')
     pdf.image("./output/Fixed_breakdown.png",10,36,270)
     t +=1
     printProgressBar(t,graphNo)
@@ -929,10 +929,10 @@ def executiveLic():
         licences['waivedCounts']['LIST'],
         ['Waived Low', 'Waived Moderate', 'Waived Severe', 'Waived Critical'],
         "./output/Waived_breakdown.png",
-        "Total Number of Waived vulnerabilities by severity week-on-week",
+        "Total Number of Waived violations by severity week-on-week (licensing only)",
         xtitle[0],sonatype_colours
     )
-    pdf.print_chapter('Total Number of Waived vulnerabilities by severity week-on-week','')
+    pdf.print_chapter('Total Number of Waived violations by severity week-on-week (licensing only)','')
     pdf.image("./output/Waived_breakdown.png",10,36,270)
     t +=1
     printProgressBar(t,graphNo)
@@ -941,10 +941,10 @@ def executiveLic():
         licences['timePeriodStart'], 
         licences['mttrLowThreat'], 
         "./output/MTTR_Low.png", 
-        "MTTR (in days) for all Low Threat vulnerabilities week-on-week", 
+        "MTTR (in days) for all Low Threat violations week-on-week", 
         xtitle[0]
     )
-    pdf.print_chapter('MTTR (in days) for all Low Threat vulnerabilities week-on-week','')
+    pdf.print_chapter('MTTR (in days) for all Low Threat violations week-on-week','')
     pdf.image('./output/MTTR_Low.png',10,36,270)
     t +=1
     printProgressBar(t, graphNo)
@@ -953,10 +953,10 @@ def executiveLic():
         licences['timePeriodStart'], 
         licences['mttrModerateThreat'], 
         "./output/MTTR_Moderate.png", 
-        "MTTR (in days) for all Moderate Threat vulnerabilities week-on-week", 
+        "MTTR (in days) for all Moderate Threat violations week-on-week", 
         xtitle[0]
     )
-    pdf.print_chapter('MTTR (in days) for all Moderate Threat vulnerabilities week-on-week','')
+    pdf.print_chapter('MTTR (in days) for all Moderate Threat violations week-on-week','')
     pdf.image('./output/MTTR_Moderate.png',10,36,270)
     t +=1
     printProgressBar(t, graphNo)
@@ -965,10 +965,10 @@ def executiveLic():
         licences['timePeriodStart'], 
         licences['mttrSevereThreat'], 
         "./output/MTTR_Severe.png", 
-        "MTTR (in days) for all Severe Threat vulnerabilities week-on-week", 
+        "MTTR (in days) for all Severe Threat violations week-on-week", 
         xtitle[0]
     )
-    pdf.print_chapter('MTTR (in days) for all Severe Threat vulnerabilities week-on-week','')
+    pdf.print_chapter('MTTR (in days) for all Severe Threat violations week-on-week','')
     pdf.image('./output/MTTR_Severe.png',10,36,270)
     t +=1
     printProgressBar(t, graphNo)
@@ -977,10 +977,10 @@ def executiveLic():
         licences['timePeriodStart'], 
         licences['mttrCriticalThreat'], 
         "./output/MTTR_Critical.png", 
-        "MTTR (in days) for all Critical Threat vulnerabilities week-on-week", 
+        "MTTR (in days) for all Critical Threat violations week-on-week", 
         xtitle[0]
     )
-    pdf.print_chapter('MTTR (in days) for all Critical Threat vulnerabilities week-on-week','')
+    pdf.print_chapter('MTTR (in days) for all Critical Threat violations week-on-week','')
     pdf.image('./output/MTTR_Critical.png',10,36,270)
     t +=1
     printProgressBar(t, graphNo)
@@ -1005,7 +1005,7 @@ def executiveLic():
         data_riskRatio.append([levels[i]])
         for j in range(0, len(shift)):
             data_riskRatio[i].append(str(licences[measures[i]][shift[j]]))
-    pdf.print_chapter('Risk Ratio (number of vulnerabilities / apps onboarded) by severity',"")
+    pdf.print_chapter('Risk Ratio (number of violations / apps onboarded) by severity (licensing only)',"")
     pdf.fancy_table(header_riskRatio, data_riskRatio)
     t +=1
     printProgressBar(t,graphNo)
@@ -1022,7 +1022,7 @@ def executiveLic():
 
 
 #-------------------------------------------------------------------------
-#TABLES: "To provide a report in table format to accommodate for customers with thousands of applications"
+#TABLES: "To provide a report for all violations, in table format to accommodate for customers with thousands of applications"
 #-------------------------------------------------------------------------
     
 # Instantiation of inherited class
@@ -1075,13 +1075,13 @@ def tables():
     printProgressBar(t,graphNo)
 
     #-------------------------------------------------------------------------
-    pdf.print_chapter('Current open backlog', "")
+    pdf.print_chapter('Current open backlog (all violations)', "")
     make_stacked_chart(
         summary['timePeriodStart'],
         summary['openCountsAtTimePeriodEnd']['LIST'],
         ['Low','Moderate','Severe','Critical'],
         "./output/OpenBacklog.png",
-        "Number of open vulnerabilities (backlog) per week",
+        "Number of open violations (backlog) per week (all violations)",
         xtitle[0],sonatype_colours)
     pdf.image("./output/OpenBacklog.png",10,36,270)
     t +=1
@@ -1102,7 +1102,7 @@ def tables():
     for i in range(0,len(data_Open_App)):
         aux.append([data_Open_App[i][0],str(data_Open_App[i][1]),str(data_Open_App[i][2]),str(data_Open_App[i][3]),str(data_Open_App[i][4])])
     data_Open_App = aux
-    pdf.print_chapter('Current risk per application sorted by criticality',"")
+    pdf.print_chapter('Current risk per application sorted by criticality (all violations)',"")
     pdf.fancy_table(header_Open_App, data_Open_App)
     t +=1
     printProgressBar(t,graphNo)
@@ -1125,14 +1125,14 @@ def tables():
         data_riskRatio.append([levels[i]])
         for j in range(0, len(shift)):
             data_riskRatio[i].append(str(summary[measures[i]][shift[j]]))
-    pdf.print_chapter('Risk Ratio (number of vulnerabilities / apps onboarded) by severity',"")
+    pdf.print_chapter('Risk Ratio (number of violations / apps onboarded) by severity (all violations)',"")
     pdf.fancy_table(header_riskRatio, data_riskRatio)
     t +=1
     printProgressBar(t,graphNo)
     
     #-------------------------------------------------------------------------
     for app in apps:
-        pdf.print_chapter('Report for Application: '+app["applicationName"],'')
+        pdf.print_chapter('Report for Application: '+app["applicationName"]+ ' (all violations)','')
         if len(app['aggregations']) >= 4:
             header_evolution = ['Metric',app['aggregations'][-4]['timePeriodStart'],app['aggregations'][-3]['timePeriodStart'],app['aggregations'][-2]['timePeriodStart'],app['aggregations'][-1]['timePeriodStart']]
             shift = [-4,-3,-2,-1]
@@ -1188,6 +1188,344 @@ def tables():
     
     #-------------------------------------------------------------------------
     pdf.output('./output/tables_report.pdf', 'F')
+
+
+#-------------------------------------------------------------------------
+#TABLES SECURITY: "To provide a report for Security violations only, in table format to accommodate for customers with thousands of applications"
+#-------------------------------------------------------------------------
+    
+# Instantiation of inherited class
+def tablesSec():
+    pages, t, graphNo = [], 0, 7
+    printProgressBar(t,graphNo)
+    
+    pdf = PDF()
+    pdf.alias_nb_pages()
+    
+    #-------------------------------------------------------------------------
+    pdf.print_chapter('Number of apps onboarded (weekly view)',"")
+    make_chart( 
+        Security['timePeriodStart'], 
+        Security['appOnboard'], 
+        "./output/AppsOnboarded.png", 
+        "Number of apps onboarded (weekly view)", 
+        xtitle[0])
+    pdf.image("./output/AppsOnboarded.png",10,36,270)
+    t +=1
+    printProgressBar(t,graphNo)
+    #-------------------------------------------------------------------------
+    pdf.print_chapter('Number of scans per week',"")
+    make_chart( 
+        Security['timePeriodStart'], 
+        Security['weeklyScans'], 
+        "./output/WeeklyScans.png", 
+        "Total number of scans per week", 
+        xtitle[0])
+    pdf.image("./output/WeeklyScans.png",10,36,270)
+    t +=1
+    printProgressBar(t,graphNo)
+
+    #-------------------------------------------------------------------------
+    header_most_scanned = ['Application','Total number of scans']
+    data_most_scanned, aux = [],[]
+    for app in apps:
+        appName = app["applicationName"]
+        scans = sum(app["security"]["evaluationCount"]["rng"])
+        aux = [appName,scans]
+        data_most_scanned.append(aux)
+    data_most_scanned.sort(key = lambda data_most_scanned: data_most_scanned[1], reverse = True)
+    aux = []
+    for i in range(0,len(data_most_scanned)):
+        aux.append([data_most_scanned[i][0],str(data_most_scanned[i][1])])
+    data_most_scanned = aux
+    pdf.print_chapter('Most scanned applications','')
+    pdf.fancy_table(header_most_scanned, data_most_scanned)
+    t +=1
+    printProgressBar(t,graphNo)
+
+    #-------------------------------------------------------------------------
+    pdf.print_chapter('Current open backlog (security only)', "")
+    make_stacked_chart(
+        Security['timePeriodStart'],
+        Security['openCountsAtTimePeriodEnd']['LIST'],
+        ['Low','Moderate','Severe','Critical'],
+        "./output/OpenBacklog.png",
+        "Number of open violations (backlog) per week (security only)",
+        xtitle[0],sonatype_colours)
+    pdf.image("./output/OpenBacklog.png",10,36,270)
+    t +=1
+    printProgressBar(t,graphNo)
+    
+    #-------------------------------------------------------------------------
+    header_Open_App = ['Application', 'Critical','Severe','Moderate','Low']
+    data_Open_App= []
+    for app in apps:
+        critical = app['security']['openCountsAtTimePeriodEnd']['TOTAL']['CRITICAL']['rng'][-1]
+        severe = app['security']['openCountsAtTimePeriodEnd']['TOTAL']['SEVERE']['rng'][-1]
+        moderate = app['security']['openCountsAtTimePeriodEnd']['TOTAL']['MODERATE']['rng'][-1]
+        low = app['security']['openCountsAtTimePeriodEnd']['TOTAL']['LOW']['rng'][-1]
+        aux = [critical,severe,moderate,low]
+        data_Open_App.append([app['applicationName']] + aux)
+    data_Open_App.sort(key = lambda data_Open_App: data_Open_App[1], reverse = True)
+    aux=[]
+    for i in range(0,len(data_Open_App)):
+        aux.append([data_Open_App[i][0],str(data_Open_App[i][1]),str(data_Open_App[i][2]),str(data_Open_App[i][3]),str(data_Open_App[i][4])])
+    data_Open_App = aux
+    pdf.print_chapter('Current risk per application sorted by criticality (security only)',"")
+    pdf.fancy_table(header_Open_App, data_Open_App)
+    t +=1
+    printProgressBar(t,graphNo)
+
+    
+ #-------------------------------------------------------------------------
+    if len(Security['timePeriodStart']) >= 4:
+        header_riskRatio = ['Risk Ratio', Security['timePeriodStart'][-4], Security['timePeriodStart'][-3], Security['timePeriodStart'][-2], Security['timePeriodStart'][-1]]
+        shift = [-4,-3,-2,-1]
+    else:
+        header_riskRatio = ['Risk Ratio']
+        shift = []
+        for k in range(0,len(Security['timePeriodStart'])):
+            header_riskRatio.append(Security['timePeriodStart'][k - len(Security['timePeriodStart'])])
+            shift.append(k - len(Security['timePeriodStart']))
+    levels = ['Critical','Severe','Moderate','Low']
+    measures = ['riskRatioCritical','riskRatioSevere','riskRatioModerate','riskRatioLow']
+    data_riskRatio= []
+    for i in range(0,len(levels)):
+        data_riskRatio.append([levels[i]])
+        for j in range(0, len(shift)):
+            data_riskRatio[i].append(str(Security[measures[i]][shift[j]]))
+    pdf.print_chapter('Risk Ratio (number of violations / apps onboarded) by severity (security only)',"")
+    pdf.fancy_table(header_riskRatio, data_riskRatio)
+    t +=1
+    printProgressBar(t,graphNo)
+    
+    #-------------------------------------------------------------------------
+    for app in apps:
+        pdf.print_chapter('Report for Application: '+app["applicationName"]+' (security only)','')
+        if len(app['aggregations']) >= 4:
+            header_evolution = ['Metric',app['aggregations'][-4]['timePeriodStart'],app['aggregations'][-3]['timePeriodStart'],app['aggregations'][-2]['timePeriodStart'],app['aggregations'][-1]['timePeriodStart']]
+            shift = [-4,-3,-2,-1]
+        else:
+            header_evolution = ['Metric']
+            shift = []
+            for k in range(0,len(app['aggregations'])):
+                header_evolution.append(app['aggregations'][k - len(app['aggregations'])]['timePeriodStart'])
+                shift.append(k - len(app['aggregations']))
+                
+        metrics = ['MTTR Critical','MTTR Severe', 'MTTR Moderate','MTTR Low','Discovered Critical','Discovered Severe','Discovered Moderate','Discovered Low',
+                   'Fixed Critical','Fixed Severe','Fixed Moderate','Fixed Low','Waived Critical','Waived Severe','Waived Moderate','Waived Low',
+                   'Open Critical','Open Severe','Open Moderate','Open Low']
+        measures = ['discoveredCounts','fixedCounts','waivedCounts','openCountsAtTimePeriodEnd']
+        mttr = ['mttrCriticalThreat','mttrSevereThreat','mttrModerateThreat','mttrLowThreat']
+        levels = ['CRITICAL','SEVERE','MODERATE','LOW']
+        data_evolution = []
+
+        for i in range(0,len(metrics)):
+            data_evolution.append([metrics[i]])
+            for j in range(0,len(shift)):
+                if i <= 3:
+                    data_evolution[i].append(str(app['security'][mttr[i]]['rng'][shift[j]]))
+                if 4 <= i <= 7:
+                    data_evolution[i].append(str(app['security'][measures[0]]['TOTAL'][levels[i-4]]['rng'][shift[j]]))
+                if 8 <= i <= 11:
+                    data_evolution[i].append(str(app['security'][measures[1]]['TOTAL'][levels[i-8]]['rng'][shift[j]]))
+                if 12 <= i <= 15:
+                    data_evolution[i].append(str(app['security'][measures[2]]['TOTAL'][levels[i-12]]['rng'][shift[j]]))
+                if 16 <= i <= 19:
+                    data_evolution[i].append(str(app['security'][measures[3]]['TOTAL'][levels[i-16]]['rng'][shift[j]]))
+
+        pdf.fancy_table(header_evolution,data_evolution)
+
+
+        pdf.ln(10)
+        
+        header_last_week = ['Last week Open backlog','Critical','Severe','Moderate','Low']
+        metrics = ['Discovered','Fixed','Waived','Open']
+        measures = ['discoveredCounts','fixedCounts','waivedCounts','openCountsAtTimePeriodEnd']
+        levels = ['CRITICAL','SEVERE','MODERATE','LOW']
+                
+        data_last_week = []
+
+        for i in range(0,len(metrics)):
+            data_last_week.append([metrics[i]])
+            for j in levels:
+                data_last_week[i].append(str(app['security'][measures[i]]['TOTAL'][j]['rng'][-1]))
+
+        pdf.fancy_table(header_last_week,data_last_week)
+    t +=1
+    printProgressBar(t,graphNo)
+    
+    #-------------------------------------------------------------------------
+    pdf.output('./output/tables_security_report.pdf', 'F')
+
+
+#-------------------------------------------------------------------------
+#TABLES LICENSING: "To provide a report for licensing violations only, in table format to accommodate for customers with thousands of applications"
+#-------------------------------------------------------------------------
+    
+# Instantiation of inherited class
+def tablesLic():
+    pages, t, graphNo = [], 0, 7
+    printProgressBar(t,graphNo)
+    
+    pdf = PDF()
+    pdf.alias_nb_pages()
+    
+    #-------------------------------------------------------------------------
+    pdf.print_chapter('Number of apps onboarded (weekly view)',"")
+    make_chart( 
+        licences['timePeriodStart'], 
+        licences['appOnboard'], 
+        "./output/AppsOnboarded.png", 
+        "Number of apps onboarded (weekly view)", 
+        xtitle[0])
+    pdf.image("./output/AppsOnboarded.png",10,36,270)
+    t +=1
+    printProgressBar(t,graphNo)
+    #-------------------------------------------------------------------------
+    pdf.print_chapter('Number of scans per week',"")
+    make_chart( 
+        licences['timePeriodStart'], 
+        licences['weeklyScans'], 
+        "./output/WeeklyScans.png", 
+        "Total number of scans per week", 
+        xtitle[0])
+    pdf.image("./output/WeeklyScans.png",10,36,270)
+    t +=1
+    printProgressBar(t,graphNo)
+
+    #-------------------------------------------------------------------------
+    header_most_scanned = ['Application','Total number of scans']
+    data_most_scanned, aux = [],[]
+    for app in apps:
+        appName = app["applicationName"]
+        scans = sum(app["licences"]["evaluationCount"]["rng"])
+        aux = [appName,scans]
+        data_most_scanned.append(aux)
+    data_most_scanned.sort(key = lambda data_most_scanned: data_most_scanned[1], reverse = True)
+    aux = []
+    for i in range(0,len(data_most_scanned)):
+        aux.append([data_most_scanned[i][0],str(data_most_scanned[i][1])])
+    data_most_scanned = aux
+    pdf.print_chapter('Most scanned applications','')
+    pdf.fancy_table(header_most_scanned, data_most_scanned)
+    t +=1
+    printProgressBar(t,graphNo)
+
+    #-------------------------------------------------------------------------
+    pdf.print_chapter('Current open backlog (licensing only)', "")
+    make_stacked_chart(
+        licences['timePeriodStart'],
+        licences['openCountsAtTimePeriodEnd']['LIST'],
+        ['Low','Moderate','Severe','Critical'],
+        "./output/OpenBacklog.png",
+        "Number of open violations (backlog) per week (licensing only)",
+        xtitle[0],sonatype_colours)
+    pdf.image("./output/OpenBacklog.png",10,36,270)
+    t +=1
+    printProgressBar(t,graphNo)
+    
+    #-------------------------------------------------------------------------
+    header_Open_App = ['Application', 'Critical','Severe','Moderate','Low']
+    data_Open_App= []
+    for app in apps:
+        critical = app['licences']['openCountsAtTimePeriodEnd']['TOTAL']['CRITICAL']['rng'][-1]
+        severe = app['licences']['openCountsAtTimePeriodEnd']['TOTAL']['SEVERE']['rng'][-1]
+        moderate = app['licences']['openCountsAtTimePeriodEnd']['TOTAL']['MODERATE']['rng'][-1]
+        low = app['licences']['openCountsAtTimePeriodEnd']['TOTAL']['LOW']['rng'][-1]
+        aux = [critical,severe,moderate,low]
+        data_Open_App.append([app['applicationName']] + aux)
+    data_Open_App.sort(key = lambda data_Open_App: data_Open_App[1], reverse = True)
+    aux=[]
+    for i in range(0,len(data_Open_App)):
+        aux.append([data_Open_App[i][0],str(data_Open_App[i][1]),str(data_Open_App[i][2]),str(data_Open_App[i][3]),str(data_Open_App[i][4])])
+    data_Open_App = aux
+    pdf.print_chapter('Current risk per application sorted by criticality (licensing only)',"")
+    pdf.fancy_table(header_Open_App, data_Open_App)
+    t +=1
+    printProgressBar(t,graphNo)
+
+    
+ #-------------------------------------------------------------------------
+    if len(licences['timePeriodStart']) >= 4:
+        header_riskRatio = ['Risk Ratio', licences['timePeriodStart'][-4], licences['timePeriodStart'][-3], licences['timePeriodStart'][-2], licences['timePeriodStart'][-1]]
+        shift = [-4,-3,-2,-1]
+    else:
+        header_riskRatio = ['Risk Ratio']
+        shift = []
+        for k in range(0,len(licences['timePeriodStart'])):
+            header_riskRatio.append(licences['timePeriodStart'][k - len(licences['timePeriodStart'])])
+            shift.append(k - len(licences['timePeriodStart']))
+    levels = ['Critical','Severe','Moderate','Low']
+    measures = ['riskRatioCritical','riskRatioSevere','riskRatioModerate','riskRatioLow']
+    data_riskRatio= []
+    for i in range(0,len(levels)):
+        data_riskRatio.append([levels[i]])
+        for j in range(0, len(shift)):
+            data_riskRatio[i].append(str(licences[measures[i]][shift[j]]))
+    pdf.print_chapter('Risk Ratio (number of violations / apps onboarded) by severity (licensing only)',"")
+    pdf.fancy_table(header_riskRatio, data_riskRatio)
+    t +=1
+    printProgressBar(t,graphNo)
+    
+    #-------------------------------------------------------------------------
+    for app in apps:
+        pdf.print_chapter('Report for Application: '+app["applicationName"]+' (licensing only)','')
+        if len(app['aggregations']) >= 4:
+            header_evolution = ['Metric',app['aggregations'][-4]['timePeriodStart'],app['aggregations'][-3]['timePeriodStart'],app['aggregations'][-2]['timePeriodStart'],app['aggregations'][-1]['timePeriodStart']]
+            shift = [-4,-3,-2,-1]
+        else:
+            header_evolution = ['Metric']
+            shift = []
+            for k in range(0,len(app['aggregations'])):
+                header_evolution.append(app['aggregations'][k - len(app['aggregations'])]['timePeriodStart'])
+                shift.append(k - len(app['aggregations']))
+                
+        metrics = ['MTTR Critical','MTTR Severe', 'MTTR Moderate','MTTR Low','Discovered Critical','Discovered Severe','Discovered Moderate','Discovered Low',
+                   'Fixed Critical','Fixed Severe','Fixed Moderate','Fixed Low','Waived Critical','Waived Severe','Waived Moderate','Waived Low',
+                   'Open Critical','Open Severe','Open Moderate','Open Low']
+        measures = ['discoveredCounts','fixedCounts','waivedCounts','openCountsAtTimePeriodEnd']
+        mttr = ['mttrCriticalThreat','mttrSevereThreat','mttrModerateThreat','mttrLowThreat']
+        levels = ['CRITICAL','SEVERE','MODERATE','LOW']
+        data_evolution = []
+
+        for i in range(0,len(metrics)):
+            data_evolution.append([metrics[i]])
+            for j in range(0,len(shift)):
+                if i <= 3:
+                    data_evolution[i].append(str(app['licences'][mttr[i]]['rng'][shift[j]]))
+                if 4 <= i <= 7:
+                    data_evolution[i].append(str(app['licences'][measures[0]]['TOTAL'][levels[i-4]]['rng'][shift[j]]))
+                if 8 <= i <= 11:
+                    data_evolution[i].append(str(app['licences'][measures[1]]['TOTAL'][levels[i-8]]['rng'][shift[j]]))
+                if 12 <= i <= 15:
+                    data_evolution[i].append(str(app['licences'][measures[2]]['TOTAL'][levels[i-12]]['rng'][shift[j]]))
+                if 16 <= i <= 19:
+                    data_evolution[i].append(str(app['licences'][measures[3]]['TOTAL'][levels[i-16]]['rng'][shift[j]]))
+
+        pdf.fancy_table(header_evolution,data_evolution)
+
+
+        pdf.ln(10)
+        
+        header_last_week = ['Last week Open backlog','Critical','Severe','Moderate','Low']
+        metrics = ['Discovered','Fixed','Waived','Open']
+        measures = ['discoveredCounts','fixedCounts','waivedCounts','openCountsAtTimePeriodEnd']
+        levels = ['CRITICAL','SEVERE','MODERATE','LOW']
+                
+        data_last_week = []
+
+        for i in range(0,len(metrics)):
+            data_last_week.append([metrics[i]])
+            for j in levels:
+                data_last_week[i].append(str(app['licences'][measures[i]]['TOTAL'][j]['rng'][-1]))
+
+        pdf.fancy_table(header_last_week,data_last_week)
+    t +=1
+    printProgressBar(t,graphNo)
+    
+    #-------------------------------------------------------------------------
+    pdf.output('./output/tables_licensing_report.pdf', 'F')
 
 
 #-------------------------------------------------------------------------
