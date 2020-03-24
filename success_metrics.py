@@ -37,6 +37,9 @@ def main():
         parser.add_argument('-i','--appId',  help='', required=False)
         parser.add_argument('-o','--orgId',  help='', required=False)
         parser.add_argument('-p','--pretty', help='', action='store_true', required=False)
+        parser.add_argument('-r','--reports', help='', action='store_true',required=False)
+        parser.add_argument('-rs','--reportsSec', help='', action='store_true',required=False)
+        parser.add_argument('-rl','--reportsLic', help='', action='store_true',required=False)
 
         args = vars(parser.parse_args())
         creds = args["auth"].split(":")
@@ -259,7 +262,7 @@ def main():
 
         ## make an output directory
         os.makedirs("output", exist_ok=True)
-
+        print("Generating successmetrics.json")
         with open("output/successmetrics.json",'w') as f:
                 if args["pretty"]:
                         f.write(json.dumps(report, indent=4))
@@ -267,6 +270,25 @@ def main():
                         json.dump(report, f)
         print( "saved to output/successmetrics.json" )
         #-----------------------------------------------------------------------------------
+        # one more thing...
+        if args["reports"] == True:
+                print("Generating the Executive report")
+                os.system('python3 ./reports.py -e')
+                print("Generating the Table report")
+                os.system('python3 ./reports.py -t')
+                
+        if args["reportsSec"] == True:
+                print("Generating the Executive report just for Security violations")
+                os.system('python3 ./reports.py -es')
+                print("Generating the Table report just for Security violations")
+                os.system('python3 ./reports.py -ts')
+                
+        if args["reportsLic"] == True:
+                print("Generating the Executive report just for Licensing violations")
+                os.system('python3 ./reports.py -el')
+                print("Generating the Table report just for Licensing violations")
+                os.system('python3 ./reports.py -tl')
+                
         #-----------------------------------------------------------------------------------
 
 #-----------------------------------------------------------------------------------
