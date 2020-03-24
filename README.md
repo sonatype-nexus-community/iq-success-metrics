@@ -40,6 +40,8 @@ If you want to generate the executive and table reports just for security violat
 
 Please, ignore any warnings.
 
+The Docker Hub repository for the docker image is here: https://hub.docker.com/repository/docker/cmorenoserrano/iq_success_metrics
+
 
 ## For Windows users
 The main difference for Windows users is in the path to your local folder to store the outputs. Below are the equivalent commands:
