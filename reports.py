@@ -246,6 +246,25 @@ def executive():
     pdf = PDF()
     pdf.alias_nb_pages()
 
+    ###########################
+    header_Open_App = ['Application', 'Critical','Severe','Moderate','Low']
+    data_Open_App= []
+    for app in apps:
+        critical = app['summary']['openCountsAtTimePeriodEnd']['TOTAL']['CRITICAL']['rng'][-1]
+        severe = app['summary']['openCountsAtTimePeriodEnd']['TOTAL']['SEVERE']['rng'][-1]
+        moderate = app['summary']['openCountsAtTimePeriodEnd']['TOTAL']['MODERATE']['rng'][-1]
+        low = app['summary']['openCountsAtTimePeriodEnd']['TOTAL']['LOW']['rng'][-1]
+        aux = [critical,severe,moderate,low]
+        data_Open_App.append([app['applicationName']] + aux)
+    data_Open_App.sort(key = lambda data_Open_App: data_Open_App[1], reverse = True)
+    aux=[]
+    if len(data_Open_App) <= 100:
+        for i in range(0,len(data_Open_App)):
+            aux.append([data_Open_App[i][0],str(data_Open_App[i][1]),str(data_Open_App[i][2]),str(data_Open_App[i][3]),str(data_Open_App[i][4])])
+    else:
+        for i in range(0,100):
+            aux.append([data_Open_App[i][0],str(data_Open_App[i][1]),str(data_Open_App[i][2]),str(data_Open_App[i][3]),str(data_Open_App[i][4])])
+    data_Open_App = aux
 
     ###########################
     
@@ -257,6 +276,11 @@ def executive():
     scans = sum(summary["weeklyScans"])
     weeklyScans = average(scans,weeks,0,0)
     discovered = sum(summary["discoveredCounts"]["TOTAL"])
+    disCri = sum(summary["discoveredCounts"]["CRITICAL"])
+    mostCri = data_Open_App[0][0]
+    mostCriVal = data_Open_App[0][1]
+    leastCri = data_Open_App[-1][0]
+    leastCriVal = data_Open_App[-1][1]
     fixed = sum(summary["fixedCounts"]["TOTAL"])
     waived = sum(summary["waivedCounts"]["TOTAL"])
     dealt = fixed + waived
@@ -268,10 +292,12 @@ def executive():
     content2 = "\t- Onboarded "+str(onboarded)+" applications at an average of "+str(weeklyOnboard)+" per week"
     content3 = "\t- Scanned applications "+str(scanned)+" times at an average of "+str(weeklyScanned)+" apps scanned per week"
     content4 = "\t- Performed "+str(scans)+" scans at an average of "+str(weeklyScans)+" scans per week"
-    content5 = "\t- Discovered "+str(discovered)+" violations, fixing "+str(fixed)+" and waiving "+str(waived)+" of them"
+    content5 = "\t- Discovered "+str(discovered)+" violations ("+str(disCri)+" of them Critical), fixing "+str(fixed)+" and waiving "+str(waived)+" of them"
     content6 = "\t  Which means that you have reduced "+str(dealtRate)+"% of your total risk"
     content7 = "\t- On average, each application had "+str(riskRatioAvg)+" Critical violations"
-    content8 = "\t- It took an average of "+str(mttrAvg)+" days to fix Critical violations"
+    content8 = "\t\t\t Most Criticals: "+str(mostCri)+" with "+str(mostCriVal)+" Critical violations"
+    content9 = "\t\t\t Least Criticals: "+str(leastCri)+" with "+str(leastCriVal)+" Critical violations"
+    content10 = "\t- It took an average of "+str(mttrAvg)+" days to fix Critical violations"
     pdf.print_chapter('Outcomes Summary (all violations)',"")
     pdf.set_font('Times', 'B', 24)
     pdf.cell(0,0,content1,0)
@@ -292,6 +318,10 @@ def executive():
     pdf.cell(0,0,content7,0)
     pdf.ln(10)
     pdf.cell(0,0,content8,0)
+    pdf.ln(10)
+    pdf.cell(0,0,content9,0)
+    pdf.ln(15)
+    pdf.cell(0,0,content10,0)
 
 
     t +=1
@@ -400,24 +430,7 @@ def executive():
     printProgressBar(t,graphNo)
     #---------------------------------------------------------------------
     
-    header_Open_App = ['Application', 'Critical','Severe','Moderate','Low']
-    data_Open_App= []
-    for app in apps:
-        critical = app['summary']['openCountsAtTimePeriodEnd']['TOTAL']['CRITICAL']['rng'][-1]
-        severe = app['summary']['openCountsAtTimePeriodEnd']['TOTAL']['SEVERE']['rng'][-1]
-        moderate = app['summary']['openCountsAtTimePeriodEnd']['TOTAL']['MODERATE']['rng'][-1]
-        low = app['summary']['openCountsAtTimePeriodEnd']['TOTAL']['LOW']['rng'][-1]
-        aux = [critical,severe,moderate,low]
-        data_Open_App.append([app['applicationName']] + aux)
-    data_Open_App.sort(key = lambda data_Open_App: data_Open_App[1], reverse = True)
-    aux=[]
-    if len(data_Open_App) <= 100:
-        for i in range(0,len(data_Open_App)):
-            aux.append([data_Open_App[i][0],str(data_Open_App[i][1]),str(data_Open_App[i][2]),str(data_Open_App[i][3]),str(data_Open_App[i][4])])
-    else:
-        for i in range(0,100):
-            aux.append([data_Open_App[i][0],str(data_Open_App[i][1]),str(data_Open_App[i][2]),str(data_Open_App[i][3]),str(data_Open_App[i][4])])
-    data_Open_App = aux
+
     pdf.print_chapter('Current risk per application sorted by criticality for all violations (Top 100)',"")
     pdf.fancy_table(header_Open_App, data_Open_App)
     t +=1
@@ -573,7 +586,26 @@ def executiveSec():
     pdf = PDF()
     pdf.alias_nb_pages()
 
-
+    ###########################
+    header_Open_App = ['Application', 'Critical','Severe','Moderate','Low']
+    data_Open_App= []
+    for app in apps:
+        critical = app['security']['openCountsAtTimePeriodEnd']['SECURITY']['CRITICAL']['rng'][-1]
+        severe = app['security']['openCountsAtTimePeriodEnd']['SECURITY']['SEVERE']['rng'][-1]
+        moderate = app['security']['openCountsAtTimePeriodEnd']['SECURITY']['MODERATE']['rng'][-1]
+        low = app['security']['openCountsAtTimePeriodEnd']['SECURITY']['LOW']['rng'][-1]
+        aux = [critical,severe,moderate,low]
+        data_Open_App.append([app['applicationName']] + aux)
+    data_Open_App.sort(key = lambda data_Open_App: data_Open_App[1], reverse = True)
+    aux=[]
+    if len(data_Open_App) <= 100:
+        for i in range(0,len(data_Open_App)):
+            aux.append([data_Open_App[i][0],str(data_Open_App[i][1]),str(data_Open_App[i][2]),str(data_Open_App[i][3]),str(data_Open_App[i][4])])
+    else:
+        for i in range(0,100):
+            aux.append([data_Open_App[i][0],str(data_Open_App[i][1]),str(data_Open_App[i][2]),str(data_Open_App[i][3]),str(data_Open_App[i][4])])
+    data_Open_App = aux
+    
     ###########################
     
     weeks = len(Security["weeks"])
@@ -584,6 +616,11 @@ def executiveSec():
     scans = sum(Security["weeklyScans"])
     weeklyScans = average(scans,weeks,0,0)
     discovered = sum(Security["discoveredCounts"]["TOTAL"])
+    disCri = sum(Security["discoveredCounts"]["CRITICAL"])
+    mostCri = data_Open_App[0][0]
+    mostCriVal = data_Open_App[0][1]
+    leastCri = data_Open_App[-1][0]
+    leastCriVal = data_Open_App[-1][1]
     fixed = sum(Security["fixedCounts"]["TOTAL"])
     waived = sum(Security["waivedCounts"]["TOTAL"])
     dealt = fixed + waived
@@ -595,11 +632,13 @@ def executiveSec():
     content2 = "\t- Onboarded "+str(onboarded)+" applications at an average of "+str(weeklyOnboard)+" per week"
     content3 = "\t- Scanned applications "+str(scanned)+" times at an average of "+str(weeklyScanned)+" apps scanned per week"
     content4 = "\t- Performed "+str(scans)+" scans at an average of "+str(weeklyScans)+" scans per week"
-    content5 = "\t- Discovered "+str(discovered)+" violations, fixing "+str(fixed)+" and waiving "+str(waived)+" of them"
+    content5 = "\t- Discovered "+str(discovered)+" violations ("+str(disCri)+" of them Critical), fixing "+str(fixed)+" and waiving "+str(waived)+" of them"
     content6 = "\t  Which means that you have reduced "+str(dealtRate)+"% of your total risk"
     content7 = "\t- On average, each application had "+str(riskRatioAvg)+" Critical violations"
-    content8 = "\t- It took an average of "+str(mttrAvg)+" days to fix Critical violations"
-    pdf.print_chapter('Outcomes Summary (security only)',"")
+    content8 = "\t\t\t Most Criticals: "+str(mostCri)+" with "+str(mostCriVal)+" Critical violations"
+    content9 = "\t\t\t Least Criticals: "+str(leastCri)+" with "+str(leastCriVal)+" Critical violations"
+    content10 = "\t- It took an average of "+str(mttrAvg)+" days to fix Critical violations"
+    pdf.print_chapter('Outcomes Summary (security violations)',"")
     pdf.set_font('Times', 'B', 24)
     pdf.cell(0,0,content1,0)
     pdf.ln(15)
@@ -619,6 +658,10 @@ def executiveSec():
     pdf.cell(0,0,content7,0)
     pdf.ln(10)
     pdf.cell(0,0,content8,0)
+    pdf.ln(10)
+    pdf.cell(0,0,content9,0)
+    pdf.ln(15)
+    pdf.cell(0,0,content10,0)
 
 
     t +=1
@@ -727,24 +770,7 @@ def executiveSec():
     printProgressBar(t,graphNo)
     #---------------------------------------------------------------------
     
-    header_Open_App = ['Application', 'Critical','Severe','Moderate','Low']
-    data_Open_App= []
-    for app in apps:
-        critical = app['security']['openCountsAtTimePeriodEnd']['SECURITY']['CRITICAL']['rng'][-1]
-        severe = app['security']['openCountsAtTimePeriodEnd']['SECURITY']['SEVERE']['rng'][-1]
-        moderate = app['security']['openCountsAtTimePeriodEnd']['SECURITY']['MODERATE']['rng'][-1]
-        low = app['security']['openCountsAtTimePeriodEnd']['SECURITY']['LOW']['rng'][-1]
-        aux = [critical,severe,moderate,low]
-        data_Open_App.append([app['applicationName']] + aux)
-    data_Open_App.sort(key = lambda data_Open_App: data_Open_App[1], reverse = True)
-    aux=[]
-    if len(data_Open_App) <= 100:
-        for i in range(0,len(data_Open_App)):
-            aux.append([data_Open_App[i][0],str(data_Open_App[i][1]),str(data_Open_App[i][2]),str(data_Open_App[i][3]),str(data_Open_App[i][4])])
-    else:
-        for i in range(0,100):
-            aux.append([data_Open_App[i][0],str(data_Open_App[i][1]),str(data_Open_App[i][2]),str(data_Open_App[i][3]),str(data_Open_App[i][4])])
-    data_Open_App = aux
+
     pdf.print_chapter('Current risk per application sorted by criticality (Top 100) (security only)',"")
     pdf.fancy_table(header_Open_App, data_Open_App)
     t +=1
@@ -899,6 +925,26 @@ def executiveLic():
     pdf = PDF()
     pdf.alias_nb_pages()
 
+###########################
+    header_Open_App = ['Application', 'Critical','Severe','Moderate','Low']
+    data_Open_App= []
+    for app in apps:
+        critical = app['licences']['openCountsAtTimePeriodEnd']['LICENSE']['CRITICAL']['rng'][-1]
+        severe = app['licences']['openCountsAtTimePeriodEnd']['LICENSE']['SEVERE']['rng'][-1]
+        moderate = app['licences']['openCountsAtTimePeriodEnd']['LICENSE']['MODERATE']['rng'][-1]
+        low = app['licences']['openCountsAtTimePeriodEnd']['LICENSE']['LOW']['rng'][-1]
+        aux = [critical,severe,moderate,low]
+        data_Open_App.append([app['applicationName']] + aux)
+    data_Open_App.sort(key = lambda data_Open_App: data_Open_App[1], reverse = True)
+    aux=[]
+    if len(data_Open_App) <= 100:
+        for i in range(0,len(data_Open_App)):
+            aux.append([data_Open_App[i][0],str(data_Open_App[i][1]),str(data_Open_App[i][2]),str(data_Open_App[i][3]),str(data_Open_App[i][4])])
+    else:
+        for i in range(0,100):
+            aux.append([data_Open_App[i][0],str(data_Open_App[i][1]),str(data_Open_App[i][2]),str(data_Open_App[i][3]),str(data_Open_App[i][4])])
+    data_Open_App = aux
+
 
 ###########################
     
@@ -910,6 +956,11 @@ def executiveLic():
     scans = sum(licences["weeklyScans"])
     weeklyScans = average(scans,weeks,0,0)
     discovered = sum(licences["discoveredCounts"]["TOTAL"])
+    disCri = sum(licences["discoveredCounts"]["CRITICAL"])
+    mostCri = data_Open_App[0][0]
+    mostCriVal = data_Open_App[0][1]
+    leastCri = data_Open_App[-1][0]
+    leastCriVal = data_Open_App[-1][1]
     fixed = sum(licences["fixedCounts"]["TOTAL"])
     waived = sum(licences["waivedCounts"]["TOTAL"])
     dealt = fixed + waived
@@ -921,11 +972,13 @@ def executiveLic():
     content2 = "\t- Onboarded "+str(onboarded)+" applications at an average of "+str(weeklyOnboard)+" per week"
     content3 = "\t- Scanned applications "+str(scanned)+" times at an average of "+str(weeklyScanned)+" apps scanned per week"
     content4 = "\t- Performed "+str(scans)+" scans at an average of "+str(weeklyScans)+" scans per week"
-    content5 = "\t- Discovered "+str(discovered)+" violations, fixing "+str(fixed)+" and waiving "+str(waived)+" of them"
+    content5 = "\t- Discovered "+str(discovered)+" violations ("+str(disCri)+" of them Critical), fixing "+str(fixed)+" and waiving "+str(waived)+" of them"
     content6 = "\t  Which means that you have reduced "+str(dealtRate)+"% of your total risk"
     content7 = "\t- On average, each application had "+str(riskRatioAvg)+" Critical violations"
-    content8 = "\t- It took an average of "+str(mttrAvg)+" days to fix Critical violations"
-    pdf.print_chapter('Outcomes Summary (licensing only)',"")
+    content8 = "\t\t\t Most Criticals: "+str(mostCri)+" with "+str(mostCriVal)+" Critical violations"
+    content9 = "\t\t\t Least Criticals: "+str(leastCri)+" with "+str(leastCriVal)+" Critical violations"
+    content10 = "\t- It took an average of "+str(mttrAvg)+" days to fix Critical violations"
+    pdf.print_chapter('Outcomes Summary (licensing violations)',"")
     pdf.set_font('Times', 'B', 24)
     pdf.cell(0,0,content1,0)
     pdf.ln(15)
@@ -945,6 +998,10 @@ def executiveLic():
     pdf.cell(0,0,content7,0)
     pdf.ln(10)
     pdf.cell(0,0,content8,0)
+    pdf.ln(10)
+    pdf.cell(0,0,content9,0)
+    pdf.ln(15)
+    pdf.cell(0,0,content10,0)
 
 
     t +=1
@@ -1054,24 +1111,6 @@ def executiveLic():
     printProgressBar(t,graphNo)
     #---------------------------------------------------------------------
     
-    header_Open_App = ['Application', 'Critical','Severe','Moderate','Low']
-    data_Open_App= []
-    for app in apps:
-        critical = app['licences']['openCountsAtTimePeriodEnd']['LICENSE']['CRITICAL']['rng'][-1]
-        severe = app['licences']['openCountsAtTimePeriodEnd']['LICENSE']['SEVERE']['rng'][-1]
-        moderate = app['licences']['openCountsAtTimePeriodEnd']['LICENSE']['MODERATE']['rng'][-1]
-        low = app['licences']['openCountsAtTimePeriodEnd']['LICENSE']['LOW']['rng'][-1]
-        aux = [critical,severe,moderate,low]
-        data_Open_App.append([app['applicationName']] + aux)
-    data_Open_App.sort(key = lambda data_Open_App: data_Open_App[1], reverse = True)
-    aux=[]
-    if len(data_Open_App) <= 100:
-        for i in range(0,len(data_Open_App)):
-            aux.append([data_Open_App[i][0],str(data_Open_App[i][1]),str(data_Open_App[i][2]),str(data_Open_App[i][3]),str(data_Open_App[i][4])])
-    else:
-        for i in range(0,100):
-            aux.append([data_Open_App[i][0],str(data_Open_App[i][1]),str(data_Open_App[i][2]),str(data_Open_App[i][3]),str(data_Open_App[i][4])])
-    data_Open_App = aux
     pdf.print_chapter('Current risk per application sorted by criticality (Top 100) (licensing only)',"")
     pdf.fancy_table(header_Open_App, data_Open_App)
     t +=1
