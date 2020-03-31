@@ -27,20 +27,20 @@ mkdir /tmp/output
 Then we pull the latest docker image from Docker Hub:
 
 ```
-docker pull cmorenoserrano/iq_success_metrics:latest
+docker pull sonatypecommunity/iq-success-metrics:latest
 ```
 
 Then we use the following docker command to generate the JSON file (switch -s stands for scope and it is the number of weeks that we want data from, in this case the past 50 weeks) and the desired PDF reports (-r stands for reports and will generate an executive report and an app-level detailed table report):
 
 ```
-docker run --name iq_success_metrics --rm -it -v /tmp/output:/usr/src/app/output cmorenoserrano/iq_success_metrics:latest success_metrics.py -u 'http://<insert your IQ Server IP here>:8070' -a user:password -s 50 -r
+docker run --name iq-success-metrics --rm -it -v /tmp/output:/usr/src/app/output sonatypecommunity/iq-success-metrics:latest success_metrics.py -u 'http://<insert your IQ Server IP here>:8070' -a user:password -s 50 -r
 ```
 
 If you want to generate the executive and table reports just for security violations, use the `-rs` switch instead of just `-r`. If you are only interested in licence obligations, you can generate such executive and table reports by using the `-rl` switch instead. 
 
 Please, ignore any warnings.
 
-The Docker Hub repository for the docker image is here: https://hub.docker.com/repository/docker/cmorenoserrano/iq_success_metrics
+The Docker Hub repository for the docker image is here: https://hub.docker.com/r/sonatypecommunity/iq-success-metrics
 
 
 ## For Windows users
@@ -49,9 +49,9 @@ The main difference for Windows users is in the path to your local folder to sto
 ```
 mkdir c:\temp
 
-docker pull cmorenoserrano/iq_success_metrics:latest
+docker pull sonatypecommunity/iq-success-metrics:latest
 
-docker run --name iq_success_metrics --rm -it -v c:\temp\:/usr/src/app/output cmorenoserrano/iq_success_metrics:latest success_metrics.py -u 'http://<insert your IQ Server IP here>:8070' -a user:password -s 50 -r
+docker run --name iq-success-metrics --rm -it -v c:\temp\:/usr/src/app/output sonatypecommunity/iq-success-metrics:latest success_metrics.py -u 'http://<insert your IQ Server IP here>:8070' -a user:password -s 50 -r
 
 ```
 ## Explaining the Success Metrics Data API
@@ -254,24 +254,6 @@ The structure is identical to `summary` with data being exclusive to licence vio
 ### Understanding `security`
 
 The structure is identical to `summary` with data being exclusive to security violations.
-
-## Building the Docker Image
-
-```
-docker build -f Dockerfile -t iq_success_metrics:latest .
-```
-
-To keep the docker container running after its main process finishes, instead run the container with this command:
-```
-docker run -dit -p 5000:5000 iq-success-metrics:latest
-```
-The above command should print a container id, similar to `bc1d9d006052b433761a0b03453e0f5c069bcb3ebb2af0a6d9ccbaa3278ddf83`.
-You can attach to the running container using that id with a command like this:
-```
-docker attach bc1d9d006052b433761a0b03453e0f5c069bcb3ebb2af0a6d9ccbaa3278ddf83
-```
-
-NOTE: optionally specify ```docker build --build-arg ALT_DOCKER_REGISTRY=host.docker.internal:19443 --build-arg ALT_PYPI_REGISTRY=http://host.docker.internal:8083/nexus/repository/pypi-python.org-proxy/simple -t iq-success-metrics:latest .``` to download images from a location other than docker hub
 
 ## Contributing
 
