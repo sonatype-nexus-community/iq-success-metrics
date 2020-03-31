@@ -1,5 +1,15 @@
 version: 2.1
 jobs:
+  release:
+    docker:
+      - image: circleci/python:3.6.4
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          command: |
+            .circleci/ci-docker.sh
+
   build:
     docker: # run the steps with Docker
       - image: circleci/python:3.6.4
@@ -20,3 +30,16 @@ jobs:
       - store_artifacts: # Upload test summary for display in Artifacts: https://circleci.com/docs/2.0/artifacts/
           path: test-results
           destination: tr1
+
+workflows:
+  version: 2.1
+  build_and_release:
+    jobs:
+      - build
+      - release:
+          context: success-metrics
+          filters: 
+            branches:
+              ignore: /.*/
+            tags:
+              only: /v[0-9]+(\.[0-9]+)*(-.*)*/
