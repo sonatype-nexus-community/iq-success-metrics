@@ -42,7 +42,7 @@ def main():
         parser.add_argument('-rl','--reportsLic', help='', action='store_true',required=False)
 
         args = vars(parser.parse_args())
-        creds = args["auth"].split(":")
+        creds = args["auth"].split(":",1)
         iq_session.auth = requests.auth.HTTPBasicAuth(str(creds[0]), str(creds[1]) )
         if not os.path.exists("output"):
             os.mkdir("output")
