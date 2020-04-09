@@ -54,6 +54,40 @@ docker pull sonatypecommunity/iq-success-metrics:latest
 docker run --name iq-success-metrics --rm -it -v c:\temp\:/usr/src/app/output sonatypecommunity/iq-success-metrics:latest success_metrics.py -u 'http://<insert your IQ Server IP here>:8070' -a user:password -s 50 -r
 
 ```
+## Advanced Usage
+If you have thousands of apps, or you would like to produce a customised report just for a specific set of apps and/or orgs, then you will have to use different switches to achieve this.
+
+If you are using the python script directly without Docker, you can get started by running the following command to display all the available options. The Docker equivalent is explained right after:
+
+```
+python3 success_metrics.py -h
+
+Usage: python3 success_metrics.py [-h] [-a AUTH] [-s SCOPE] [-u URL] [-i APPID] [-o ORGID] [-p] [-r] [-rs] [-rl]
+
+The optional arguments are:
+-h, --help (shows this help message and exits)
+-a AUTH, --auth AUTH (in the format user:password, by default admin:admin123)
+-s SCOPE, --scope SCOPE (number of weeks from current one to gather data from. Default value is six weeks)
+-u URL, --url URL (URL for IQ server, by default http://localhost:8070)
+-i APPID, --appId APPID (list of application IDs, application Names, application Public IDs or combination thereof to filter from all available data. Default is all available data)
+-o ORGID, --orgId ORGID (list of organization IDs, organization Names or combination thereof to filter from all available data. Default is all available data)
+-p, --pretty (indents the JSON printout 4 spaces. Default is no indentation)
+-r, --reports (generates the executive report and the table report for all violations)
+-rs, --reportsSec (same as -r but only for Security violations)
+-rl, --reportsLic (same as -r but only for Licensing violations)
+```
+
+A valid example would be:
+
+`python3 success_metrics.py -a admin:admin123 -s 50 -u 'http://localhost:8070' -i 'd8f63854f4ea4405a9600e34f4d4514e','Test App1','MyApp3' -o 'c6f2775a45d44d43a32621536e638a8e','The A Team' -p -r`
+
+This collects the past fifty weeks of data for the three applications listed ('d8f63854f4ea4405a9600e34f4d4514e','Test App1','MyApp3'), irrespective of them belonging to any particular organization. In addition, this also collects the past fifty weeks of data for all the applications under organizations 'c6f2775a45d44d43a32621536e638a8e' and 'My Org'. The filtering does an OR filtering, so the collected data will be the union of the three apps with the two organizations. Then it processes the data, indents the results in the "pretty" format (indented 4 spaces), saves it to the JSON file successmetrics.json and uses it to generate the executive report and the table report for those apps and orgs. 
+
+### The Docker equivalent for advanced usage
+`docker run --name iq-success-metrics --rm -it -v /tmp/output:/usr/src/app/output sonatypecommunity/iq-success-metrics:latest success_metrics.py -a admin:admin123 -s 50 -u 'http://host.docker.internal:8070' -i 'd8f63854f4ea4405a9600e34f4d4514e','Test App1','MyApp3' -o 'c6f2775a45d44d43a32621536e638a8e','The A Team' -p -r`
+
+Do not forget to replace http://host.docker.internal:8070 with the URL of your IQ server and use your own user:password instead of admin:admin123.
+
 ## Explaining the Success Metrics Data API
 
 The [Success Metrics Data API](https://help.sonatype.com/iqserver/automating/rest-apis/success-metrics-data-rest-api---v2) returns policy evaluation, violation and remediation data, aggregated monthly or weekly. The API uses the following common language in its return values:
