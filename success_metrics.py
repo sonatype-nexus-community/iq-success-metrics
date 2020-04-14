@@ -34,6 +34,7 @@ def main():
         parser.add_argument('-a','--auth',   help='', default="admin:admin123", required=False)
         parser.add_argument('-s','--scope',  help='', type=int, default="6", required=False)
         parser.add_argument('-u','--url',    help='', default="http://localhost:8070", required=False)
+        parser.add_argument('-k','--insecure', help='', action='store_true', required=False)
         parser.add_argument('-i','--appId',  help='', required=False)
         parser.add_argument('-o','--orgId',  help='', required=False)
         parser.add_argument('-p','--pretty', help='', action='store_true', required=False)
@@ -44,6 +45,11 @@ def main():
         args = vars(parser.parse_args())
         creds = args["auth"].split(":",1)
         iq_session.auth = requests.auth.HTTPBasicAuth(str(creds[0]), str(creds[1]) )
+
+        if args["insecure"] == True:
+            print("WARNING: Ignoring SSL Certificate Validation")
+            iq_session.verify = False
+
         if not os.path.exists("output"):
             os.mkdir("output")
 
