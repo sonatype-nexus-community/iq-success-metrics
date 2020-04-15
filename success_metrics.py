@@ -30,16 +30,16 @@ config = {
 }
 
 def main():
-        parser = argparse.ArgumentParser(description='get some Success Metrics')
-        parser.add_argument('-a','--auth',   help='', default="admin:admin123", required=False)
-        parser.add_argument('-s','--scope',  help='', type=int, default="6", required=False)
-        parser.add_argument('-u','--url',    help='', default="http://localhost:8070", required=False)
-        parser.add_argument('-i','--appId',  help='', required=False)
-        parser.add_argument('-o','--orgId',  help='', required=False)
-        parser.add_argument('-p','--pretty', help='', action='store_true', required=False)
-        parser.add_argument('-r','--reports', help='', action='store_true',required=False)
-        parser.add_argument('-rs','--reportsSec', help='', action='store_true',required=False)
-        parser.add_argument('-rl','--reportsLic', help='', action='store_true',required=False)
+        parser = argparse.ArgumentParser(description="Sample command: python3 success_metrics.py -a admin:admin123 -s 10 -u 'http://localhost:8070' -i 'd8f63854f4ea4405a9600e34f4d4514e','Test App1','MyApp3' -o 'c6f2775a45d44d43a32621536e638a8e','The A Team' -p -r")
+        parser.add_argument('-a','--auth',   help='(in the format user:password, by default admin:admin123)', default="admin:admin123", required=False)
+        parser.add_argument('-s','--scope',  help='(number of weeks from current one to gather data from. Default value is six weeks)', type=int, default="6", required=False)
+        parser.add_argument('-u','--url',    help='(URL for IQ server, by default http://localhost:8070)', default="http://localhost:8070", required=False)
+        parser.add_argument('-i','--appId',  help='(list of application IDs, application Names, application Public IDs or combination thereof to filter from all available data. Default is all available data)', required=False)
+        parser.add_argument('-o','--orgId',  help='(list of organization IDs, organization Names or combination thereof to filter from all available data. Default is all available data)', required=False)
+        parser.add_argument('-p','--pretty', help='(indents the JSON printout 4 spaces. Default is no indentation)', action='store_true', required=False)
+        parser.add_argument('-r','--reports', help='(generates the executive report and the table report for all violations)', action='store_true',required=False)
+        parser.add_argument('-rs','--reportsSec', help='(same as -r but only for Security violations)', action='store_true',required=False)
+        parser.add_argument('-rl','--reportsLic', help='(same as -r but only for Licensing violations)', action='store_true',required=False)
 
         args = vars(parser.parse_args())
         creds = args["auth"].split(":",1)
