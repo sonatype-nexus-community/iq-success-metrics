@@ -34,6 +34,7 @@ def main():
         parser.add_argument('-a','--auth',   help='(in the format user:password, by default admin:admin123)', default="admin:admin123", required=False)
         parser.add_argument('-s','--scope',  help='(number of weeks from current one to gather data from. Default value is six weeks)', type=int, default="6", required=False)
         parser.add_argument('-u','--url',    help='(URL for IQ server, by default http://localhost:8070)', default="http://localhost:8070", required=False)
+        parser.add_argument('-k','--insecure', help='(Disable SSL Certificate Validation)', action='store_true', required=False)
         parser.add_argument('-i','--appId',  help='(list of application IDs, application Names, application Public IDs or combination thereof to filter from all available data. Default is all available data)', required=False)
         parser.add_argument('-o','--orgId',  help='(list of organization IDs, organization Names or combination thereof to filter from all available data. Default is all available data)', required=False)
         parser.add_argument('-p','--pretty', help='(indents the JSON printout 4 spaces. Default is no indentation)', action='store_true', required=False)
@@ -44,6 +45,11 @@ def main():
         args = vars(parser.parse_args())
         creds = args["auth"].split(":",1)
         iq_session.auth = requests.auth.HTTPBasicAuth(str(creds[0]), str(creds[1]) )
+        
+        if args["insecure"] == True:
+            print("WARNING: Ignoring SSL Certificate Validation")
+            iq_session.verify = False
+
         if not os.path.exists("output"):
             os.mkdir("output")
 
