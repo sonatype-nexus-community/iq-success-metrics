@@ -182,6 +182,7 @@ The optional arguments are:
 -a AUTH, --auth AUTH (in the format user:password, by default admin:admin123 )
 -s SCOPE, --scope SCOPE (number of weeks from current one to gather data from. Default value is six weeks)
 -u URL, --url URL (URL for IQ server, by default http://localhost:8070 )
+-k, --insecure (Disable SSL Certificate Validation)
 -i APPID, --appId APPID (list of application IDs, application Names, application Public IDs or combination thereof to filter from all available data. Default is all available data)
 -o ORGID, --orgId ORGID (list of organization IDs, organization Names or combination thereof to filter from all available data. Default is all available data)
 -p, --pretty (indents the JSON printout 4 spaces. Default is no indentation)
