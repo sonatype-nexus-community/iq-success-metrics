@@ -239,7 +239,7 @@ def average(numerator,denominator,percentage,integer):
 #EXECUTIVE: Executive summary report (combination of reports but without going into app level)
 def executive():
 
-    pages, t, graphNo = [], 0, 17
+    pages, t, graphNo = [], 0, 18
     appName, orgName, OpeLow, OpeMod, OpeSev, OpeCri, mttrLow, mttrMod, mttrSev, mttrCri = [],[],[],[],[],[],[],[],[],[]
     printProgressBar(t,graphNo)
     
@@ -424,12 +424,59 @@ def executive():
        "Current Total Number of Open violations by organisation for all violations",
         xtitle[2],sonatype_colours
     )
+
+    orgs = []
+    orgsLow, orgsMod, orgsSev, orgsCri = {},{},{},{}
+    for i in range(0,len(orgName)):
+        if orgName[i] not in orgs:
+            orgs.append(orgName[i])
+            orgsLow[orgName[i]]=OpeLow[i]
+            orgsMod[orgName[i]]=OpeMod[i]
+            orgsSev[orgName[i]]=OpeSev[i]
+            orgsCri[orgName[i]]=OpeCri[i]
+        elif orgName[i] in orgs:
+            orgsLow[orgName[i]]+=OpeLow[i]
+            orgsMod[orgName[i]]+=OpeMod[i]
+            orgsSev[orgName[i]]+=OpeSev[i]
+            orgsCri[orgName[i]]+=OpeCri[i]
+            
+    #print("Orgs",orgs)
+    #print("Critical",orgsCri)
     pdf.print_chapter('Current Total Number of Open violations by organisation for all violations', "")
     pdf.image("./output/Current_Open_Orgs.png",10,36,270)
     t +=1
     printProgressBar(t,graphNo)
     #---------------------------------------------------------------------
+
+###########################
+    header_Open_Org = ['Organisation', 'Critical','Severe','Moderate','Low']
+    data_Open_Org= []
+    for org in orgs:
+        critical = orgsCri[org]
+        severe = orgsSev[org]
+        moderate = orgsMod[org]
+        low = orgsLow[org]
+        aux = [critical,severe,moderate,low]
+        data_Open_Org.append([org] + aux)
+    data_Open_Org.sort(key = lambda data_Open_Org: data_Open_Org[1], reverse = True)
+    aux=[]
+    if len(data_Open_Org) <= 100:
+        for i in range(0,len(data_Open_Org)):
+            aux.append([data_Open_Org[i][0],str(data_Open_Org[i][1]),str(data_Open_Org[i][2]),str(data_Open_Org[i][3]),str(data_Open_Org[i][4])])
+    else:
+        for i in range(0,100):
+            aux.append([data_Open_Org[i][0],str(data_Open_Org[i][1]),str(data_Open_Org[i][2]),str(data_Open_Org[i][3]),str(data_Open_Org[i][4])])
+    data_Open_Org = aux
+
+    ###########################
     
+
+    pdf.print_chapter('Current Total Number of Open violations per Org sorted by criticality for all violations (Top 100)',"")
+    pdf.fancy_table(header_Open_Org, data_Open_Org)
+    t +=1
+    printProgressBar(t,graphNo)
+
+#---------------------------------------------------------------------    
 
     pdf.print_chapter('Current risk per application sorted by criticality for all violations (Top 100)',"")
     pdf.fancy_table(header_Open_App, data_Open_App)
@@ -437,6 +484,7 @@ def executive():
     printProgressBar(t,graphNo)
 
 #---------------------------------------------------------------------
+    
     make_stacked_chart(
         summary['timePeriodStart'],
         [
@@ -579,7 +627,7 @@ def executive():
 #EXECUTIVE SECURITY: Executive summary report only for Security violations (combination of reports but without going into app level)
 def executiveSec():
 
-    pages, t, graphNo = [], 0, 17
+    pages, t, graphNo = [], 0, 18
     appName, orgName, OpeLow, OpeMod, OpeSev, OpeCri, mttrLow, mttrMod, mttrSev, mttrCri = [],[],[],[],[],[],[],[],[],[]
     printProgressBar(t,graphNo)
     
@@ -764,12 +812,61 @@ def executiveSec():
        "Current Total Number of Open violations by organisation (security only)",
         xtitle[2],sonatype_colours
     )
+
+    orgs = []
+    orgsLow, orgsMod, orgsSev, orgsCri = {},{},{},{}
+    for i in range(0,len(orgName)):
+        if orgName[i] not in orgs:
+            orgs.append(orgName[i])
+            orgsLow[orgName[i]]=OpeLow[i]
+            orgsMod[orgName[i]]=OpeMod[i]
+            orgsSev[orgName[i]]=OpeSev[i]
+            orgsCri[orgName[i]]=OpeCri[i]
+        elif orgName[i] in orgs:
+            orgsLow[orgName[i]]+=OpeLow[i]
+            orgsMod[orgName[i]]+=OpeMod[i]
+            orgsSev[orgName[i]]+=OpeSev[i]
+            orgsCri[orgName[i]]+=OpeCri[i]
+            
+    #print("Orgs",orgs)
+    #print("Critical",orgsCri)
+
     pdf.print_chapter('Current Total Number of Open violations by organisation (security only)', "")
     pdf.image("./output/Current_Open_Orgs.png",10,36,270)
     t +=1
     printProgressBar(t,graphNo)
     #---------------------------------------------------------------------
+
+###########################
+    header_Open_Org = ['Organisation', 'Critical','Severe','Moderate','Low']
+    data_Open_Org= []
+    for org in orgs:
+        critical = orgsCri[org]
+        severe = orgsSev[org]
+        moderate = orgsMod[org]
+        low = orgsLow[org]
+        aux = [critical,severe,moderate,low]
+        data_Open_Org.append([org] + aux)
+    data_Open_Org.sort(key = lambda data_Open_Org: data_Open_Org[1], reverse = True)
+    aux=[]
+    if len(data_Open_Org) <= 100:
+        for i in range(0,len(data_Open_Org)):
+            aux.append([data_Open_Org[i][0],str(data_Open_Org[i][1]),str(data_Open_Org[i][2]),str(data_Open_Org[i][3]),str(data_Open_Org[i][4])])
+    else:
+        for i in range(0,100):
+            aux.append([data_Open_Org[i][0],str(data_Open_Org[i][1]),str(data_Open_Org[i][2]),str(data_Open_Org[i][3]),str(data_Open_Org[i][4])])
+    data_Open_Org = aux
+
+    ###########################
     
+
+    pdf.print_chapter('Current Total Number of Open violations per Org sorted by criticality for security violations only (Top 100)',"")
+    pdf.fancy_table(header_Open_Org, data_Open_Org)
+    t +=1
+    printProgressBar(t,graphNo)
+
+#---------------------------------------------------------------------    
+
 
     pdf.print_chapter('Current risk per application sorted by criticality (Top 100) (security only)',"")
     pdf.fancy_table(header_Open_App, data_Open_App)
@@ -918,7 +1015,7 @@ def executiveSec():
 #EXECUTIVE LICENSING: Executive summary report only for Licensing violations (combination of reports but without going into app level)
 def executiveLic():
 
-    pages, t, graphNo = [], 0, 17
+    pages, t, graphNo = [], 0, 18
     appName, orgName, OpeLow, OpeMod, OpeSev, OpeCri, mttrLow, mttrMod, mttrSev, mttrCri = [],[],[],[],[],[],[],[],[],[]
     printProgressBar(t,graphNo)
     
@@ -1105,11 +1202,60 @@ def executiveLic():
        "Current Total Number of Open violations by organisation (licensing only)",
         xtitle[2],sonatype_colours
     )
+
+    orgs = []
+    orgsLow, orgsMod, orgsSev, orgsCri = {},{},{},{}
+    for i in range(0,len(orgName)):
+        if orgName[i] not in orgs:
+            orgs.append(orgName[i])
+            orgsLow[orgName[i]]=OpeLow[i]
+            orgsMod[orgName[i]]=OpeMod[i]
+            orgsSev[orgName[i]]=OpeSev[i]
+            orgsCri[orgName[i]]=OpeCri[i]
+        elif orgName[i] in orgs:
+            orgsLow[orgName[i]]+=OpeLow[i]
+            orgsMod[orgName[i]]+=OpeMod[i]
+            orgsSev[orgName[i]]+=OpeSev[i]
+            orgsCri[orgName[i]]+=OpeCri[i]
+            
+    #print("Orgs",orgs)
+    #print("Critical",orgsCri)
+    
     pdf.print_chapter('Current Total Number of Open violations by organisation (licensing only)', "")
     pdf.image("./output/Current_Open_Orgs.png",10,36,270)
     t +=1
     printProgressBar(t,graphNo)
     #---------------------------------------------------------------------
+
+###########################
+    header_Open_Org = ['Organisation', 'Critical','Severe','Moderate','Low']
+    data_Open_Org= []
+    for org in orgs:
+        critical = orgsCri[org]
+        severe = orgsSev[org]
+        moderate = orgsMod[org]
+        low = orgsLow[org]
+        aux = [critical,severe,moderate,low]
+        data_Open_Org.append([org] + aux)
+    data_Open_Org.sort(key = lambda data_Open_Org: data_Open_Org[1], reverse = True)
+    aux=[]
+    if len(data_Open_Org) <= 100:
+        for i in range(0,len(data_Open_Org)):
+            aux.append([data_Open_Org[i][0],str(data_Open_Org[i][1]),str(data_Open_Org[i][2]),str(data_Open_Org[i][3]),str(data_Open_Org[i][4])])
+    else:
+        for i in range(0,100):
+            aux.append([data_Open_Org[i][0],str(data_Open_Org[i][1]),str(data_Open_Org[i][2]),str(data_Open_Org[i][3]),str(data_Open_Org[i][4])])
+    data_Open_Org = aux
+
+    ###########################
+    
+
+    pdf.print_chapter('Current Total Number of Open violations per Org sorted by criticality for licensing violations only (Top 100)',"")
+    pdf.fancy_table(header_Open_Org, data_Open_Org)
+    t +=1
+    printProgressBar(t,graphNo)
+
+#---------------------------------------------------------------------  
     
     pdf.print_chapter('Current risk per application sorted by criticality (Top 100) (licensing only)',"")
     pdf.fancy_table(header_Open_App, data_Open_App)
