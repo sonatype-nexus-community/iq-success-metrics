@@ -277,22 +277,25 @@ def executive():
     weeklyScans = average(scans,weeks,0,0)
     discovered = sum(summary["discoveredCounts"]["TOTAL"])
     disCri = sum(summary["discoveredCounts"]["CRITICAL"])
-    if len(data_Open_App[0][0]) > 0:
+    if len(data_Open_App) > 0:
         mostCri = data_Open_App[0][0]
         mostCriVal = data_Open_App[0][1]
     else:
-        mostCri = "No application found"
+        mostCri = "Error: No applications found!"
         mostCriVal = 0
-    if len(data_Open_App[-1][0]) > 0:
+    if len(data_Open_App) > 0:
         leastCri = data_Open_App[-1][0]
         leastCriVal = data_Open_App[-1][1]
     else:
-        leastCri = "No application found"
+        leastCri = "Error: No applications found!"
         leastCriVal = 0
     fixed = sum(summary["fixedCounts"]["TOTAL"])
     waived = sum(summary["waivedCounts"]["TOTAL"])
     dealt = fixed + waived
-    dealtRate = round((dealt / discovered) * 100,1)
+    if discovered > 0:
+        dealtRate = round((dealt / discovered) * 100,1)
+    else:
+        dealtRate = 0
     riskRatio = [float(i) for i in summary["riskRatioCritical"]]
     riskRatioAvg = average(sum(riskRatio),weeks,0,0)
     mttrAvg = nonzeroAvg(summary["mttrCriticalThreat"],0,0)
