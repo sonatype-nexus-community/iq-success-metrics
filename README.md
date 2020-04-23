@@ -38,6 +38,12 @@ docker run --name iq-success-metrics --rm -it -v /tmp/output:/usr/src/app/output
 
 If you want to generate the executive and table reports just for security violations, use the `-rs` switch instead of just `-r`. If you are only interested in licence obligations, you can generate such executive and table reports by using the `-rl` switch instead. 
 
+If you are using a reverse proxy (or using HTTPS instead of HTTP for your IQ server), then you should modify the command to ignore SSL certificate verification by using the -k switch and removing the :8070 port from the URL. For example: 
+
+```
+docker run --name iq-success-metrics --rm -it -v /tmp/output:/usr/src/app/output sonatypecommunity/iq-success-metrics:latest success_metrics.py -u 'http://<insert your IQ Server IP here>' -a user:password -s 50 -r -k
+```
+
 Please, ignore any warnings.
 
 The Docker Hub repository for the docker image is here: https://hub.docker.com/r/sonatypecommunity/iq-success-metrics
@@ -54,6 +60,13 @@ docker pull sonatypecommunity/iq-success-metrics:latest
 docker run --name iq-success-metrics --rm -it -v c:\temp\:/usr/src/app/output sonatypecommunity/iq-success-metrics:latest success_metrics.py -u 'http://<insert your IQ Server IP here>:8070' -a user:password -s 50 -r
 
 ```
+If you are using a reverse proxy (or using HTTPS instead of HTTP for your IQ server), then you should modify the command to ignore SSL certificate verification by using the -k switch and removing the :8070 port from the URL. For example: 
+
+```
+docker run --name iq-success-metrics --rm -it -v c:\temp\:/usr/src/app/output sonatypecommunity/iq-success-metrics:latest success_metrics.py -u 'http://<insert your IQ Server IP here>' -a user:password -s 50 -r -k
+
+```
+
 ## Advanced Usage
 If you have thousands of apps, or you would like to produce a customised report just for a specific set of apps and/or orgs, then you will have to use different switches to achieve this.
 
