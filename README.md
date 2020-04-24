@@ -30,19 +30,40 @@ Then we pull the latest docker image from Docker Hub:
 docker pull sonatypecommunity/iq-success-metrics:latest
 ```
 
-Then we use the following docker command to generate the JSON file (switch -s stands for scope and it is the number of weeks that we want data from, in this case the past 50 weeks) and the desired PDF reports (-r stands for reports and will generate an executive report and an app-level detailed table report):
+Then we use the following docker command to generate the JSON file (switch -s stands for scope and it is the number of weeks that we want data from, in this case the past 50 weeks) and the desired PDF reports (-r stands for reports and will generate an executive report and an app-level detailed table report). Do not forget to replace the URL with your IQ server's:
 
 ```
-docker run --name iq-success-metrics --rm -it -v /tmp/output:/usr/src/app/output sonatypecommunity/iq-success-metrics:latest success_metrics.py -u 'http://<insert your IQ Server IP here>:8070' -a user:password -s 50 -r
+docker run --name iq-success-metrics --rm -it -v /tmp/output:/usr/src/app/output sonatypecommunity/iq-success-metrics:latest success_metrics.py -u http://iq.server.com:8070 -a user:password -s 50 -r
 ```
 
 If you want to generate the executive and table reports just for security violations, use the `-rs` switch instead of just `-r`. If you are only interested in licence obligations, you can generate such executive and table reports by using the `-rl` switch instead. 
 
-If you are using a reverse proxy (or using HTTPS instead of HTTP for your IQ server), then you should modify the command to ignore SSL certificate verification by using the -k switch and removing the :8070 port from the URL. For example: 
+## Troubleshooting
+90% of issues lie with the URL format. Here is a quick guide on how to troubleshoot them:
+
+1) All URLs must NOT end in /. For example, `-u http://iq.server.com:8070` is a valid URL, but `-u http://iq.server.com/:8070` is invalid and will throw an error.
+
+2) Most times it is best to enter the URL without quotes (single `'` or double `"`). If you must use quotes because everything else fails, then you can try using quotes for the URL, but only as last troubleshooting resort.
+
+3) If you are using an URL with HTTP, then you must indicate the port 8070. For example: `-u http://iq.server.com:8070`. Forgetting to add the port will throw an error.
+
+4) However, if you are using a reverse proxy, then the proxy will take care of the port number, so you should not include it. For example `-u http://iq.server.com` or `-u https://iq.server.com`
+
+5) If you are using HTTPS, then you must use the `-k` switch to enable insecure mode in IQ server. This will disable the need to have a verified SSL certificate for IQ server.
+
+For example, for HTTPS not using reverse proxy:
 
 ```
-docker run --name iq-success-metrics --rm -it -v /tmp/output:/usr/src/app/output sonatypecommunity/iq-success-metrics:latest success_metrics.py -u 'http://<insert your IQ Server IP here>' -a user:password -s 50 -r -k
+docker run --name iq-success-metrics --rm -it -v /tmp/output:/usr/src/app/output sonatypecommunity/iq-success-metrics:latest success_metrics.py -u https://iq.server.com:8070 -a user:password -s 50 -r -k
 ```
+
+An equivalent example for HTTPS using reverse proxy would be:
+
+```
+docker run --name iq-success-metrics --rm -it -v /tmp/output:/usr/src/app/output sonatypecommunity/iq-success-metrics:latest success_metrics.py -u https://iq.server.com -a user:password -s 50 -r -k
+```
+
+If after trying all of this, you still encounter problems, contact your CSE.
 
 Please, ignore any warnings.
 
@@ -57,15 +78,11 @@ mkdir c:\temp
 
 docker pull sonatypecommunity/iq-success-metrics:latest
 
-docker run --name iq-success-metrics --rm -it -v c:\temp\:/usr/src/app/output sonatypecommunity/iq-success-metrics:latest success_metrics.py -u 'http://<insert your IQ Server IP here>:8070' -a user:password -s 50 -r
+docker run --name iq-success-metrics --rm -it -v c:\temp\:/usr/src/app/output sonatypecommunity/iq-success-metrics:latest success_metrics.py -u http://iq.server.com:8070 -a user:password -s 50 -r
 
 ```
-If you are using a reverse proxy (or using HTTPS instead of HTTP for your IQ server), then you should modify the command to ignore SSL certificate verification by using the -k switch and removing the :8070 port from the URL. For example: 
 
-```
-docker run --name iq-success-metrics --rm -it -v c:\temp\:/usr/src/app/output sonatypecommunity/iq-success-metrics:latest success_metrics.py -u 'http://<insert your IQ Server IP here>' -a user:password -s 50 -r -k
-
-```
+The aforementioned Troubleshooting section also applies to the Windows users. Just remember to adapt the path to your local folder to the Windows format as indicated before.
 
 ## Advanced Usage
 If you have thousands of apps, or you would like to produce a customised report just for a specific set of apps and/or orgs, then you will have to use different switches to achieve this.
@@ -93,12 +110,12 @@ The optional arguments are:
 
 A valid example would be:
 
-`python3 success_metrics.py -a admin:admin123 -s 50 -u 'http://localhost:8070' -i 'd8f63854f4ea4405a9600e34f4d4514e','Test App1','MyApp3' -o 'c6f2775a45d44d43a32621536e638a8e','The A Team' -p -r`
+`python3 success_metrics.py -a admin:admin123 -s 50 -u http://localhost:8070 -i 'd8f63854f4ea4405a9600e34f4d4514e','Test App1','MyApp3' -o 'c6f2775a45d44d43a32621536e638a8e','The A Team' -p -r`
 
 This collects the past fifty weeks of data for the three applications listed ('d8f63854f4ea4405a9600e34f4d4514e','Test App1','MyApp3'), irrespective of them belonging to any particular organization. In addition, this also collects the past fifty weeks of data for all the applications under organizations 'c6f2775a45d44d43a32621536e638a8e' and 'My Org'. The filtering does an OR filtering, so the collected data will be the union of the three apps with the two organizations. Then it processes the data, indents the results in the "pretty" format (indented 4 spaces), saves it to the JSON file successmetrics.json and uses it to generate the executive report and the table report for those apps and orgs. 
 
 ### The Docker equivalent for advanced usage
-`docker run --name iq-success-metrics --rm -it -v /tmp/output:/usr/src/app/output sonatypecommunity/iq-success-metrics:latest success_metrics.py -a admin:admin123 -s 50 -u 'http://host.docker.internal:8070' -i 'd8f63854f4ea4405a9600e34f4d4514e','Test App1','MyApp3' -o 'c6f2775a45d44d43a32621536e638a8e','The A Team' -p -r`
+`docker run --name iq-success-metrics --rm -it -v /tmp/output:/usr/src/app/output sonatypecommunity/iq-success-metrics:latest success_metrics.py -a admin:admin123 -s 50 -u http://host.docker.internal:8070 -i 'd8f63854f4ea4405a9600e34f4d4514e','Test App1','MyApp3' -o 'c6f2775a45d44d43a32621536e638a8e','The A Team' -p -r`
 
 Do not forget to replace http://host.docker.internal:8070 with the URL of your IQ server and use your own user:password instead of admin:admin123.
 
