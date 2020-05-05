@@ -99,6 +99,34 @@ def make_stacked_chart(period, data, legend, filename, title, xtitle,colours):
         )
     fig.update_xaxes(tickvals=period,automargin=True)
     fig.write_image(filename)
+
+def make_group_chart(period, data, legend, filename, title, xtitle,colours):
+    traces = []
+    for i in range(0, len(data)):
+        trace = go.Bar(
+            name = legend[i],
+            x = period,
+            y = data[i],
+            textposition = 'auto',
+            marker = dict(color=colours[i])
+            )
+        traces.append(trace)
+
+    fig = go.Figure(data=traces, layout_title_text=title)
+    fig.update_layout(
+        barmode='group',
+        autosize=False,
+        width=840,
+        height=528,
+        xaxis=go.layout.XAxis(
+            title_text=xtitle
+            )
+        )
+    fig.update_xaxes(tickvals=period,automargin=True)
+    fig.write_image(filename)
+
+
+
 #---------------------------------
 
 class PDF(FPDF):
@@ -414,6 +442,16 @@ def executive():
     printProgressBar(t,graphNo)
     
     #-------------------------------------------------------------------------
+
+    pdf.print_chapter('Current risk per application sorted by criticality for all violations (Top 100)',"")
+    pdf.fancy_table(header_Open_App, data_Open_App)
+    t +=1
+    printProgressBar(t,graphNo)
+
+#---------------------------------------------------------------------
+ 
+
+
     #---------------------------------------------------------------------
     for app in apps:
         orgName.append(app["organizationName"])
@@ -488,15 +526,8 @@ def executive():
     printProgressBar(t,graphNo)
 
 #---------------------------------------------------------------------    
-
-    pdf.print_chapter('Current risk per application sorted by criticality for all violations (Top 100)',"")
-    pdf.fancy_table(header_Open_App, data_Open_App)
-    t +=1
-    printProgressBar(t,graphNo)
-
-#---------------------------------------------------------------------
-    
-    make_stacked_chart(
+   
+    make_group_chart(
         summary['timePeriodStart'],
         [
             summary['discoveredCounts']['TOTAL'],
