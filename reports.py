@@ -331,12 +331,13 @@ def executive():
     content2 = "\t- Onboarded "+str(onboarded)+" applications at an average of "+str(weeklyOnboard)+" per week"
     content3 = "\t- Scanned applications "+str(scanned)+" times at an average of "+str(weeklyScanned)+" apps scanned per week"
     content4 = "\t- Performed "+str(scans)+" scans at an average of "+str(weeklyScans)+" scans per week"
-    content5 = "\t- Discovered "+str(discovered)+" violations ("+str(disCri)+" of them Critical), fixing "+str(fixed)+" and waiving "+str(waived)+" of them"
-    content6 = "\t  Which means that you have remediated "+str(dealtRate)+"% of your known risk"
-    content7 = "\t- On average, each application had "+str(riskRatioAvg)+" Critical violations"
-    content8 = "\t\t\t Most Criticals: "+str(mostCri)+" with "+str(mostCriVal)+" Critical violations"
-    content9 = "\t\t\t Least Criticals: "+str(leastCri)+" with "+str(leastCriVal)+" Critical violations"
-    content10 = "\t- It took an average of "+str(mttrAvg)+" days to fix Critical violations"
+    content5 = "\t- Discovered "+str(discovered)+" new violations ("+str(disCri)+" of them Critical)"
+    content6 = "\t- Fixed "+str(fixed)+" and waived "+str(waived)+" violations from your open backlog"
+    content7 = "\t  Which means that your Fixing Rate (Fixed & Waived / Discovered) is "+str(dealtRate)+"%"
+    content8 = "\t- On average, each application had "+str(riskRatioAvg)+" Critical violations"
+    content9 = "\t\t\t Most Criticals: "+str(mostCri)+" with "+str(mostCriVal)+" Critical violations"
+    content10 = "\t\t\t Least Criticals: "+str(leastCri)+" with "+str(leastCriVal)+" Critical violations"
+    content11 = "\t- It took an average of "+str(mttrAvg)+" days to fix Critical violations"
     pdf.print_chapter('Outcomes Summary (all violations)',"")
     pdf.set_font('Times', 'B', 24)
     pdf.cell(0,0,content1,0)
@@ -350,17 +351,19 @@ def executive():
     pdf.ln(10)
     pdf.cell(0,0,content5,0)
     pdf.ln(10)
-    pdf.set_text_color(0, 0, 255)
     pdf.cell(0,0,content6,0)
+    pdf.ln(10)
+    pdf.set_text_color(0, 0, 255)
+    pdf.cell(0,0,content7,0)
     pdf.ln(15)
     pdf.set_text_color(0, 0, 0)
-    pdf.cell(0,0,content7,0)
-    pdf.ln(10)
     pdf.cell(0,0,content8,0)
     pdf.ln(10)
     pdf.cell(0,0,content9,0)
-    pdf.ln(15)
+    pdf.ln(10)
     pdf.cell(0,0,content10,0)
+    pdf.ln(15)
+    pdf.cell(0,0,content11,0)
 
 
     t +=1
@@ -714,7 +717,10 @@ def executiveSec():
     fixed = sum(Security["fixedCounts"]["TOTAL"])
     waived = sum(Security["waivedCounts"]["TOTAL"])
     dealt = fixed + waived
-    dealtRate = round((dealt / discovered) * 100,1)
+    if discovered > 0:
+        dealtRate = round((dealt / discovered) * 100,1)
+    else:
+        dealtRate = 0
     riskRatio = [float(i) for i in Security["riskRatioCritical"]]
     riskRatioAvg = average(sum(riskRatio),weeks,0,0)
     mttrAvg = nonzeroAvg(Security["mttrCriticalThreat"],0,0)
@@ -722,12 +728,13 @@ def executiveSec():
     content2 = "\t- Onboarded "+str(onboarded)+" applications at an average of "+str(weeklyOnboard)+" per week"
     content3 = "\t- Scanned applications "+str(scanned)+" times at an average of "+str(weeklyScanned)+" apps scanned per week"
     content4 = "\t- Performed "+str(scans)+" scans at an average of "+str(weeklyScans)+" scans per week"
-    content5 = "\t- Discovered "+str(discovered)+" violations ("+str(disCri)+" of them Critical), fixing "+str(fixed)+" and waiving "+str(waived)+" of them"
-    content6 = "\t  Which means that you have remediated "+str(dealtRate)+"% of your known risk"
-    content7 = "\t- On average, each application had "+str(riskRatioAvg)+" Critical violations"
-    content8 = "\t\t\t Most Criticals: "+str(mostCri)+" with "+str(mostCriVal)+" Critical violations"
-    content9 = "\t\t\t Least Criticals: "+str(leastCri)+" with "+str(leastCriVal)+" Critical violations"
-    content10 = "\t- It took an average of "+str(mttrAvg)+" days to fix Critical violations"
+    content5 = "\t- Discovered "+str(discovered)+" new violations ("+str(disCri)+" of them Critical)"
+    content6 = "\t- Fixed "+str(fixed)+" and waived "+str(waived)+" violations from your open backlog"
+    content7 = "\t  Which means that your Fixing Rate (Fixed & Waived / Discovered) is "+str(dealtRate)+"%"
+    content8 = "\t- On average, each application had "+str(riskRatioAvg)+" Critical violations"
+    content9 = "\t\t\t Most Criticals: "+str(mostCri)+" with "+str(mostCriVal)+" Critical violations"
+    content10 = "\t\t\t Least Criticals: "+str(leastCri)+" with "+str(leastCriVal)+" Critical violations"
+    content11 = "\t- It took an average of "+str(mttrAvg)+" days to fix Critical violations"
     pdf.print_chapter('Outcomes Summary (security violations)',"")
     pdf.set_font('Times', 'B', 24)
     pdf.cell(0,0,content1,0)
@@ -741,17 +748,19 @@ def executiveSec():
     pdf.ln(10)
     pdf.cell(0,0,content5,0)
     pdf.ln(10)
-    pdf.set_text_color(0, 0, 255)
     pdf.cell(0,0,content6,0)
+    pdf.ln(10)
+    pdf.set_text_color(0, 0, 255)
+    pdf.cell(0,0,content7,0)
     pdf.ln(15)
     pdf.set_text_color(0, 0, 0)
-    pdf.cell(0,0,content7,0)
-    pdf.ln(10)
     pdf.cell(0,0,content8,0)
     pdf.ln(10)
     pdf.cell(0,0,content9,0)
-    pdf.ln(15)
+    pdf.ln(10)
     pdf.cell(0,0,content10,0)
+    pdf.ln(15)
+    pdf.cell(0,0,content11,0)
 
 
     t +=1
@@ -1103,7 +1112,10 @@ def executiveLic():
     fixed = sum(licences["fixedCounts"]["TOTAL"])
     waived = sum(licences["waivedCounts"]["TOTAL"])
     dealt = fixed + waived
-    dealtRate = round((dealt / discovered) * 100,1)
+    if discovered > 0:
+        dealtRate = round((dealt / discovered) * 100,1)
+    else:
+        dealtRate = 0
     riskRatio = [float(i) for i in licences["riskRatioCritical"]]
     riskRatioAvg = average(sum(riskRatio),weeks,0,0)
     mttrAvg = nonzeroAvg(licences["mttrCriticalThreat"],0,0)
@@ -1111,12 +1123,13 @@ def executiveLic():
     content2 = "\t- Onboarded "+str(onboarded)+" applications at an average of "+str(weeklyOnboard)+" per week"
     content3 = "\t- Scanned applications "+str(scanned)+" times at an average of "+str(weeklyScanned)+" apps scanned per week"
     content4 = "\t- Performed "+str(scans)+" scans at an average of "+str(weeklyScans)+" scans per week"
-    content5 = "\t- Discovered "+str(discovered)+" violations ("+str(disCri)+" of them Critical), fixing "+str(fixed)+" and waiving "+str(waived)+" of them"
-    content6 = "\t  Which means that you have remediated "+str(dealtRate)+"% of your known risk"
-    content7 = "\t- On average, each application had "+str(riskRatioAvg)+" Critical violations"
-    content8 = "\t\t\t Most Criticals: "+str(mostCri)+" with "+str(mostCriVal)+" Critical violations"
-    content9 = "\t\t\t Least Criticals: "+str(leastCri)+" with "+str(leastCriVal)+" Critical violations"
-    content10 = "\t- It took an average of "+str(mttrAvg)+" days to fix Critical violations"
+    content5 = "\t- Discovered "+str(discovered)+" new violations ("+str(disCri)+" of them Critical)"
+    content6 = "\t- Fixed "+str(fixed)+" and waived "+str(waived)+" violations from your open backlog"
+    content7 = "\t  Which means that your Fixing Rate (Fixed & Waived / Discovered) is "+str(dealtRate)+"%"
+    content8 = "\t- On average, each application had "+str(riskRatioAvg)+" Critical violations"
+    content9 = "\t\t\t Most Criticals: "+str(mostCri)+" with "+str(mostCriVal)+" Critical violations"
+    content10 = "\t\t\t Least Criticals: "+str(leastCri)+" with "+str(leastCriVal)+" Critical violations"
+    content11 = "\t- It took an average of "+str(mttrAvg)+" days to fix Critical violations"
     pdf.print_chapter('Outcomes Summary (licensing violations)',"")
     pdf.set_font('Times', 'B', 24)
     pdf.cell(0,0,content1,0)
@@ -1130,17 +1143,19 @@ def executiveLic():
     pdf.ln(10)
     pdf.cell(0,0,content5,0)
     pdf.ln(10)
-    pdf.set_text_color(0, 0, 255)
     pdf.cell(0,0,content6,0)
+    pdf.ln(10)
+    pdf.set_text_color(0, 0, 255)
+    pdf.cell(0,0,content7,0)
     pdf.ln(15)
     pdf.set_text_color(0, 0, 0)
-    pdf.cell(0,0,content7,0)
-    pdf.ln(10)
     pdf.cell(0,0,content8,0)
     pdf.ln(10)
     pdf.cell(0,0,content9,0)
-    pdf.ln(15)
+    pdf.ln(10)
     pdf.cell(0,0,content10,0)
+    pdf.ln(15)
+    pdf.cell(0,0,content11,0)
 
 
     t +=1
