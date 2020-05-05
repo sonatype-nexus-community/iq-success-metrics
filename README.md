@@ -106,6 +106,7 @@ The optional arguments are:
 -r, --reports (generates the executive report and the table report for all violations)
 -rs, --reportsSec (same as -r but only for Security violations)
 -rl, --reportsLic (same as -r but only for Licensing violations)
+-d DATERANGE, --dateRange DATERANGE (creates JSON for a specified date range [yyyy-mm-dd:yyyy-mm-dd]. Do not use in conjunction with -s option)
 ```
 
 A valid example would be:
@@ -113,6 +114,11 @@ A valid example would be:
 `python3 success_metrics.py -a admin:admin123 -s 50 -u http://localhost:8070 -i 'd8f63854f4ea4405a9600e34f4d4514e','Test App1','MyApp3' -o 'c6f2775a45d44d43a32621536e638a8e','The A Team' -p -r`
 
 This collects the past fifty weeks of data for the three applications listed ('d8f63854f4ea4405a9600e34f4d4514e','Test App1','MyApp3'), irrespective of them belonging to any particular organization. In addition, this also collects the past fifty weeks of data for all the applications under organizations 'c6f2775a45d44d43a32621536e638a8e' and 'My Org'. The filtering does an OR filtering, so the collected data will be the union of the three apps with the two organizations. Then it processes the data, indents the results in the "pretty" format (indented 4 spaces), saves it to the JSON file successmetrics.json and uses it to generate the executive report and the table report for those apps and orgs. 
+
+A similar example but using date range would be:
+
+`python3 success_metrics.py -a admin:admin123 -d 2019-06-01:2020-05-05 -u http://localhost:8070 -i 'd8f63854f4ea4405a9600e34f4d4514e','Test App1','MyApp3' -o 'c6f2775a45d44d43a32621536e638a8e','The A Team' -p -r`
+
 
 ### The Docker equivalent for advanced usage
 `docker run --name iq-success-metrics --rm -it -v /tmp/output:/usr/src/app/output sonatypecommunity/iq-success-metrics:latest success_metrics.py -a admin:admin123 -s 50 -u http://host.docker.internal:8070 -i 'd8f63854f4ea4405a9600e34f4d4514e','Test App1','MyApp3' -o 'c6f2775a45d44d43a32621536e638a8e','The A Team' -p -r`
