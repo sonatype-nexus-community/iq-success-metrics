@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import datetime
+import time
 import json
 import sys
 import argparse
@@ -29,7 +30,33 @@ config = {
         "rates": ["fixedRate","waivedRate","dealtRate"]
 }
 
+#---------------------------------
+# Print iterations progress
+def printProgressBar (
+        iteration, 
+        total, 
+        prefix = 'Progress:', 
+        suffix = 'Complete', 
+        decimals = 1, 
+        length = 50, 
+        fill = '█'):
+
+    time.sleep(0.1)
+    percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
+    filledLength = int(length * iteration // total)
+    bar = fill * filledLength + '-' * (length - filledLength)
+    print('\r%s |%s| %s%% %s' % (prefix, bar, percent, suffix), end = '\r')
+    # Print New Line on Complete
+    if iteration == total: 
+        print()
+
+#---------------------------------
+
 def main():
+
+        t,segments = 0, 11
+        printProgressBar(t,segments)
+        
         parser = argparse.ArgumentParser(description="Sample command: python3 success_metrics.py -a admin:admin123 -s 50 -u 'http://localhost:8070' -i 'd8f63854f4ea4405a9600e34f4d4514e','Test App1','MyApp3' -o 'c6f2775a45d44d43a32621536e638a8e','The A Team' -p -r")
         parser.add_argument('-a','--auth',   help='(in the format user:password, by default admin:admin123)', default="admin:admin123", required=False)
         parser.add_argument('-s','--scope',  help='(number of weeks from current one to gather data from)', type=int, required=False)
@@ -51,8 +78,8 @@ def main():
                 first = dateRange[0].split("-",2)
                 last = dateRange[1].split("-",2)
                 #print(dateRange)
-                print("first: ",first)
-                print("last: ",last)
+                #print("first: ",first)
+                #print("last: ",last)
         iq_session.auth = requests.auth.HTTPBasicAuth(str(creds[0]), str(creds[1]) )
         
         if args["insecure"] == True:
@@ -67,6 +94,12 @@ def main():
 
         #search for organizationId
         orgId = searchOrgs(args["orgId"], args["url"])
+
+#-----------------------------------------------------------------------------------   
+        t +=1
+        printProgressBar(t,segments)
+#-----------------------------------------------------------------------------------
+
 
         # get success metrics
         if args["scope"]:
@@ -91,10 +124,15 @@ def main():
         reportAverages, reportCounts, reportSummary = {}, {}, {"appNames":[], "orgNames":[], "weeks":[], "dates":[], "timePeriodStart" : []}
         reportAveragesLic, reportCountsLic, reportLic = {}, {}, {"appNames":[], "orgNames":[], "weeks":[], "dates":[], "timePeriodStart" : []}
         reportAveragesSec, reportCountsSec, reportSec = {}, {}, {"appNames":[], "orgNames":[], "weeks":[], "dates":[], "timePeriodStart" : []}
+
+#-----------------------------------------------------------------------------------   
+        t +=1
+        printProgressBar(t,segments)
+#-----------------------------------------------------------------------------------
         
         # set the weeks range in the report summary for the required scope.
         if args["scope"]:
-                print("scope: ",scope)
+                #print("scope: ",scope)
                 for recency in range(scope, 0, -1):
                         reportSummary["timePeriodStart"].append( get_week_start( recency ) )
                         reportLic["timePeriodStart"].append( get_week_start( recency ) )
@@ -105,7 +143,7 @@ def main():
                         reportSec["weeks"].append( get_week_only( recency ) )
                         
         elif args["dateRange"]:
-                print("scope: ",scope)
+                #print("scope: ",scope)
                 for recency in range(scope, 0, -1):
                         reportSummary["timePeriodStart"].append( get_week_start_range( last, recency ) )
                         reportLic["timePeriodStart"].append( get_week_start_range( last, recency ) )
@@ -114,6 +152,12 @@ def main():
                         #print(reportSummary["weeks"])
                         reportLic["weeks"].append( get_week_only_range( last, recency ) )
                         reportSec["weeks"].append( get_week_only_range( last, recency ) )
+
+#-----------------------------------------------------------------------------------   
+        t +=1
+        printProgressBar(t,segments)
+#-----------------------------------------------------------------------------------
+
         
         # building aggregated set of fields for MTTR
         for mttr in config["mttr"]:
@@ -141,6 +185,12 @@ def main():
                 reportCounts[status].update({ "TOTAL" : zeros(reportSummary["weeks"]) })
                 reportCountsLic[status].update({ "TOTAL" : zeros(reportLic["weeks"]) })
                 reportCountsSec[status].update({ "TOTAL" : zeros(reportSec["weeks"]) })
+
+#-----------------------------------------------------------------------------------   
+        t +=1
+        printProgressBar(t,segments)
+#-----------------------------------------------------------------------------------
+
 
         #-----------------------------------------------------------------------------------
         # loop through applications in success metric data.
@@ -200,17 +250,36 @@ def main():
                         #        reportCounts[rates]["TOTAL"][week_no] += app_summary[rates]["TOTAL"]["rng"][position]
 
         #-----------------------------------------------------------------------------------
+
+#-----------------------------------------------------------------------------------   
+        t +=1
+        printProgressBar(t,segments)
+#-----------------------------------------------------------------------------------
+
+
         #convert the dicts to arrays.
         for fields in ["appNumberScan", "appOnboard", "weeklyScans"]:
                 reportSummary.update({ fields : list( reportCounts[fields].values() ) })
                 reportLic.update({ fields : list( reportCountsLic[fields].values() ) })
                 reportSec.update({ fields : list( reportCountsSec[fields].values() ) })
 
+#-----------------------------------------------------------------------------------   
+        t +=1
+        printProgressBar(t,segments)
+#-----------------------------------------------------------------------------------
+
+
         # calculate the averages for each week.  Returns None when no values are available for a given week. 
         for mttr in config["mttr"]:
                 reportSummary.update({ mttr: list( avg(value) for value in reportAverages[mttr].values()) })
                 reportLic.update({ mttr: list( avg(value) for value in reportAveragesLic[mttr].values()) })
                 reportSec.update({ mttr: list( avg(value) for value in reportAveragesSec[mttr].values()) })
+
+#-----------------------------------------------------------------------------------   
+        t +=1
+        printProgressBar(t,segments)
+#-----------------------------------------------------------------------------------
+
         
         for status in config["status"]:
                 reportSummary.update({ status: {} })
@@ -238,7 +307,13 @@ def main():
         #        reportSummary[rates].update({ "TOTAL" : list( reportCounts[rates]["TOTAL"].values() ) })
 
         riskRatioCri, riskRatioSev, riskRatioMod, riskRatioLow = [],[],[],[]
-        print(str(len(reportSummary['weeks'])))
+
+#-----------------------------------------------------------------------------------   
+        t +=1
+        printProgressBar(t,segments)
+#-----------------------------------------------------------------------------------
+
+        #print(str(len(reportSummary['weeks'])))
         for week_no in range(0,len(reportSummary['weeks'])):
                 if reportSummary['appOnboard'][week_no] != 0:
                         riskRatioCri.append(str(round((reportSummary['openCountsAtTimePeriodEnd']['CRITICAL'][week_no])/(reportSummary['appOnboard'][week_no]),2)))
@@ -255,6 +330,12 @@ def main():
         reportSummary.update({'riskRatioModerate' : riskRatioMod})
         reportSummary.update({'riskRatioLow' : riskRatioLow})
 #-----------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------   
+        t +=1
+        printProgressBar(t,segments)
+#-----------------------------------------------------------------------------------
+
+
         riskRatioCri, riskRatioSev, riskRatioMod, riskRatioLow = [],[],[],[]
         for week_no in range(0,len(reportLic['weeks'])):
                 if reportLic['appOnboard'][week_no] != 0:
@@ -272,6 +353,12 @@ def main():
         reportLic.update({'riskRatioModerate' : riskRatioMod})
         reportLic.update({'riskRatioLow' : riskRatioLow})
 #-----------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------   
+        t +=1
+        printProgressBar(t,segments)
+#-----------------------------------------------------------------------------------
+
+
         riskRatioCri, riskRatioSev, riskRatioMod, riskRatioLow = [],[],[],[]
         for week_no in range(0,len(reportSec['weeks'])):
                 if reportSec['appOnboard'][week_no] != 0:
@@ -292,6 +379,11 @@ def main():
         
         # Final report with summary and data objects.
         report = {"summary": reportSummary, "apps": data, "licences": reportLic, "security": reportSec}
+
+#-----------------------------------------------------------------------------------   
+        t +=1
+        printProgressBar(t,segments)
+#-----------------------------------------------------------------------------------
 
         #-----------------------------------------------------------------------------------
         # Setting the default to output to json file with the option to format it to human readable.
@@ -399,7 +491,7 @@ def get_ISO_week(date): # date is needed to calculate ISO week
         d = datetime.date(int(date[0]),int(date[1]),int(date[2]))
         #print(d)
         period = '{}-W{}'.format(d.year , d.isocalendar()[1])
-        print("ISO week: ",period)
+        #print("ISO week: ",period)
         return period
 
 def get_week_date(s):
