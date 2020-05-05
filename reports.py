@@ -332,7 +332,7 @@ def executive():
     content3 = "\t- Scanned applications "+str(scanned)+" times at an average of "+str(weeklyScanned)+" apps scanned per week"
     content4 = "\t- Performed "+str(scans)+" scans at an average of "+str(weeklyScans)+" scans per week"
     content5 = "\t- Discovered "+str(discovered)+" violations ("+str(disCri)+" of them Critical), fixing "+str(fixed)+" and waiving "+str(waived)+" of them"
-    content6 = "\t  Which means that you have reduced "+str(dealtRate)+"% of your total risk"
+    content6 = "\t  Which means that you have remediated "+str(dealtRate)+"% of your known risk"
     content7 = "\t- On average, each application had "+str(riskRatioAvg)+" Critical violations"
     content8 = "\t\t\t Most Criticals: "+str(mostCri)+" with "+str(mostCriVal)+" Critical violations"
     content9 = "\t\t\t Least Criticals: "+str(leastCri)+" with "+str(leastCriVal)+" Critical violations"
@@ -723,7 +723,7 @@ def executiveSec():
     content3 = "\t- Scanned applications "+str(scanned)+" times at an average of "+str(weeklyScanned)+" apps scanned per week"
     content4 = "\t- Performed "+str(scans)+" scans at an average of "+str(weeklyScans)+" scans per week"
     content5 = "\t- Discovered "+str(discovered)+" violations ("+str(disCri)+" of them Critical), fixing "+str(fixed)+" and waiving "+str(waived)+" of them"
-    content6 = "\t  Which means that you have reduced "+str(dealtRate)+"% of your total risk"
+    content6 = "\t  Which means that you have remediated "+str(dealtRate)+"% of your known risk"
     content7 = "\t- On average, each application had "+str(riskRatioAvg)+" Critical violations"
     content8 = "\t\t\t Most Criticals: "+str(mostCri)+" with "+str(mostCriVal)+" Critical violations"
     content9 = "\t\t\t Least Criticals: "+str(leastCri)+" with "+str(leastCriVal)+" Critical violations"
@@ -916,7 +916,7 @@ def executiveSec():
     printProgressBar(t,graphNo)
 
 #---------------------------------------------------------------------
-    make_stacked_chart(
+    make_group_chart(
         Security['timePeriodStart'],
         [
             Security['discoveredCounts']['TOTAL'],
@@ -1112,7 +1112,7 @@ def executiveLic():
     content3 = "\t- Scanned applications "+str(scanned)+" times at an average of "+str(weeklyScanned)+" apps scanned per week"
     content4 = "\t- Performed "+str(scans)+" scans at an average of "+str(weeklyScans)+" scans per week"
     content5 = "\t- Discovered "+str(discovered)+" violations ("+str(disCri)+" of them Critical), fixing "+str(fixed)+" and waiving "+str(waived)+" of them"
-    content6 = "\t  Which means that you have reduced "+str(dealtRate)+"% of your total risk"
+    content6 = "\t  Which means that you have remediated "+str(dealtRate)+"% of your known risk"
     content7 = "\t- On average, each application had "+str(riskRatioAvg)+" Critical violations"
     content8 = "\t\t\t Most Criticals: "+str(mostCri)+" with "+str(mostCriVal)+" Critical violations"
     content9 = "\t\t\t Least Criticals: "+str(leastCri)+" with "+str(leastCriVal)+" Critical violations"
@@ -1305,7 +1305,7 @@ def executiveLic():
     printProgressBar(t,graphNo)
 
 #---------------------------------------------------------------------
-    make_stacked_chart(
+    make_group_chart(
         licences['timePeriodStart'],
         [
             licences['discoveredCounts']['TOTAL'],

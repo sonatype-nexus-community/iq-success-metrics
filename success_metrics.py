@@ -30,9 +30,9 @@ config = {
 }
 
 def main():
-        parser = argparse.ArgumentParser(description="Sample command: python3 success_metrics.py -a admin:admin123 -s 10 -u 'http://localhost:8070' -i 'd8f63854f4ea4405a9600e34f4d4514e','Test App1','MyApp3' -o 'c6f2775a45d44d43a32621536e638a8e','The A Team' -p -r")
+        parser = argparse.ArgumentParser(description="Sample command: python3 success_metrics.py -a admin:admin123 -s 50 -u 'http://localhost:8070' -i 'd8f63854f4ea4405a9600e34f4d4514e','Test App1','MyApp3' -o 'c6f2775a45d44d43a32621536e638a8e','The A Team' -p -r")
         parser.add_argument('-a','--auth',   help='(in the format user:password, by default admin:admin123)', default="admin:admin123", required=False)
-        parser.add_argument('-s','--scope',  help='(number of weeks from current one to gather data from. Default value is six weeks)', type=int, default="6", required=False)
+        parser.add_argument('-s','--scope',  help='(number of weeks from current one to gather data from)', type=int, required=False)
         parser.add_argument('-u','--url',    help='(URL for IQ server, by default http://localhost:8070)', default="http://localhost:8070", required=False)
         parser.add_argument('-k','--insecure', help='(Disable SSL Certificate Validation)', action='store_true', required=False)
         parser.add_argument('-i','--appId',  help='(list of application IDs, application Names, application Public IDs or combination thereof to filter from all available data. Default is all available data)', required=False)
@@ -41,9 +41,18 @@ def main():
         parser.add_argument('-r','--reports', help='(generates the executive report and the table report for all violations)', action='store_true',required=False)
         parser.add_argument('-rs','--reportsSec', help='(same as -r but only for Security violations)', action='store_true',required=False)
         parser.add_argument('-rl','--reportsLic', help='(same as -r but only for Licensing violations)', action='store_true',required=False)
+        parser.add_argument('-d','--dateRange',    help='(creates JSON for a specified date range [yyyy-mm-dd:yyyy-mm-dd]. Do not use in conjunction with -s option)', required=False)
+        
 
         args = vars(parser.parse_args())
         creds = args["auth"].split(":",1)
+        if args["dateRange"]:
+                dateRange = args["dateRange"].split(":",1)
+                first = dateRange[0].split("-",2)
+                last = dateRange[1].split("-",2)
+                #print(dateRange)
+                print("first: ",first)
+                print("last: ",last)
         iq_session.auth = requests.auth.HTTPBasicAuth(str(creds[0]), str(creds[1]) )
         
         if args["insecure"] == True:
@@ -60,7 +69,14 @@ def main():
         orgId = searchOrgs(args["orgId"], args["url"])
 
         # get success metrics
-        data = get_metrics(args["url"], args["scope"], appId,  orgId ) #collects data with or without filters according to appId and orgId
+        if args["scope"]:
+                scope = args["scope"]
+                data = get_metrics(args["url"], scope, appId,  orgId ) #collects data with or without filters according to appId and orgId
+        elif args["dateRange"]:
+                scope=get_scope(first,last)
+                data = get_metrics_range(args["url"], first, last, appId,  orgId ) #collects data with or without filters according to appId and orgId
+        else:
+                print("No scope or date range has been provided")
 
         if data is None: 
                 print("No results found.")
@@ -77,14 +93,27 @@ def main():
         reportAveragesSec, reportCountsSec, reportSec = {}, {}, {"appNames":[], "orgNames":[], "weeks":[], "dates":[], "timePeriodStart" : []}
         
         # set the weeks range in the report summary for the required scope.
-        for recency in range(args["scope"], 0, -1):
-                reportSummary["timePeriodStart"].append( get_week_start( recency ) )
-                reportLic["timePeriodStart"].append( get_week_start( recency ) )
-                reportSec["timePeriodStart"].append( get_week_start( recency ) )
-                reportSummary["weeks"].append( get_week_only( recency ) )
-                reportLic["weeks"].append( get_week_only( recency ) )
-                reportSec["weeks"].append( get_week_only( recency ) )
-                
+        if args["scope"]:
+                print("scope: ",scope)
+                for recency in range(scope, 0, -1):
+                        reportSummary["timePeriodStart"].append( get_week_start( recency ) )
+                        reportLic["timePeriodStart"].append( get_week_start( recency ) )
+                        reportSec["timePeriodStart"].append( get_week_start( recency ) )
+                        reportSummary["weeks"].append( get_week_only( recency ) )
+                        #print(reportSummary["weeks"])
+                        reportLic["weeks"].append( get_week_only( recency ) )
+                        reportSec["weeks"].append( get_week_only( recency ) )
+                        
+        elif args["dateRange"]:
+                print("scope: ",scope)
+                for recency in range(scope, 0, -1):
+                        reportSummary["timePeriodStart"].append( get_week_start_range( last, recency ) )
+                        reportLic["timePeriodStart"].append( get_week_start_range( last, recency ) )
+                        reportSec["timePeriodStart"].append( get_week_start_range( last, recency ) )
+                        reportSummary["weeks"].append( get_week_only_range( last, recency ) )
+                        #print(reportSummary["weeks"])
+                        reportLic["weeks"].append( get_week_only_range( last, recency ) )
+                        reportSec["weeks"].append( get_week_only_range( last, recency ) )
         
         # building aggregated set of fields for MTTR
         for mttr in config["mttr"]:
@@ -133,7 +162,7 @@ def main():
                 app.update( {"licences": app_summary} )
                 app.update( {"security": app_summary} )
                 
-
+                #print(app_summary["weeks"])
                 for week_no in app_summary["weeks"]:
                         position = app_summary["weeks"].index(week_no)
                         reportCounts["appOnboard"][week_no] += 1
@@ -209,6 +238,7 @@ def main():
         #        reportSummary[rates].update({ "TOTAL" : list( reportCounts[rates]["TOTAL"].values() ) })
 
         riskRatioCri, riskRatioSev, riskRatioMod, riskRatioLow = [],[],[],[]
+        print(str(len(reportSummary['weeks'])))
         for week_no in range(0,len(reportSummary['weeks'])):
                 if reportSummary['appOnboard'][week_no] != 0:
                         riskRatioCri.append(str(round((reportSummary['openCountsAtTimePeriodEnd']['CRITICAL'][week_no])/(reportSummary['appOnboard'][week_no]),2)))
@@ -326,17 +356,50 @@ def get_week_start(recency = 0):
         d = datetime.date.today()
         d = d - datetime.timedelta(days=d.weekday()+(recency*7) )
         period = '{}'.format( d.isoformat() )
+        #print("weekstart: ",period)
         return period
+
+def get_week_start_range(last, recency = 0):
+        d = datetime.date(int(last[0]),int(last[1]),int(last[2]))
+        d = d - datetime.timedelta(days=d.weekday()+((recency-1)*7) )
+        period = '{}'.format( d.isoformat() )
+        #print("weekstart: ",period)
+        return period
+
 
 def get_week_only(recency = 0):
-        d = datetime.date.today() - datetime.timedelta(days=(recency*7))
+        d = datetime.date.today() - datetime.timedelta(days=((recency)*7))
         period = '{}'.format(d.isocalendar()[1])
+        #print("weekonly: ",period)
         return period
 
+def get_week_only_range(last,recency = 0):
+        d = datetime.date(int(last[0]),int(last[1]),int(last[2])) - datetime.timedelta(days=((recency-1)*7))
+        period = '{}'.format(d.isocalendar()[1])
+        #print("weekonly: ",period)
+        return period
+
+def get_scope(first,last):
+
+        from datetime import date
+
+        d1 = date(int(last[0]),int(last[1]),int(last[2]))
+        d2 = date(int(first[0]),int(first[1]),int(first[2]))
+        scope = (d1-d2).days//7
+        scope += 2
+        #print(scope)
+        return scope
                                                   
 def get_week(recency = 0): # recency is number of weeks prior to current week.
         d = datetime.date.today() - datetime.timedelta(days=(recency*7))
         period = '{}-W{}'.format(d.year , d.isocalendar()[1])
+        return period
+
+def get_ISO_week(date): # date is needed to calculate ISO week
+        d = datetime.date(int(date[0]),int(date[1]),int(date[2]))
+        #print(d)
+        period = '{}-W{}'.format(d.year , d.isocalendar()[1])
+        print("ISO week: ",period)
         return period
 
 def get_week_date(s):
@@ -350,6 +413,14 @@ def get_metrics(iq_url, scope = 6, appId = [], orgId = []): # scope is number of
         r_body = {"timePeriod": "WEEK", "firstTimePeriod": get_week(scope) ,"lastTimePeriod": get_week(1), #use get_week(0) instead if looking for Year-To-Date data instead of fully completed weeks
                 "applicationIds": appId, "organizationIds": orgId}
         response = iq_session.post( url, json=r_body, headers=iq_header)
+        return response.json()
+
+def get_metrics_range(iq_url, first, last, appId = [], orgId = []): # first is initial week and last is the last week of the date range.
+        url = "{}/api/v2/reports/metrics".format(iq_url)
+        iq_header = {'Content-Type':'application/json', 'Accept':'application/json'}
+        r_body = {"timePeriod": "WEEK", "firstTimePeriod": get_ISO_week(first) ,"lastTimePeriod": get_ISO_week(last), "applicationIds": appId, "organizationIds": orgId}
+        response = iq_session.post( url, json=r_body, headers=iq_header)
+        #print(response.json())
         return response.json()
 
 def rnd(n): return round(n,2)
