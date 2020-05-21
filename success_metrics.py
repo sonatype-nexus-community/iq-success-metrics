@@ -51,11 +51,356 @@ def printProgressBar (
         print()
 
 #---------------------------------
+def appChecker(iq_url):
+    appList = []
+    url = "{}/api/v2/applications".format(iq_url)
+    response = iq_session.get(url)
+    rawData = response.json()
+    for i in range(0,len(rawData["applications"])):
+        appList.append(rawData["applications"][i]["id"])
+    
+    #print("Response: ",response.json())
+    return appList,len(appList)
+    
+
+#---------------------------------
+
+
+#---------------------------------
+def runScript(args,appId,orgId):
+
+                t,segments = 0, 11
+                printProgressBar(t,segments)
+
+        #-----------------------------------------------------------------------------------   
+                t +=1
+                printProgressBar(t,segments)
+        #-----------------------------------------------------------------------------------
+        
+                # get success metrics
+                if args["scope"]:
+                        scope = args["scope"]
+                        data = get_metrics(args["url"], scope, appId,  orgId ) #collects data with or without filters according to appId and orgId
+                elif args["dateRange"]:
+                        scope=get_scope(first,last)
+                        data = get_metrics_range(args["url"], first, last, appId,  orgId ) #collects data with or without filters according to appId and orgId
+                else:
+                        print("No scope or date range has been provided")
+
+                if data is None: 
+                        print("No results found.")
+                        raise SystemExit
+
+                #-----------------------------------------------------------------------------------
+                #reportCounts is used to aggregate totals from the filtered set of applications.
+                #reportAverages will calculate averages for MTTR. 
+                #reportSummary will return the final results.
+                #reportLic will return the final results for Licence vulnerabilities only
+                #reportSec will return the final results for security vulnerabilities only
+                reportAverages, reportCounts, reportSummary = {}, {}, {"appNames":[], "orgNames":[], "weeks":[], "dates":[], "timePeriodStart" : []}
+                reportAveragesLic, reportCountsLic, reportLic = {}, {}, {"appNames":[], "orgNames":[], "weeks":[], "dates":[], "timePeriodStart" : []}
+                reportAveragesSec, reportCountsSec, reportSec = {}, {}, {"appNames":[], "orgNames":[], "weeks":[], "dates":[], "timePeriodStart" : []}
+
+        #-----------------------------------------------------------------------------------   
+                t +=1
+                printProgressBar(t,segments)
+        #-----------------------------------------------------------------------------------
+                
+                # set the weeks range in the report summary for the required scope.
+                if args["scope"]:
+                        #print("scope: ",scope)
+                        for recency in range(scope, 0, -1):
+                                reportSummary["timePeriodStart"].append( get_week_start( recency ) )
+                                reportLic["timePeriodStart"].append( get_week_start( recency ) )
+                                reportSec["timePeriodStart"].append( get_week_start( recency ) )
+                                reportSummary["weeks"].append( get_week_only( recency ) )
+                                #print(reportSummary["weeks"])
+                                reportLic["weeks"].append( get_week_only( recency ) )
+                                reportSec["weeks"].append( get_week_only( recency ) )
+                                
+                elif args["dateRange"]:
+                        #print("scope: ",scope)
+                        for recency in range(scope, 0, -1):
+                                reportSummary["timePeriodStart"].append( get_week_start_range( last, recency ) )
+                                reportLic["timePeriodStart"].append( get_week_start_range( last, recency ) )
+                                reportSec["timePeriodStart"].append( get_week_start_range( last, recency ) )
+                                reportSummary["weeks"].append( get_week_only_range( last, recency ) )
+                                #print(reportSummary["weeks"])
+                                reportLic["weeks"].append( get_week_only_range( last, recency ) )
+                                reportSec["weeks"].append( get_week_only_range( last, recency ) )
+
+        #-----------------------------------------------------------------------------------   
+                t +=1
+                printProgressBar(t,segments)
+        #-----------------------------------------------------------------------------------
+
+                
+                # building aggregated set of fields for MTTR
+                for mttr in config["mttr"]:
+                        reportAverages.update({mttr: empties(reportSummary["weeks"]) })
+                        reportAveragesLic.update({mttr: empties(reportLic["weeks"]) })
+                        reportAveragesSec.update({mttr: empties(reportSec["weeks"]) })
+                        
+
+                # set empty range for scope
+                for fields in ["appNumberScan", "appOnboard", "weeklyScans","riskRatioCritical","riskRatioSevere","riskRatioModerate","riskRatioLow"]:
+                        reportCounts.update({ fields : zeros(reportSummary["weeks"]) })
+                        reportCountsLic.update({ fields : zeros(reportLic["weeks"]) })
+                        reportCountsSec.update({ fields : zeros(reportSec["weeks"]) })
+
+                # building aggregated set of fields.
+                for status in config["status"]:
+                        reportCounts.update({ status: {} })
+                        reportCountsLic.update({ status: {} })
+                        reportCountsSec.update({ status: {} })
+                        
+                        for risk in config["risk"]:
+                                reportCounts[status].update({ risk: zeros(reportSummary["weeks"]) })
+                                reportCountsLic[status].update({ risk: zeros(reportLic["weeks"]) })
+                                reportCountsSec[status].update({ risk: zeros(reportSec["weeks"]) })
+                        reportCounts[status].update({ "TOTAL" : zeros(reportSummary["weeks"]) })
+                        reportCountsLic[status].update({ "TOTAL" : zeros(reportLic["weeks"]) })
+                        reportCountsSec[status].update({ "TOTAL" : zeros(reportSec["weeks"]) })
+
+        #-----------------------------------------------------------------------------------   
+                t +=1
+                printProgressBar(t,segments)
+        #-----------------------------------------------------------------------------------
+
+
+                #-----------------------------------------------------------------------------------
+                # loop through applications in success metric data.
+                for app in data:
+                        reportSummary['appNames'].append( app["applicationName"] )
+                        reportLic['appNames'].append( app["applicationName"] )
+                        reportSec['appNames'].append( app["applicationName"] )
+                        reportSummary['orgNames'].append( app["organizationName"] )
+                        reportLic['orgNames'].append( app["organizationName"] )
+                        reportSec['orgNames'].append( app["organizationName"] )
+                        
+                        app_summary = get_aggs_list() # zeroed summary template.
+                        for aggregation in app["aggregations"]:
+                                # process the weekly reports for application.
+                                process_week(aggregation, app_summary)
+
+                        compute_summary(app_summary)
+                        app.update( {"summary": app_summary} )
+                        app.update( {"licences": app_summary} )
+                        app.update( {"security": app_summary} )
+                        
+                        #print(app_summary["weeks"])
+                        for week_no in app_summary["weeks"]:
+                                position = app_summary["weeks"].index(week_no)
+                                reportCounts["appOnboard"][week_no] += 1
+                                reportCountsLic["appOnboard"][week_no] += 1
+                                reportCountsSec["appOnboard"][week_no] += 1
+
+                                # only include the app's week when they have a value
+                                for mttr in config["mttr"]:
+                                        value = app_summary[mttr]["rng"][position]
+                                        if not value is None:
+                                                reportAverages[mttr][week_no].append( value )
+                                                reportAveragesLic[mttr][week_no].append( value )
+                                                reportAveragesSec[mttr][week_no].append( value )
+
+                                if app_summary["evaluationCount"]["rng"][position] != 0:
+                                        reportCounts["appNumberScan"][week_no] += 1
+                                        reportCountsLic["appNumberScan"][week_no] += 1
+                                        reportCountsSec["appNumberScan"][week_no] += 1
+                                        reportCounts["weeklyScans"][week_no] += app_summary["evaluationCount"]["rng"][position] 
+                                        reportCountsLic["weeklyScans"][week_no] += app_summary["evaluationCount"]["rng"][position] 
+                                        reportCountsSec["weeklyScans"][week_no] += app_summary["evaluationCount"]["rng"][position] 
+
+                                for status in config["status"]:
+                                        for risk in config["risk"]:
+                                                reportCounts[status][risk][week_no] += app_summary[status]["TOTAL"][risk]["rng"][position]
+                                                reportCountsLic[status][risk][week_no] += app_summary[status]["LICENSE"][risk]["rng"][position]
+                                                reportCountsSec[status][risk][week_no] += app_summary[status]["SECURITY"][risk]["rng"][position]
+                                        reportCounts[status]["TOTAL"][week_no] += app_summary[status]["TOTAL"]["rng"][position]
+                                        reportCountsLic[status]["TOTAL"][week_no] += app_summary[status]["LICENSE"]["TOTAL"]["rng"][position]
+                                        reportCountsSec[status]["TOTAL"][week_no] += app_summary[status]["SECURITY"]["TOTAL"]["rng"][position]
+
+                                #for rates in config["rates"]:
+                                #        for risk in config["risk"]:
+                                #                reportCounts[rates][risk][week_no] += app_summary[rates]["TOTAL"][risk]["rng"][position]
+                                #        reportCounts[rates]["TOTAL"][week_no] += app_summary[rates]["TOTAL"]["rng"][position]
+
+                #-----------------------------------------------------------------------------------
+
+        #-----------------------------------------------------------------------------------   
+                t +=1
+                printProgressBar(t,segments)
+        #-----------------------------------------------------------------------------------
+
+
+                #convert the dicts to arrays.
+                for fields in ["appNumberScan", "appOnboard", "weeklyScans"]:
+                        reportSummary.update({ fields : list( reportCounts[fields].values() ) })
+                        reportLic.update({ fields : list( reportCountsLic[fields].values() ) })
+                        reportSec.update({ fields : list( reportCountsSec[fields].values() ) })
+
+        #-----------------------------------------------------------------------------------   
+                t +=1
+                printProgressBar(t,segments)
+        #-----------------------------------------------------------------------------------
+
+
+                # calculate the averages for each week.  Returns None when no values are available for a given week. 
+                for mttr in config["mttr"]:
+                        reportSummary.update({ mttr: list( avg(value) for value in reportAverages[mttr].values()) })
+                        reportLic.update({ mttr: list( avg(value) for value in reportAveragesLic[mttr].values()) })
+                        reportSec.update({ mttr: list( avg(value) for value in reportAveragesSec[mttr].values()) })
+
+        #-----------------------------------------------------------------------------------   
+                t +=1
+                printProgressBar(t,segments)
+        #-----------------------------------------------------------------------------------
+
+                
+                for status in config["status"]:
+                        reportSummary.update({ status: {} })
+                        reportLic.update({ status: {} })
+                        reportSec.update({ status: {} })
+
+                        for risk in config["risk"]:
+                                reportSummary[status].update({ risk: list( reportCounts[status][risk].values() ) })
+                                reportLic[status].update({ risk: list( reportCountsLic[status][risk].values() ) })
+                                reportSec[status].update({ risk: list( reportCountsSec[status][risk].values() ) })
+                        reportSummary[status].update({ "LIST" : list( reportSummary[status].values() ) })
+                        reportLic[status].update({ "LIST" : list( reportLic[status].values() ) })
+                        reportSec[status].update({ "LIST" : list( reportSec[status].values() ) })    
+                        reportSummary[status].update({ "TOTAL" : list( reportCounts[status]["TOTAL"].values() ) })
+                        reportLic[status].update({ "TOTAL" : list( reportCountsLic[status]["TOTAL"].values() ) })
+                        reportSec[status].update({ "TOTAL" : list( reportCountsSec[status]["TOTAL"].values() ) })
+
+                #for rates in config["rates"]:
+                #        reportSummary.update({ rates: {} })
+                #
+                #        for risk in config["risk"]:
+                #                reportSummary[rates].update({ risk: list( reportCounts[rates][risk].values() ) })
+                #
+                #        reportSummary[rates].update({ "LIST" : list( reportSummary[rates].values() ) })        
+                #        reportSummary[rates].update({ "TOTAL" : list( reportCounts[rates]["TOTAL"].values() ) })
+
+                riskRatioCri, riskRatioSev, riskRatioMod, riskRatioLow = [],[],[],[]
+
+        #-----------------------------------------------------------------------------------   
+                t +=1
+                printProgressBar(t,segments)
+        #-----------------------------------------------------------------------------------
+
+                #print(str(len(reportSummary['weeks'])))
+                for week_no in range(0,len(reportSummary['weeks'])):
+                        if reportSummary['appOnboard'][week_no] != 0:
+                                riskRatioCri.append(str(round((reportSummary['openCountsAtTimePeriodEnd']['CRITICAL'][week_no])/(reportSummary['appOnboard'][week_no]),2)))
+                                riskRatioSev.append(str(round((reportSummary['openCountsAtTimePeriodEnd']['SEVERE'][week_no])/(reportSummary['appOnboard'][week_no]),2)))
+                                riskRatioMod.append(str(round((reportSummary['openCountsAtTimePeriodEnd']['MODERATE'][week_no])/(reportSummary['appOnboard'][week_no]),2)))
+                                riskRatioLow.append(str(round((reportSummary['openCountsAtTimePeriodEnd']['LOW'][week_no])/(reportSummary['appOnboard'][week_no]),2)))
+                        else:
+                                riskRatioCri.append(str(0))
+                                riskRatioSev.append(str(0))
+                                riskRatioMod.append(str(0))
+                                riskRatioLow.append(str(0))
+                reportSummary.update({'riskRatioCritical' : riskRatioCri})
+                reportSummary.update({'riskRatioSevere' : riskRatioSev})
+                reportSummary.update({'riskRatioModerate' : riskRatioMod})
+                reportSummary.update({'riskRatioLow' : riskRatioLow})
+        #-----------------------------------------------------------------------------------------
+        #-----------------------------------------------------------------------------------   
+                t +=1
+                printProgressBar(t,segments)
+        #-----------------------------------------------------------------------------------
+
+
+                riskRatioCri, riskRatioSev, riskRatioMod, riskRatioLow = [],[],[],[]
+                for week_no in range(0,len(reportLic['weeks'])):
+                        if reportLic['appOnboard'][week_no] != 0:
+                                riskRatioCri.append(str(round((reportLic['openCountsAtTimePeriodEnd']['CRITICAL'][week_no])/(reportLic['appOnboard'][week_no]),2)))
+                                riskRatioSev.append(str(round((reportLic['openCountsAtTimePeriodEnd']['SEVERE'][week_no])/(reportLic['appOnboard'][week_no]),2)))
+                                riskRatioMod.append(str(round((reportLic['openCountsAtTimePeriodEnd']['MODERATE'][week_no])/(reportLic['appOnboard'][week_no]),2)))
+                                riskRatioLow.append(str(round((reportLic['openCountsAtTimePeriodEnd']['LOW'][week_no])/(reportLic['appOnboard'][week_no]),2)))
+                        else:
+                                riskRatioCri.append(str(0))
+                                riskRatioSev.append(str(0))
+                                riskRatioMod.append(str(0))
+                                riskRatioLow.append(str(0))
+                reportLic.update({'riskRatioCritical' : riskRatioCri})
+                reportLic.update({'riskRatioSevere' : riskRatioSev})
+                reportLic.update({'riskRatioModerate' : riskRatioMod})
+                reportLic.update({'riskRatioLow' : riskRatioLow})
+        #-----------------------------------------------------------------------------------------
+        #-----------------------------------------------------------------------------------   
+                t +=1
+                printProgressBar(t,segments)
+        #-----------------------------------------------------------------------------------
+
+
+                riskRatioCri, riskRatioSev, riskRatioMod, riskRatioLow = [],[],[],[]
+                for week_no in range(0,len(reportSec['weeks'])):
+                        if reportSec['appOnboard'][week_no] != 0:
+                                riskRatioCri.append(str(round((reportSec['openCountsAtTimePeriodEnd']['CRITICAL'][week_no])/(reportSec['appOnboard'][week_no]),2)))
+                                riskRatioSev.append(str(round((reportSec['openCountsAtTimePeriodEnd']['SEVERE'][week_no])/(reportSec['appOnboard'][week_no]),2)))
+                                riskRatioMod.append(str(round((reportSec['openCountsAtTimePeriodEnd']['MODERATE'][week_no])/(reportSec['appOnboard'][week_no]),2)))
+                                riskRatioLow.append(str(round((reportSec['openCountsAtTimePeriodEnd']['LOW'][week_no])/(reportSec['appOnboard'][week_no]),2)))
+                        else:
+                                riskRatioCri.append(str(0))
+                                riskRatioSev.append(str(0))
+                                riskRatioMod.append(str(0))
+                                riskRatioLow.append(str(0))
+                reportSec.update({'riskRatioCritical' : riskRatioCri})
+                reportSec.update({'riskRatioSevere' : riskRatioSev})
+                reportSec.update({'riskRatioModerate' : riskRatioMod})
+                reportSec.update({'riskRatioLow' : riskRatioLow})
+        #-----------------------------------------------------------------------------------------
+                
+                # Final report with summary and data objects.
+                report = {"summary": reportSummary, "apps": data, "licences": reportLic, "security": reportSec}
+
+        #-----------------------------------------------------------------------------------   
+                t +=1
+                printProgressBar(t,segments)
+        #-----------------------------------------------------------------------------------
+
+                #-----------------------------------------------------------------------------------
+                # Setting the default to output to json file with the option to format it to human readable.
+
+                ## make an output directory
+                os.makedirs("output", exist_ok=True)
+                print("Generating successmetrics.json")
+                with open("output/successmetrics.json",'w') as f:
+                        if args["pretty"]:
+                                f.write(json.dumps(report, indent=4))
+                        else:
+                                json.dump(report, f)
+                print( "saved to output/successmetrics.json" )
+                #-----------------------------------------------------------------------------------
+                # one more thing...
+                if args["reports"] == True:
+                        print("Generating the Executive report")
+                        os.system('python3 ./reports.py -e')
+                        print("Generating the Table report")
+                        os.system('python3 ./reports.py -t')
+                        
+                if args["reportsSec"] == True:
+                        print("Generating the Executive report just for Security violations")
+                        os.system('python3 ./reports.py -es')
+                        print("Generating the Table report just for Security violations")
+                        os.system('python3 ./reports.py -ts')
+                        
+                if args["reportsLic"] == True:
+                        print("Generating the Executive report just for Licensing violations")
+                        os.system('python3 ./reports.py -el')
+                        print("Generating the Table report just for Licensing violations")
+                        os.system('python3 ./reports.py -tl')
+                        
+                #-----------------------------------------------------------------------------------
+
+    
+
+#---------------------------------
 
 def main():
 
-        t,segments = 0, 11
-        printProgressBar(t,segments)
         
         parser = argparse.ArgumentParser(description="Sample command: python3 success_metrics.py -a admin:admin123 -s 50 -u 'http://localhost:8070' -i 'd8f63854f4ea4405a9600e34f4d4514e','Test App1','MyApp3' -o 'c6f2775a45d44d43a32621536e638a8e','The A Team' -p -r")
         parser.add_argument('-a','--auth',   help='(in the format user:password, by default admin:admin123)', default="admin:admin123", required=False)
@@ -69,6 +414,7 @@ def main():
         parser.add_argument('-rs','--reportsSec', help='(same as -r but only for Security violations)', action='store_true',required=False)
         parser.add_argument('-rl','--reportsLic', help='(same as -r but only for Licensing violations)', action='store_true',required=False)
         parser.add_argument('-d','--dateRange',    help='(creates JSON for a specified date range [yyyy-mm-dd:yyyy-mm-dd]. Do not use in conjunction with -s option)', required=False)
+        parser.add_argument('-w','--warning', help='(bypasses Large Number of Apps warning, running script despite warning)', action='store_true',required=False)
         
 
         args = vars(parser.parse_args())
@@ -95,329 +441,25 @@ def main():
         #search for organizationId
         orgId = searchOrgs(args["orgId"], args["url"])
 
-#-----------------------------------------------------------------------------------   
-        t +=1
-        printProgressBar(t,segments)
-#-----------------------------------------------------------------------------------
+        # checking app number
+        appList,appNumber = appChecker(args["url"])
+        appMax = 500
+        #print(appList)
+        print("Total number of apps in IQ server: "+str(appNumber))
 
-
-        # get success metrics
-        if args["scope"]:
-                scope = args["scope"]
-                data = get_metrics(args["url"], scope, appId,  orgId ) #collects data with or without filters according to appId and orgId
-        elif args["dateRange"]:
-                scope=get_scope(first,last)
-                data = get_metrics_range(args["url"], first, last, appId,  orgId ) #collects data with or without filters according to appId and orgId
+        if appNumber > appMax:
+            if args["warning"]:
+                confirmation = input("You have selected to bypass Large Number of Apps warning.\nWARNING: IQ server performance might be affected. In some rare cases IQ server might crash.\nIf you still want to proceed, type yes and hit <Enter>\nOtherwise type no and hit <Enter> to exit this script now\n[yes/no]: ")
+                if confirmation != "yes":
+                    print("Exiting script.")
+                    raise SystemExit
+                else: 
+                    runScript(args,appId,orgId)
+            else:
+                print("Your total number of apps in IQ server exceeds the recommended value for the script to run safely.\nIf you still want to proceed, please run the script with the -w switch to bypass the warning.")
         else:
-                print("No scope or date range has been provided")
-
-        if data is None: 
-                print("No results found.")
-                raise SystemExit
-
-        #-----------------------------------------------------------------------------------
-        #reportCounts is used to aggregate totals from the filtered set of applications.
-        #reportAverages will calculate averages for MTTR. 
-        #reportSummary will return the final results.
-        #reportLic will return the final results for Licence vulnerabilities only
-        #reportSec will return the final results for security vulnerabilities only
-        reportAverages, reportCounts, reportSummary = {}, {}, {"appNames":[], "orgNames":[], "weeks":[], "dates":[], "timePeriodStart" : []}
-        reportAveragesLic, reportCountsLic, reportLic = {}, {}, {"appNames":[], "orgNames":[], "weeks":[], "dates":[], "timePeriodStart" : []}
-        reportAveragesSec, reportCountsSec, reportSec = {}, {}, {"appNames":[], "orgNames":[], "weeks":[], "dates":[], "timePeriodStart" : []}
-
-#-----------------------------------------------------------------------------------   
-        t +=1
-        printProgressBar(t,segments)
-#-----------------------------------------------------------------------------------
-        
-        # set the weeks range in the report summary for the required scope.
-        if args["scope"]:
-                #print("scope: ",scope)
-                for recency in range(scope, 0, -1):
-                        reportSummary["timePeriodStart"].append( get_week_start( recency ) )
-                        reportLic["timePeriodStart"].append( get_week_start( recency ) )
-                        reportSec["timePeriodStart"].append( get_week_start( recency ) )
-                        reportSummary["weeks"].append( get_week_only( recency ) )
-                        #print(reportSummary["weeks"])
-                        reportLic["weeks"].append( get_week_only( recency ) )
-                        reportSec["weeks"].append( get_week_only( recency ) )
-                        
-        elif args["dateRange"]:
-                #print("scope: ",scope)
-                for recency in range(scope, 0, -1):
-                        reportSummary["timePeriodStart"].append( get_week_start_range( last, recency ) )
-                        reportLic["timePeriodStart"].append( get_week_start_range( last, recency ) )
-                        reportSec["timePeriodStart"].append( get_week_start_range( last, recency ) )
-                        reportSummary["weeks"].append( get_week_only_range( last, recency ) )
-                        #print(reportSummary["weeks"])
-                        reportLic["weeks"].append( get_week_only_range( last, recency ) )
-                        reportSec["weeks"].append( get_week_only_range( last, recency ) )
-
-#-----------------------------------------------------------------------------------   
-        t +=1
-        printProgressBar(t,segments)
-#-----------------------------------------------------------------------------------
-
-        
-        # building aggregated set of fields for MTTR
-        for mttr in config["mttr"]:
-                reportAverages.update({mttr: empties(reportSummary["weeks"]) })
-                reportAveragesLic.update({mttr: empties(reportLic["weeks"]) })
-                reportAveragesSec.update({mttr: empties(reportSec["weeks"]) })
+            runScript(args,appId,orgId)
                 
-
-        # set empty range for scope
-        for fields in ["appNumberScan", "appOnboard", "weeklyScans","riskRatioCritical","riskRatioSevere","riskRatioModerate","riskRatioLow"]:
-                reportCounts.update({ fields : zeros(reportSummary["weeks"]) })
-                reportCountsLic.update({ fields : zeros(reportLic["weeks"]) })
-                reportCountsSec.update({ fields : zeros(reportSec["weeks"]) })
-
-        # building aggregated set of fields.
-        for status in config["status"]:
-                reportCounts.update({ status: {} })
-                reportCountsLic.update({ status: {} })
-                reportCountsSec.update({ status: {} })
-                
-                for risk in config["risk"]:
-                        reportCounts[status].update({ risk: zeros(reportSummary["weeks"]) })
-                        reportCountsLic[status].update({ risk: zeros(reportLic["weeks"]) })
-                        reportCountsSec[status].update({ risk: zeros(reportSec["weeks"]) })
-                reportCounts[status].update({ "TOTAL" : zeros(reportSummary["weeks"]) })
-                reportCountsLic[status].update({ "TOTAL" : zeros(reportLic["weeks"]) })
-                reportCountsSec[status].update({ "TOTAL" : zeros(reportSec["weeks"]) })
-
-#-----------------------------------------------------------------------------------   
-        t +=1
-        printProgressBar(t,segments)
-#-----------------------------------------------------------------------------------
-
-
-        #-----------------------------------------------------------------------------------
-        # loop through applications in success metric data.
-        for app in data:
-                reportSummary['appNames'].append( app["applicationName"] )
-                reportLic['appNames'].append( app["applicationName"] )
-                reportSec['appNames'].append( app["applicationName"] )
-                reportSummary['orgNames'].append( app["organizationName"] )
-                reportLic['orgNames'].append( app["organizationName"] )
-                reportSec['orgNames'].append( app["organizationName"] )
-                
-                app_summary = get_aggs_list() # zeroed summary template.
-                for aggregation in app["aggregations"]:
-                        # process the weekly reports for application.
-                        process_week(aggregation, app_summary)
-
-                compute_summary(app_summary)
-                app.update( {"summary": app_summary} )
-                app.update( {"licences": app_summary} )
-                app.update( {"security": app_summary} )
-                
-                #print(app_summary["weeks"])
-                for week_no in app_summary["weeks"]:
-                        position = app_summary["weeks"].index(week_no)
-                        reportCounts["appOnboard"][week_no] += 1
-                        reportCountsLic["appOnboard"][week_no] += 1
-                        reportCountsSec["appOnboard"][week_no] += 1
-
-                        # only include the app's week when they have a value
-                        for mttr in config["mttr"]:
-                                value = app_summary[mttr]["rng"][position]
-                                if not value is None:
-                                        reportAverages[mttr][week_no].append( value )
-                                        reportAveragesLic[mttr][week_no].append( value )
-                                        reportAveragesSec[mttr][week_no].append( value )
-
-                        if app_summary["evaluationCount"]["rng"][position] != 0:
-                                reportCounts["appNumberScan"][week_no] += 1
-                                reportCountsLic["appNumberScan"][week_no] += 1
-                                reportCountsSec["appNumberScan"][week_no] += 1
-                                reportCounts["weeklyScans"][week_no] += app_summary["evaluationCount"]["rng"][position] 
-                                reportCountsLic["weeklyScans"][week_no] += app_summary["evaluationCount"]["rng"][position] 
-                                reportCountsSec["weeklyScans"][week_no] += app_summary["evaluationCount"]["rng"][position] 
-
-                        for status in config["status"]:
-                                for risk in config["risk"]:
-                                        reportCounts[status][risk][week_no] += app_summary[status]["TOTAL"][risk]["rng"][position]
-                                        reportCountsLic[status][risk][week_no] += app_summary[status]["LICENSE"][risk]["rng"][position]
-                                        reportCountsSec[status][risk][week_no] += app_summary[status]["SECURITY"][risk]["rng"][position]
-                                reportCounts[status]["TOTAL"][week_no] += app_summary[status]["TOTAL"]["rng"][position]
-                                reportCountsLic[status]["TOTAL"][week_no] += app_summary[status]["LICENSE"]["TOTAL"]["rng"][position]
-                                reportCountsSec[status]["TOTAL"][week_no] += app_summary[status]["SECURITY"]["TOTAL"]["rng"][position]
-
-                        #for rates in config["rates"]:
-                        #        for risk in config["risk"]:
-                        #                reportCounts[rates][risk][week_no] += app_summary[rates]["TOTAL"][risk]["rng"][position]
-                        #        reportCounts[rates]["TOTAL"][week_no] += app_summary[rates]["TOTAL"]["rng"][position]
-
-        #-----------------------------------------------------------------------------------
-
-#-----------------------------------------------------------------------------------   
-        t +=1
-        printProgressBar(t,segments)
-#-----------------------------------------------------------------------------------
-
-
-        #convert the dicts to arrays.
-        for fields in ["appNumberScan", "appOnboard", "weeklyScans"]:
-                reportSummary.update({ fields : list( reportCounts[fields].values() ) })
-                reportLic.update({ fields : list( reportCountsLic[fields].values() ) })
-                reportSec.update({ fields : list( reportCountsSec[fields].values() ) })
-
-#-----------------------------------------------------------------------------------   
-        t +=1
-        printProgressBar(t,segments)
-#-----------------------------------------------------------------------------------
-
-
-        # calculate the averages for each week.  Returns None when no values are available for a given week. 
-        for mttr in config["mttr"]:
-                reportSummary.update({ mttr: list( avg(value) for value in reportAverages[mttr].values()) })
-                reportLic.update({ mttr: list( avg(value) for value in reportAveragesLic[mttr].values()) })
-                reportSec.update({ mttr: list( avg(value) for value in reportAveragesSec[mttr].values()) })
-
-#-----------------------------------------------------------------------------------   
-        t +=1
-        printProgressBar(t,segments)
-#-----------------------------------------------------------------------------------
-
-        
-        for status in config["status"]:
-                reportSummary.update({ status: {} })
-                reportLic.update({ status: {} })
-                reportSec.update({ status: {} })
-
-                for risk in config["risk"]:
-                        reportSummary[status].update({ risk: list( reportCounts[status][risk].values() ) })
-                        reportLic[status].update({ risk: list( reportCountsLic[status][risk].values() ) })
-                        reportSec[status].update({ risk: list( reportCountsSec[status][risk].values() ) })
-                reportSummary[status].update({ "LIST" : list( reportSummary[status].values() ) })
-                reportLic[status].update({ "LIST" : list( reportLic[status].values() ) })
-                reportSec[status].update({ "LIST" : list( reportSec[status].values() ) })    
-                reportSummary[status].update({ "TOTAL" : list( reportCounts[status]["TOTAL"].values() ) })
-                reportLic[status].update({ "TOTAL" : list( reportCountsLic[status]["TOTAL"].values() ) })
-                reportSec[status].update({ "TOTAL" : list( reportCountsSec[status]["TOTAL"].values() ) })
-
-        #for rates in config["rates"]:
-        #        reportSummary.update({ rates: {} })
-        #
-        #        for risk in config["risk"]:
-        #                reportSummary[rates].update({ risk: list( reportCounts[rates][risk].values() ) })
-        #
-        #        reportSummary[rates].update({ "LIST" : list( reportSummary[rates].values() ) })        
-        #        reportSummary[rates].update({ "TOTAL" : list( reportCounts[rates]["TOTAL"].values() ) })
-
-        riskRatioCri, riskRatioSev, riskRatioMod, riskRatioLow = [],[],[],[]
-
-#-----------------------------------------------------------------------------------   
-        t +=1
-        printProgressBar(t,segments)
-#-----------------------------------------------------------------------------------
-
-        #print(str(len(reportSummary['weeks'])))
-        for week_no in range(0,len(reportSummary['weeks'])):
-                if reportSummary['appOnboard'][week_no] != 0:
-                        riskRatioCri.append(str(round((reportSummary['openCountsAtTimePeriodEnd']['CRITICAL'][week_no])/(reportSummary['appOnboard'][week_no]),2)))
-                        riskRatioSev.append(str(round((reportSummary['openCountsAtTimePeriodEnd']['SEVERE'][week_no])/(reportSummary['appOnboard'][week_no]),2)))
-                        riskRatioMod.append(str(round((reportSummary['openCountsAtTimePeriodEnd']['MODERATE'][week_no])/(reportSummary['appOnboard'][week_no]),2)))
-                        riskRatioLow.append(str(round((reportSummary['openCountsAtTimePeriodEnd']['LOW'][week_no])/(reportSummary['appOnboard'][week_no]),2)))
-                else:
-                        riskRatioCri.append(str(0))
-                        riskRatioSev.append(str(0))
-                        riskRatioMod.append(str(0))
-                        riskRatioLow.append(str(0))
-        reportSummary.update({'riskRatioCritical' : riskRatioCri})
-        reportSummary.update({'riskRatioSevere' : riskRatioSev})
-        reportSummary.update({'riskRatioModerate' : riskRatioMod})
-        reportSummary.update({'riskRatioLow' : riskRatioLow})
-#-----------------------------------------------------------------------------------------
-#-----------------------------------------------------------------------------------   
-        t +=1
-        printProgressBar(t,segments)
-#-----------------------------------------------------------------------------------
-
-
-        riskRatioCri, riskRatioSev, riskRatioMod, riskRatioLow = [],[],[],[]
-        for week_no in range(0,len(reportLic['weeks'])):
-                if reportLic['appOnboard'][week_no] != 0:
-                        riskRatioCri.append(str(round((reportLic['openCountsAtTimePeriodEnd']['CRITICAL'][week_no])/(reportLic['appOnboard'][week_no]),2)))
-                        riskRatioSev.append(str(round((reportLic['openCountsAtTimePeriodEnd']['SEVERE'][week_no])/(reportLic['appOnboard'][week_no]),2)))
-                        riskRatioMod.append(str(round((reportLic['openCountsAtTimePeriodEnd']['MODERATE'][week_no])/(reportLic['appOnboard'][week_no]),2)))
-                        riskRatioLow.append(str(round((reportLic['openCountsAtTimePeriodEnd']['LOW'][week_no])/(reportLic['appOnboard'][week_no]),2)))
-                else:
-                        riskRatioCri.append(str(0))
-                        riskRatioSev.append(str(0))
-                        riskRatioMod.append(str(0))
-                        riskRatioLow.append(str(0))
-        reportLic.update({'riskRatioCritical' : riskRatioCri})
-        reportLic.update({'riskRatioSevere' : riskRatioSev})
-        reportLic.update({'riskRatioModerate' : riskRatioMod})
-        reportLic.update({'riskRatioLow' : riskRatioLow})
-#-----------------------------------------------------------------------------------------
-#-----------------------------------------------------------------------------------   
-        t +=1
-        printProgressBar(t,segments)
-#-----------------------------------------------------------------------------------
-
-
-        riskRatioCri, riskRatioSev, riskRatioMod, riskRatioLow = [],[],[],[]
-        for week_no in range(0,len(reportSec['weeks'])):
-                if reportSec['appOnboard'][week_no] != 0:
-                        riskRatioCri.append(str(round((reportSec['openCountsAtTimePeriodEnd']['CRITICAL'][week_no])/(reportSec['appOnboard'][week_no]),2)))
-                        riskRatioSev.append(str(round((reportSec['openCountsAtTimePeriodEnd']['SEVERE'][week_no])/(reportSec['appOnboard'][week_no]),2)))
-                        riskRatioMod.append(str(round((reportSec['openCountsAtTimePeriodEnd']['MODERATE'][week_no])/(reportSec['appOnboard'][week_no]),2)))
-                        riskRatioLow.append(str(round((reportSec['openCountsAtTimePeriodEnd']['LOW'][week_no])/(reportSec['appOnboard'][week_no]),2)))
-                else:
-                        riskRatioCri.append(str(0))
-                        riskRatioSev.append(str(0))
-                        riskRatioMod.append(str(0))
-                        riskRatioLow.append(str(0))
-        reportSec.update({'riskRatioCritical' : riskRatioCri})
-        reportSec.update({'riskRatioSevere' : riskRatioSev})
-        reportSec.update({'riskRatioModerate' : riskRatioMod})
-        reportSec.update({'riskRatioLow' : riskRatioLow})
-#-----------------------------------------------------------------------------------------
-        
-        # Final report with summary and data objects.
-        report = {"summary": reportSummary, "apps": data, "licences": reportLic, "security": reportSec}
-
-#-----------------------------------------------------------------------------------   
-        t +=1
-        printProgressBar(t,segments)
-#-----------------------------------------------------------------------------------
-
-        #-----------------------------------------------------------------------------------
-        # Setting the default to output to json file with the option to format it to human readable.
-
-        ## make an output directory
-        os.makedirs("output", exist_ok=True)
-        print("Generating successmetrics.json")
-        with open("output/successmetrics.json",'w') as f:
-                if args["pretty"]:
-                        f.write(json.dumps(report, indent=4))
-                else:
-                        json.dump(report, f)
-        print( "saved to output/successmetrics.json" )
-        #-----------------------------------------------------------------------------------
-        # one more thing...
-        if args["reports"] == True:
-                print("Generating the Executive report")
-                os.system('python3 ./reports.py -e')
-                print("Generating the Table report")
-                os.system('python3 ./reports.py -t')
-                
-        if args["reportsSec"] == True:
-                print("Generating the Executive report just for Security violations")
-                os.system('python3 ./reports.py -es')
-                print("Generating the Table report just for Security violations")
-                os.system('python3 ./reports.py -ts')
-                
-        if args["reportsLic"] == True:
-                print("Generating the Executive report just for Licensing violations")
-                os.system('python3 ./reports.py -el')
-                print("Generating the Table report just for Licensing violations")
-                os.system('python3 ./reports.py -tl')
-                
-        #-----------------------------------------------------------------------------------
 
 #-----------------------------------------------------------------------------------
 def searchApps(search, iq_url):
