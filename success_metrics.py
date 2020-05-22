@@ -64,10 +64,28 @@ def appChecker(iq_url):
     
 
 #---------------------------------
-
+def appBatcher(appList,batchMax):
+    batches = {}
+    j = 1
+    while len(appList) > 0:
+        batch = []
+        for i in range(0,batchMax):
+            if (len(appList) > 0):
+                batch.append(appList.pop())
+        batches["batch"+str(j)] = batch
+        j += 1
+    print("Generating batches.json")
+    with open("output/batches.json",'w') as f:
+        json.dump(batches, f)
+    print( "saved to output/batches.json" )
+                
+    return batches
+    
 
 #---------------------------------
-def runScript(args,appId,orgId):
+
+#---------------------------------
+def runScript(args,appId,orgId,batches,delay):
 
                 t,segments = 0, 11
                 printProgressBar(t,segments)
@@ -78,18 +96,23 @@ def runScript(args,appId,orgId):
         #-----------------------------------------------------------------------------------
         
                 # get success metrics
-                if args["scope"]:
-                        scope = args["scope"]
-                        data = get_metrics(args["url"], scope, appId,  orgId ) #collects data with or without filters according to appId and orgId
-                elif args["dateRange"]:
-                        scope=get_scope(first,last)
-                        data = get_metrics_range(args["url"], first, last, appId,  orgId ) #collects data with or without filters according to appId and orgId
-                else:
-                        print("No scope or date range has been provided")
+                for i in range(0,len(batches)):
+                    if args["scope"]:
+                            scope = args["scope"]
+                            #data = get_metrics(args["url"], scope, appId,  orgId ) #collects data with or without filters according to appId and orgId
+                            data = get_metrics(args["url"], scope, batches["batch"+str(i+1)],  orgId ) #collects data with or without filters according to appId and orgId
+                            
+                    elif args["dateRange"]:
+                            scope=get_scope(first,last)
+                            data = get_metrics_range(args["url"], first, last, appId,  orgId ) #collects data with or without filters according to appId and orgId
+                    else:
+                            print("No scope or date range has been provided")
 
-                if data is None: 
-                        print("No results found.")
-                        raise SystemExit
+                    print(data)
+                    
+                    if data is None: 
+                            print("No results found.")
+                            raise SystemExit
 
                 #-----------------------------------------------------------------------------------
                 #reportCounts is used to aggregate totals from the filtered set of applications.
@@ -415,6 +438,7 @@ def main():
         parser.add_argument('-rl','--reportsLic', help='(same as -r but only for Licensing violations)', action='store_true',required=False)
         parser.add_argument('-d','--dateRange',    help='(creates JSON for a specified date range [yyyy-mm-dd:yyyy-mm-dd]. Do not use in conjunction with -s option)', required=False)
         parser.add_argument('-w','--warning', help='(bypasses Large Number of Apps warning, running script despite warning)', action='store_true',required=False)
+        parser.add_argument('-b','--batches', help='(runs the script in batches, each one the specified number of seconds apart; 1 second apart by default)', type=int, default=1 ,required=False)
         
 
         args = vars(parser.parse_args())
@@ -441,12 +465,21 @@ def main():
         #search for organizationId
         orgId = searchOrgs(args["orgId"], args["url"])
 
+        #Defining batch size and batch delay in seconds
+        batchMax = 2
+        delay = args["batches"]
+        
         # checking app number
         appList,appNumber = appChecker(args["url"])
         appMax = 500
+        
         #print(appList)
         print("Total number of apps in IQ server: "+str(appNumber))
 
+#-------------------
+        batches = appBatcher(appList,batchMax)
+        
+#-------------------
         if appNumber > appMax:
             if args["warning"]:
                 confirmation = input("You have selected to bypass Large Number of Apps warning.\nWARNING: IQ server performance might be affected. In some rare cases IQ server might crash.\nIf you still want to proceed, type yes and hit <Enter>\nOtherwise type no and hit <Enter> to exit this script now\n[yes/no]: ")
@@ -454,11 +487,11 @@ def main():
                     print("Exiting script.")
                     raise SystemExit
                 else: 
-                    runScript(args,appId,orgId)
+                    runScript(args,appId,orgId,batches,delay)
             else:
                 print("Your total number of apps in IQ server exceeds the recommended value for the script to run safely.\nIf you still want to proceed, please run the script with the -w switch to bypass the warning.")
         else:
-            runScript(args,appId,orgId)
+            runScript(args,appId,orgId,batches,delay)
                 
 
 #-----------------------------------------------------------------------------------
