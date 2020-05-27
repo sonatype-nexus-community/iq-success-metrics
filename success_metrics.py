@@ -108,7 +108,7 @@ def runScript(args,appId,orgId,batches,delay):
                     else:
                             print("No scope or date range has been provided")
 
-                    print(data)
+                    #print(data)
                     
                     if data is None: 
                             print("No results found.")
@@ -437,7 +437,6 @@ def main():
         parser.add_argument('-rs','--reportsSec', help='(same as -r but only for Security violations)', action='store_true',required=False)
         parser.add_argument('-rl','--reportsLic', help='(same as -r but only for Licensing violations)', action='store_true',required=False)
         parser.add_argument('-d','--dateRange',    help='(creates JSON for a specified date range [yyyy-mm-dd:yyyy-mm-dd]. Do not use in conjunction with -s option)', required=False)
-        parser.add_argument('-w','--warning', help='(bypasses Large Number of Apps warning, running script despite warning)', action='store_true',required=False)
         parser.add_argument('-b','--batches', help='(runs the script in batches, each one the specified number of seconds apart; 1 second apart by default)', type=int, default=1 ,required=False)
         
 
@@ -466,12 +465,11 @@ def main():
         orgId = searchOrgs(args["orgId"], args["url"])
 
         #Defining batch size and batch delay in seconds
-        batchMax = 2
+        batchMax = 100000
         delay = args["batches"]
         
         # checking app number
         appList,appNumber = appChecker(args["url"])
-        appMax = 500
         
         #print(appList)
         print("Total number of apps in IQ server: "+str(appNumber))
@@ -480,18 +478,8 @@ def main():
         batches = appBatcher(appList,batchMax)
         
 #-------------------
-        if appNumber > appMax:
-            if args["warning"]:
-                confirmation = input("You have selected to bypass Large Number of Apps warning.\nWARNING: IQ server performance might be affected. In some rare cases IQ server might crash.\nIf you still want to proceed, type yes and hit <Enter>\nOtherwise type no and hit <Enter> to exit this script now\n[yes/no]: ")
-                if confirmation != "yes":
-                    print("Exiting script.")
-                    raise SystemExit
-                else: 
-                    runScript(args,appId,orgId,batches,delay)
-            else:
-                print("Your total number of apps in IQ server exceeds the recommended value for the script to run safely.\nIf you still want to proceed, please run the script with the -w switch to bypass the warning.")
-        else:
-            runScript(args,appId,orgId,batches,delay)
+
+        runScript(args,appId,orgId,batches,delay)
                 
 
 #-----------------------------------------------------------------------------------
