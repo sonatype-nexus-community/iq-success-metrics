@@ -31,6 +31,7 @@ config = {
 }
 
 #---------------------------------
+#
 # Print iterations progress
 def printProgressBar (
         iteration, 
