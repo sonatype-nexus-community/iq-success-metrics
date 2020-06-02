@@ -85,7 +85,7 @@ def appBatcher(appList,batchMax):
 #---------------------------------
 
 #---------------------------------
-def runScript(args,appId,orgId,batches,delay):
+def runScript(args,appId,orgId,first,last,batches,delay):
 
                 t,segments = 0, 11
                 printProgressBar(t,segments)
@@ -152,6 +152,11 @@ def runScript(args,appId,orgId,batches,delay):
                                 reportLic["weeks"].append( get_week_only_range( last, recency ) )
                                 reportSec["weeks"].append( get_week_only_range( last, recency ) )
 
+                reportSummary["dates"] = reportSummary["timePeriodStart"]
+                reportLic["dates"] = reportLic["timePeriodStart"]
+                reportSec["dates"] = reportSec["timePeriodStart"]
+                
+
         #-----------------------------------------------------------------------------------   
                 t +=1
                 printProgressBar(t,segments)
@@ -160,16 +165,16 @@ def runScript(args,appId,orgId,batches,delay):
                 
                 # building aggregated set of fields for MTTR
                 for mttr in config["mttr"]:
-                        reportAverages.update({mttr: empties(reportSummary["weeks"]) })
-                        reportAveragesLic.update({mttr: empties(reportLic["weeks"]) })
-                        reportAveragesSec.update({mttr: empties(reportSec["weeks"]) })
+                        reportAverages.update({mttr: empties(reportSummary["timePeriodStart"]) })
+                        reportAveragesLic.update({mttr: empties(reportLic["timePeriodStart"]) })
+                        reportAveragesSec.update({mttr: empties(reportSec["timePeriodStart"]) })
                         
 
                 # set empty range for scope
                 for fields in ["appNumberScan", "appOnboard", "weeklyScans","riskRatioCritical","riskRatioSevere","riskRatioModerate","riskRatioLow"]:
-                        reportCounts.update({ fields : zeros(reportSummary["weeks"]) })
-                        reportCountsLic.update({ fields : zeros(reportLic["weeks"]) })
-                        reportCountsSec.update({ fields : zeros(reportSec["weeks"]) })
+                        reportCounts.update({ fields : zeros(reportSummary["timePeriodStart"]) })
+                        reportCountsLic.update({ fields : zeros(reportLic["timePeriodStart"]) })
+                        reportCountsSec.update({ fields : zeros(reportSec["timePeriodStart"]) })
 
                 # building aggregated set of fields.
                 for status in config["status"]:
@@ -178,13 +183,13 @@ def runScript(args,appId,orgId,batches,delay):
                         reportCountsSec.update({ status: {} })
                         
                         for risk in config["risk"]:
-                                reportCounts[status].update({ risk: zeros(reportSummary["weeks"]) })
-                                reportCountsLic[status].update({ risk: zeros(reportLic["weeks"]) })
-                                reportCountsSec[status].update({ risk: zeros(reportSec["weeks"]) })
-                        reportCounts[status].update({ "TOTAL" : zeros(reportSummary["weeks"]) })
-                        reportCountsLic[status].update({ "TOTAL" : zeros(reportLic["weeks"]) })
-                        reportCountsSec[status].update({ "TOTAL" : zeros(reportSec["weeks"]) })
-
+                                reportCounts[status].update({ risk: zeros(reportSummary["timePeriodStart"]) })
+                                reportCountsLic[status].update({ risk: zeros(reportLic["timePeriodStart"]) })
+                                reportCountsSec[status].update({ risk: zeros(reportSec["timePeriodStart"]) })
+                        reportCounts[status].update({ "TOTAL" : zeros(reportSummary["timePeriodStart"]) })
+                        reportCountsLic[status].update({ "TOTAL" : zeros(reportLic["timePeriodStart"]) })
+                        reportCountsSec[status].update({ "TOTAL" : zeros(reportSec["timePeriodStart"]) })
+                
         #-----------------------------------------------------------------------------------   
                 t +=1
                 printProgressBar(t,segments)
@@ -211,42 +216,41 @@ def runScript(args,appId,orgId,batches,delay):
                         app.update( {"licences": app_summary} )
                         app.update( {"security": app_summary} )
                         
-                        #print(app_summary["weeks"])
-                        for week_no in app_summary["weeks"]:
-                                position = app_summary["weeks"].index(week_no)
-                                reportCounts["appOnboard"][week_no] += 1
-                                reportCountsLic["appOnboard"][week_no] += 1
-                                reportCountsSec["appOnboard"][week_no] += 1
+                        for date_no in app_summary["dates"]:
+                                position = app_summary["dates"].index(date_no)
+                                reportCounts["appOnboard"][date_no] += 1
+                                reportCountsLic["appOnboard"][date_no] += 1
+                                reportCountsSec["appOnboard"][date_no] += 1
 
                                 # only include the app's week when they have a value
                                 for mttr in config["mttr"]:
                                         value = app_summary[mttr]["rng"][position]
                                         if not value is None:
-                                                reportAverages[mttr][week_no].append( value )
-                                                reportAveragesLic[mttr][week_no].append( value )
-                                                reportAveragesSec[mttr][week_no].append( value )
+                                                reportAverages[mttr][date_no].append( value )
+                                                reportAveragesLic[mttr][date_no].append( value )
+                                                reportAveragesSec[mttr][date_no].append( value )
 
                                 if app_summary["evaluationCount"]["rng"][position] != 0:
-                                        reportCounts["appNumberScan"][week_no] += 1
-                                        reportCountsLic["appNumberScan"][week_no] += 1
-                                        reportCountsSec["appNumberScan"][week_no] += 1
-                                        reportCounts["weeklyScans"][week_no] += app_summary["evaluationCount"]["rng"][position] 
-                                        reportCountsLic["weeklyScans"][week_no] += app_summary["evaluationCount"]["rng"][position] 
-                                        reportCountsSec["weeklyScans"][week_no] += app_summary["evaluationCount"]["rng"][position] 
+                                        reportCounts["appNumberScan"][date_no] += 1
+                                        reportCountsLic["appNumberScan"][date_no] += 1
+                                        reportCountsSec["appNumberScan"][date_no] += 1
+                                        reportCounts["weeklyScans"][date_no] += app_summary["evaluationCount"]["rng"][position] 
+                                        reportCountsLic["weeklyScans"][date_no] += app_summary["evaluationCount"]["rng"][position] 
+                                        reportCountsSec["weeklyScans"][date_no] += app_summary["evaluationCount"]["rng"][position] 
 
                                 for status in config["status"]:
                                         for risk in config["risk"]:
-                                                reportCounts[status][risk][week_no] += app_summary[status]["TOTAL"][risk]["rng"][position]
-                                                reportCountsLic[status][risk][week_no] += app_summary[status]["LICENSE"][risk]["rng"][position]
-                                                reportCountsSec[status][risk][week_no] += app_summary[status]["SECURITY"][risk]["rng"][position]
-                                        reportCounts[status]["TOTAL"][week_no] += app_summary[status]["TOTAL"]["rng"][position]
-                                        reportCountsLic[status]["TOTAL"][week_no] += app_summary[status]["LICENSE"]["TOTAL"]["rng"][position]
-                                        reportCountsSec[status]["TOTAL"][week_no] += app_summary[status]["SECURITY"]["TOTAL"]["rng"][position]
+                                                reportCounts[status][risk][date_no] += app_summary[status]["TOTAL"][risk]["rng"][position]
+                                                reportCountsLic[status][risk][date_no] += app_summary[status]["LICENSE"][risk]["rng"][position]
+                                                reportCountsSec[status][risk][date_no] += app_summary[status]["SECURITY"][risk]["rng"][position]
+                                        reportCounts[status]["TOTAL"][date_no] += app_summary[status]["TOTAL"]["rng"][position]
+                                        reportCountsLic[status]["TOTAL"][date_no] += app_summary[status]["LICENSE"]["TOTAL"]["rng"][position]
+                                        reportCountsSec[status]["TOTAL"][date_no] += app_summary[status]["SECURITY"]["TOTAL"]["rng"][position]
 
                                 #for rates in config["rates"]:
                                 #        for risk in config["risk"]:
-                                #                reportCounts[rates][risk][week_no] += app_summary[rates]["TOTAL"][risk]["rng"][position]
-                                #        reportCounts[rates]["TOTAL"][week_no] += app_summary[rates]["TOTAL"]["rng"][position]
+                                #                reportCounts[rates][risk][date_no] += app_summary[rates]["TOTAL"][risk]["rng"][position]
+                                #        reportCounts[rates]["TOTAL"][date_no] += app_summary[rates]["TOTAL"]["rng"][position]
 
                 #-----------------------------------------------------------------------------------
 
@@ -312,18 +316,18 @@ def runScript(args,appId,orgId,batches,delay):
                 printProgressBar(t,segments)
         #-----------------------------------------------------------------------------------
 
-                #print(str(len(reportSummary['weeks'])))
                 for week_no in range(0,len(reportSummary['weeks'])):
-                        if reportSummary['appOnboard'][week_no] != 0:
-                                riskRatioCri.append(str(round((reportSummary['openCountsAtTimePeriodEnd']['CRITICAL'][week_no])/(reportSummary['appOnboard'][week_no]),2)))
-                                riskRatioSev.append(str(round((reportSummary['openCountsAtTimePeriodEnd']['SEVERE'][week_no])/(reportSummary['appOnboard'][week_no]),2)))
-                                riskRatioMod.append(str(round((reportSummary['openCountsAtTimePeriodEnd']['MODERATE'][week_no])/(reportSummary['appOnboard'][week_no]),2)))
-                                riskRatioLow.append(str(round((reportSummary['openCountsAtTimePeriodEnd']['LOW'][week_no])/(reportSummary['appOnboard'][week_no]),2)))
-                        else:
-                                riskRatioCri.append(str(0))
-                                riskRatioSev.append(str(0))
-                                riskRatioMod.append(str(0))
-                                riskRatioLow.append(str(0))
+                    #print("\n"+str(reportSummary['appOnboard'][week_no]))
+                    if reportSummary['appOnboard'][week_no] != 0:
+                            riskRatioCri.append(str(round((reportSummary['openCountsAtTimePeriodEnd']['CRITICAL'][week_no])/(reportSummary['appOnboard'][week_no]),2)))
+                            riskRatioSev.append(str(round((reportSummary['openCountsAtTimePeriodEnd']['SEVERE'][week_no])/(reportSummary['appOnboard'][week_no]),2)))
+                            riskRatioMod.append(str(round((reportSummary['openCountsAtTimePeriodEnd']['MODERATE'][week_no])/(reportSummary['appOnboard'][week_no]),2)))
+                            riskRatioLow.append(str(round((reportSummary['openCountsAtTimePeriodEnd']['LOW'][week_no])/(reportSummary['appOnboard'][week_no]),2)))
+                    else:
+                            riskRatioCri.append(str(0))
+                            riskRatioSev.append(str(0))
+                            riskRatioMod.append(str(0))
+                            riskRatioLow.append(str(0))
                 reportSummary.update({'riskRatioCritical' : riskRatioCri})
                 reportSummary.update({'riskRatioSevere' : riskRatioSev})
                 reportSummary.update({'riskRatioModerate' : riskRatioMod})
@@ -442,6 +446,7 @@ def main():
 
         args = vars(parser.parse_args())
         creds = args["auth"].split(":",1)
+        first, last = [], []
         if args["dateRange"]:
                 dateRange = args["dateRange"].split(":",1)
                 first = dateRange[0].split("-",2)
@@ -479,7 +484,7 @@ def main():
         
 #-------------------
 
-        runScript(args,appId,orgId,batches,delay)
+        runScript(args,appId,orgId,first,last,batches,delay)
                 
 
 #-----------------------------------------------------------------------------------
@@ -535,7 +540,7 @@ def get_week_only_range(last,recency = 0):
         return period
 
 def get_scope(first,last):
-
+ 
         from datetime import date
 
         d1 = date(int(last[0]),int(last[1]),int(last[2]))
