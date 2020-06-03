@@ -84,6 +84,20 @@ def appBatcher(appList,batchMax):
     
 
 #---------------------------------
+def checkDates(start_date,end_date):
+    today = datetime.datetime.today()
+    start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+    end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+    
+    if end_date > today:
+        print("\nERROR: Selected reporting end date is in the future. The latest possible reporting end date is today.")
+        raise SystemExit
+
+    elif start_date > end_date:
+        print("\nERROR: Selected end date is earlier than the start date.")
+        raise SystemExit
+    
+
 
 #---------------------------------
 def runScript(args,appId,orgId,first,last,batches,delay):
@@ -452,9 +466,10 @@ def main():
                 dateRange = args["dateRange"].split(":",1)
                 first = dateRange[0].split("-",2)
                 last = dateRange[1].split("-",2)
-                #print(dateRange)
-                #print("first: ",first)
-                #print("last: ",last)
+                start_date = dateRange[0]
+                end_date = dateRange[1]
+                checkDates(start_date,end_date)
+
         iq_session.auth = requests.auth.HTTPBasicAuth(str(creds[0]), str(creds[1]) )
         
         if args["insecure"] == True:
