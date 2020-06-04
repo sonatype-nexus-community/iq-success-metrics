@@ -92,7 +92,7 @@ If you are using the python script directly without Docker, you can get started 
 ```
 python3 success_metrics.py -h
 
-Usage: python3 success_metrics.py [-h] [-a AUTH] [-s SCOPE] [-u URL] [-i APPID] [-o ORGID] [-p] [-r] [-rs] [-rl]
+Usage: python3 success_metrics.py [-h] [-a AUTH] [-s SCOPE] [-u URL] [-i APPID] [-o ORGID] [-p] [-r] [-rs] [-rl] [-d] [-snap]
 
 The optional arguments are:
 -h, --help (shows this help message and exits)
@@ -107,6 +107,7 @@ The optional arguments are:
 -rs, --reportsSec (same as -r but only for Security violations)
 -rl, --reportsLic (same as -r but only for Licensing violations)
 -d DATERANGE, --dateRange DATERANGE (creates JSON for a specified date range [yyyy-mm-dd:yyyy-mm-dd]. Do not use in conjunction with -s option)
+-snap SNAPSHOT, --snapshot SNAPSHOT (runs the script just for the apps present in the specified snapshot date yyyy-mm-dd)
 ```
 
 A valid example would be:
@@ -119,6 +120,24 @@ A similar example but using date range would be:
 
 `python3 success_metrics.py -a admin:admin123 -d 2019-06-01:2020-05-05 -u http://localhost:8070 -i 'd8f63854f4ea4405a9600e34f4d4514e','Test App1','MyApp3' -o 'c6f2775a45d44d43a32621536e638a8e','The A Team' -p -r`
 
+### The Snapshot feature
+Since release v4.13, the snapshot feature is available by using the switch -snap.
+Every time you run the script (from v4.13 onwards), the current list of unique IDs for all of the apps in the IQ server will be downloaded and added to the `snapshot.json` file inside the output folder with a timestamp. For example, if you run the script on 4th May 2020 and then again a month later on the 4th June 2020, you would get a `snapshot.json` like this:
+
+```
+{
+"2020-05-04": ["64d87188e83f443ab219e05796884826", "c55c6016614047ca95d39a31320a60f3"], 
+
+"2020-06-04": ["64d87188e83f443ab219e05796884826", "c55c6016614047ca95d39a31320a60f3", "3dc04244158f4b06baef2864ae5b8bfe", "1fa77b9cd9164862a7b062c28f70c882", "ff474edbdb04491c8bdc10d1ed43b76c", "1c08d2d27e874c0494b098238087941d", "d8f63854f4ea4405a9600e34f4d4514e", "091b5ae36c0144eb87df172bd338d834", "37f20d1fa8804f88b8e41b860c31b2be"]
+}
+```
+You can see that in May, only two apps were onboarded and in June there are nine apps. If you want to check the progress only for those two original apps from 1st January 2020 till 4th June 2020, you just need to run the usual command but with the -snap switch, selecting the 4th May 2020 snapshot:
+
+`python3 success_metrics.py -a admin:admin123 -u http:localhost:8070 -d 2020-01-01:2020-06-04 -snap 2020-05-04 -r`
+
+Or using docker:
+
+`docker run --name iq-success-metrics --rm -it -v /tmp/output:/usr/src/app/output sonatypecommunity/iq-success-metrics:latest success_metrics.py -a admin:admin123 -u http://host.docker.internal:8070 -d 2020-01-01:2020-06-04 -snap 2020-05-04 -r`
 
 ### The Docker equivalent for advanced usage
 `docker run --name iq-success-metrics --rm -it -v /tmp/output:/usr/src/app/output sonatypecommunity/iq-success-metrics:latest success_metrics.py -a admin:admin123 -s 50 -u http://host.docker.internal:8070 -i 'd8f63854f4ea4405a9600e34f4d4514e','Test App1','MyApp3' -o 'c6f2775a45d44d43a32621536e638a8e','The A Team' -p -r`
