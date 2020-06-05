@@ -329,7 +329,7 @@ def executive():
     mttrAvg = nonzeroAvg(summary["mttrCriticalThreat"],0,0)
     content1 = "In the past "+str(weeks)+" weeks your organisation:"
     content2 = "\t- Onboarded "+str(onboarded)+" applications at an average of "+str(weeklyOnboard)+" per week"
-    content3 = "\t- Scanned applications "+str(scanned)+" times at an average of "+str(weeklyScanned)+" apps scanned per week"
+    content3 = "\t- Scanned applications at an average of "+str(weeklyScanned)+" apps scanned per week"
     content4 = "\t- Performed "+str(scans)+" scans at an average of "+str(weeklyScans)+" scans per week"
     content5 = "\t- Discovered "+str(discovered)+" new violations ("+str(disCri)+" of them Critical)"
     content6 = "\t- Fixed "+str(fixed)+" and waived "+str(waived)+" violations from your open backlog"
@@ -726,7 +726,7 @@ def executiveSec():
     mttrAvg = nonzeroAvg(Security["mttrCriticalThreat"],0,0)
     content1 = "In the past "+str(weeks)+" weeks your organisation:"
     content2 = "\t- Onboarded "+str(onboarded)+" applications at an average of "+str(weeklyOnboard)+" per week"
-    content3 = "\t- Scanned applications "+str(scanned)+" times at an average of "+str(weeklyScanned)+" apps scanned per week"
+    content3 = "\t- Scanned applications at an average of "+str(weeklyScanned)+" apps scanned per week"
     content4 = "\t- Performed "+str(scans)+" scans at an average of "+str(weeklyScans)+" scans per week"
     content5 = "\t- Discovered "+str(discovered)+" new violations ("+str(disCri)+" of them Critical)"
     content6 = "\t- Fixed "+str(fixed)+" and waived "+str(waived)+" violations from your open backlog"
@@ -1121,7 +1121,7 @@ def executiveLic():
     mttrAvg = nonzeroAvg(licences["mttrCriticalThreat"],0,0)
     content1 = "In the past "+str(weeks)+" weeks your organisation:"
     content2 = "\t- Onboarded "+str(onboarded)+" applications at an average of "+str(weeklyOnboard)+" per week"
-    content3 = "\t- Scanned applications "+str(scanned)+" times at an average of "+str(weeklyScanned)+" apps scanned per week"
+    content3 = "\t- Scanned applications at an average of "+str(weeklyScanned)+" apps scanned per week"
     content4 = "\t- Performed "+str(scans)+" scans at an average of "+str(weeklyScans)+" scans per week"
     content5 = "\t- Discovered "+str(discovered)+" new violations ("+str(disCri)+" of them Critical)"
     content6 = "\t- Fixed "+str(fixed)+" and waived "+str(waived)+" violations from your open backlog"
