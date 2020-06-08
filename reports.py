@@ -13,6 +13,7 @@
 # limitations under the License.
 import json
 from fpdf import FPDF
+import datetime
 import time
 import plotly.graph_objects as go
 import argparse
@@ -32,6 +33,8 @@ xtitle = ["Date", "Applications", "Organisations"]
 filename = args['jsonFile']
 sonatype_colours = ['rgb(0,106,197)','rgb(253,198,22)','rgb(246,128,4)','rgb(205,0,40)']
 disfixwai_colours = ['rgb(245,69,44)','rgb(0,209,146)','rgb(101,104,255)']
+from datetime import date
+today = datetime.datetime.today()
 
 
 with open(filename, 'r') as f:
@@ -261,6 +264,18 @@ def average(numerator,denominator,percentage,integer):
     else:
         output = round(numerator / denominator,1)
     return(output)
+#---------------------------------
+
+def weeksWithData(scope):
+    aux = 0
+    stop = 0
+    for week in range(0,len(scope)):
+        if scope[week] == 0 and stop == 0:
+            aux += 1
+        elif scope[week] != 0:
+            stop = 1
+    output = len(scope) - aux    
+    return(output)
 
 #---------------------------------
 
@@ -298,11 +313,11 @@ def executive():
     
     weeks = len(summary["weeks"])
     onboarded = summary["appOnboard"][-1]
-    weeklyOnboard = average(onboarded,weeks,0,0)
+    weeklyOnboard = average(onboarded,weeksWithData(summary["appOnboard"]),0,0)
     scanned = sum(summary["appNumberScan"])
-    weeklyScanned = average(scanned,weeks,0,0)
+    weeklyScanned = average(scanned,weeksWithData(summary["appNumberScan"]),0,0)
     scans = sum(summary["weeklyScans"])
-    weeklyScans = average(scans,weeks,0,0)
+    weeklyScans = average(scans,weeksWithData(summary["weeklyScans"]),0,0)
     discovered = sum(summary["discoveredCounts"]["TOTAL"])
     disCri = sum(summary["discoveredCounts"]["CRITICAL"])
     if len(data_Open_App) > 0:
@@ -325,8 +340,9 @@ def executive():
     else:
         dealtRate = 0
     riskRatio = [float(i) for i in summary["riskRatioCritical"]]
-    riskRatioAvg = average(sum(riskRatio),weeks,0,0)
+    riskRatioAvg = average(sum(riskRatio),weeksWithData(riskRatio),0,0)
     mttrAvg = nonzeroAvg(summary["mttrCriticalThreat"],0,0)
+    content0 = "Report run on: "+str(today)
     content1 = "In the past "+str(weeks)+" weeks your organisation:"
     content2 = "\t- Onboarded "+str(onboarded)+" applications at an average of "+str(weeklyOnboard)+" per week"
     content3 = "\t- Scanned applications at an average of "+str(weeklyScanned)+" apps scanned per week"
@@ -339,6 +355,8 @@ def executive():
     content10 = "\t\t\t Least Criticals: "+str(leastCri)+" with "+str(leastCriVal)+" Critical violations"
     content11 = "\t- It took an average of "+str(mttrAvg)+" days to fix Critical violations"
     pdf.print_chapter('Outcomes Summary (all violations)',"")
+    pdf.cell(0,0,content0,0)
+    pdf.ln(10)
     pdf.set_font('Times', 'B', 24)
     pdf.cell(0,0,content1,0)
     pdf.ln(15)
@@ -703,11 +721,11 @@ def executiveSec():
     
     weeks = len(Security["weeks"])
     onboarded = Security["appOnboard"][-1]
-    weeklyOnboard = average(onboarded,weeks,0,0)
+    weeklyOnboard = average(onboarded,weeksWithData(Security["appOnboard"]),0,0)
     scanned = sum(Security["appNumberScan"])
-    weeklyScanned = average(scanned,weeks,0,0)
+    weeklyScanned = average(scanned,weeksWithData(Security["appNumberScan"]),0,0)
     scans = sum(Security["weeklyScans"])
-    weeklyScans = average(scans,weeks,0,0)
+    weeklyScans = average(scans,weeksWithData(Security["weeklyScans"]),0,0)
     discovered = sum(Security["discoveredCounts"]["TOTAL"])
     disCri = sum(Security["discoveredCounts"]["CRITICAL"])
     mostCri = data_Open_App[0][0]
@@ -722,8 +740,9 @@ def executiveSec():
     else:
         dealtRate = 0
     riskRatio = [float(i) for i in Security["riskRatioCritical"]]
-    riskRatioAvg = average(sum(riskRatio),weeks,0,0)
+    riskRatioAvg = average(sum(riskRatio),weeksWithData(riskRatio),0,0)
     mttrAvg = nonzeroAvg(Security["mttrCriticalThreat"],0,0)
+    content0 = "Report run on: "+str(today)
     content1 = "In the past "+str(weeks)+" weeks your organisation:"
     content2 = "\t- Onboarded "+str(onboarded)+" applications at an average of "+str(weeklyOnboard)+" per week"
     content3 = "\t- Scanned applications at an average of "+str(weeklyScanned)+" apps scanned per week"
@@ -736,6 +755,8 @@ def executiveSec():
     content10 = "\t\t\t Least Criticals: "+str(leastCri)+" with "+str(leastCriVal)+" Critical violations"
     content11 = "\t- It took an average of "+str(mttrAvg)+" days to fix Critical violations"
     pdf.print_chapter('Outcomes Summary (security violations)',"")
+    pdf.cell(0,0,content0,0)
+    pdf.ln(10)
     pdf.set_font('Times', 'B', 24)
     pdf.cell(0,0,content1,0)
     pdf.ln(15)
@@ -1098,11 +1119,11 @@ def executiveLic():
     
     weeks = len(licences["weeks"])
     onboarded = licences["appOnboard"][-1]
-    weeklyOnboard = average(onboarded,weeks,0,0)
+    weeklyOnboard = average(onboarded,weeksWithData(licences["appOnboard"]),0,0)
     scanned = sum(licences["appNumberScan"])
-    weeklyScanned = average(scanned,weeks,0,0)
+    weeklyScanned = average(scanned,weeksWithData(licences["appNumberScan"]),0,0)
     scans = sum(licences["weeklyScans"])
-    weeklyScans = average(scans,weeks,0,0)
+    weeklyScans = average(scans,weeksWithData(licences["weeklyScans"]),0,0)
     discovered = sum(licences["discoveredCounts"]["TOTAL"])
     disCri = sum(licences["discoveredCounts"]["CRITICAL"])
     mostCri = data_Open_App[0][0]
@@ -1117,8 +1138,9 @@ def executiveLic():
     else:
         dealtRate = 0
     riskRatio = [float(i) for i in licences["riskRatioCritical"]]
-    riskRatioAvg = average(sum(riskRatio),weeks,0,0)
+    riskRatioAvg = average(sum(riskRatio),weeksWithData(riskRatio),0,0)
     mttrAvg = nonzeroAvg(licences["mttrCriticalThreat"],0,0)
+    content0 = "Report run on: "+str(today)
     content1 = "In the past "+str(weeks)+" weeks your organisation:"
     content2 = "\t- Onboarded "+str(onboarded)+" applications at an average of "+str(weeklyOnboard)+" per week"
     content3 = "\t- Scanned applications at an average of "+str(weeklyScanned)+" apps scanned per week"
@@ -1131,6 +1153,8 @@ def executiveLic():
     content10 = "\t\t\t Least Criticals: "+str(leastCri)+" with "+str(leastCriVal)+" Critical violations"
     content11 = "\t- It took an average of "+str(mttrAvg)+" days to fix Critical violations"
     pdf.print_chapter('Outcomes Summary (licensing violations)',"")
+    pdf.cell(0,0,content0,0)
+    pdf.ln(10)
     pdf.set_font('Times', 'B', 24)
     pdf.cell(0,0,content1,0)
     pdf.ln(15)

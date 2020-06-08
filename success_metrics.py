@@ -116,7 +116,6 @@ def runScript(args,appId,orgId,first,last):
                 
                 if args["scope"]:
                         scope = args["scope"]
-                        #data = get_metrics(args["url"], scope, appId,  orgId ) #collects data with or without filters according to appId and orgId
                         data = get_metrics(args["url"], scope, appId,  orgId ) #collects data with or without filters according to appId and orgId
                         
                 elif args["dateRange"]:
@@ -487,8 +486,25 @@ def main():
 
         #search for applicationId
         if args["snapshot"]:
-            appId = snap[args["snapshot"]]
-            
+            if not os.path.exists("output/snapshot.json"):
+                print("\nERROR: cannot find snapshot.json. Please run the script without -snap option to generate a new snapshot.json")
+                raise SystemExit
+                
+            else:
+                with open("output/snapshot.json") as f:
+                    snap = json.load(f)
+
+                if args["snapshot"] in snap:
+                    #print("Snapshot found in snapshot.json")
+                    #-------------------
+                    appId = snap[args["snapshot"]]
+                    #-------------------
+                else:
+                    print("\nERROR: the snapshot (date) selected could not be found in snapshot.json\nPlease select an existing snapshot (date). \nAvailable snapshots: ")
+                    for key in snap.items():
+                        print(key[0])
+                    raise SystemExit
+                    
         else:
             appId = searchApps(args["appId"], args["url"])
 
@@ -498,8 +514,6 @@ def main():
         #print(appList)
         print("Total number of apps with scan reports in IQ server (including onboarded and later deleted apps): "+str(appNumber))
 
-#-------------------
-        #snapshot = appSnap(appList,batchMax)
         
 #-------------------
 
