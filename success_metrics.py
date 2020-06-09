@@ -54,34 +54,36 @@ def printProgressBar (
 #---------------------------------
 def appChecker(iq_url):
     appList = []
+    today = datetime.datetime.today()
+    today = today.strftime("%Y-%m-%d")
     url = "{}/api/v2/applications".format(iq_url)
     response = iq_session.get(url)
     rawData = response.json()
     for i in range(0,len(rawData["applications"])):
         appList.append(rawData["applications"][i]["id"])
+    d = {today : appList}
     
-    #print("Response: ",response.json())
-    return appList,len(appList)
+    if not os.path.exists("output/snapshot.json"):
+        with open("output/snapshot.json",'w') as f:
+            json.dump(d,f)
+            snap = d
+            print("Creating snapshot.json")
+
+    else:
+        with open("output/snapshot.json") as f:
+            snap = json.load(f)
+            snap.update(d)
+            print("Updating snapshot.json")
+
+            with open("output/snapshot.json",'w') as f:
+                json.dump(snap, f)
+
+    print( "saved to output/snapshot.json" )
+
+    return snap,len(appList)
     
 
 #---------------------------------
-def appBatcher(appList,batchMax):
-    batches = {}
-    j = 1
-    while len(appList) > 0:
-        batch = []
-        for i in range(0,batchMax):
-            if (len(appList) > 0):
-                batch.append(appList.pop())
-        batches["batch"+str(j)] = batch
-        j += 1
-    print("Generating batches.json")
-    with open("output/batches.json",'w') as f:
-        json.dump(batches, f)
-    print( "saved to output/batches.json" )
-                
-    return batches
-    
 
 #---------------------------------
 def checkDates(start_date,end_date):
@@ -100,7 +102,7 @@ def checkDates(start_date,end_date):
 
 
 #---------------------------------
-def runScript(args,appId,orgId,first,last,batches,delay):
+def runScript(args,appId,orgId,first,last):
 
                 t,segments = 0, 11
                 printProgressBar(t,segments)
@@ -111,23 +113,22 @@ def runScript(args,appId,orgId,first,last,batches,delay):
         #-----------------------------------------------------------------------------------
         
                 # get success metrics
-                for i in range(0,len(batches)):
-                    if args["scope"]:
-                            scope = args["scope"]
-                            #data = get_metrics(args["url"], scope, appId,  orgId ) #collects data with or without filters according to appId and orgId
-                            data = get_metrics(args["url"], scope, batches["batch"+str(i+1)],  orgId ) #collects data with or without filters according to appId and orgId
-                            
-                    elif args["dateRange"]:
-                            scope=get_scope(first,last)
-                            data = get_metrics_range(args["url"], first, last, appId,  orgId ) #collects data with or without filters according to appId and orgId
-                    else:
-                            print("No scope or date range has been provided")
+                
+                if args["scope"]:
+                        scope = args["scope"]
+                        data = get_metrics(args["url"], scope, appId,  orgId ) #collects data with or without filters according to appId and orgId
+                        
+                elif args["dateRange"]:
+                        scope=get_scope(first,last)
+                        data = get_metrics_range(args["url"], first, last, appId,  orgId ) #collects data with or without filters according to appId and orgId
+                else:
+                        print("No scope or date range has been provided")
 
-                    #print(data)
-                    
-                    if data is None: 
-                            print("No results found.")
-                            raise SystemExit
+                #print(data)
+                
+                if data is None: 
+                        print("No results found.")
+                        raise SystemExit
 
                 #-----------------------------------------------------------------------------------
                 #reportCounts is used to aggregate totals from the filtered set of applications.
@@ -456,7 +457,8 @@ def main():
         parser.add_argument('-rs','--reportsSec', help='(same as -r but only for Security violations)', action='store_true',required=False)
         parser.add_argument('-rl','--reportsLic', help='(same as -r but only for Licensing violations)', action='store_true',required=False)
         parser.add_argument('-d','--dateRange',    help='(creates JSON for a specified date range [yyyy-mm-dd:yyyy-mm-dd]. Do not use in conjunction with -s option)', required=False)
-        parser.add_argument('-b','--batches', help='(runs the script in batches, each one the specified number of seconds apart; 1 second apart by default)', type=int, default=1 ,required=False)
+        parser.add_argument('-snap','--snapshot', help='(runs the script just for the apps present in the specified snapshot date)',required=False)
+        
         
 
         args = vars(parser.parse_args())
@@ -479,28 +481,43 @@ def main():
         if not os.path.exists("output"):
             os.mkdir("output")
 
+        # checking app number and creating snapshot
+        snap,appNumber = appChecker(args["url"])
+
         #search for applicationId
-        appId = searchApps(args["appId"], args["url"])
+        if args["snapshot"]:
+            if not os.path.exists("output/snapshot.json"):
+                print("\nERROR: cannot find snapshot.json. Please run the script without -snap option to generate a new snapshot.json")
+                raise SystemExit
+                
+            else:
+                with open("output/snapshot.json") as f:
+                    snap = json.load(f)
+
+                if args["snapshot"] in snap:
+                    #print("Snapshot found in snapshot.json")
+                    #-------------------
+                    appId = snap[args["snapshot"]]
+                    #-------------------
+                else:
+                    print("\nERROR: the snapshot (date) selected could not be found in snapshot.json\nPlease select an existing snapshot (date). \nAvailable snapshots: ")
+                    for key in snap.items():
+                        print(key[0])
+                    raise SystemExit
+                    
+        else:
+            appId = searchApps(args["appId"], args["url"])
 
         #search for organizationId
         orgId = searchOrgs(args["orgId"], args["url"])
-
-        #Defining batch size and batch delay in seconds
-        batchMax = 100000
-        delay = args["batches"]
-        
-        # checking app number
-        appList,appNumber = appChecker(args["url"])
         
         #print(appList)
-        print("Total number of apps in IQ server: "+str(appNumber))
+        print("Total number of apps with scan reports in IQ server (including onboarded and later deleted apps): "+str(appNumber))
 
-#-------------------
-        batches = appBatcher(appList,batchMax)
         
 #-------------------
 
-        runScript(args,appId,orgId,first,last,batches,delay)
+        runScript(args,appId,orgId,first,last)
                 
 
 #-----------------------------------------------------------------------------------
