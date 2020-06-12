@@ -337,7 +337,9 @@ def executive():
         leastCri = "Error: No applications found!"
         leastCriVal = 0
     fixed = sum(summary["fixedCounts"]["TOTAL"])
+    fixedCri = sum(summary["fixedCounts"]["CRITICAL"])
     waived = sum(summary["waivedCounts"]["TOTAL"])
+    waivedCri = sum(summary["waivedCounts"]["CRITICAL"])
     dealt = fixed + waived
     if discovered > 0:
         dealtRate = round((dealt / discovered) * 100,1)
@@ -352,7 +354,7 @@ def executive():
     content3 = "\t- Scanned applications at an average of "+str(weeklyScanned)+" apps scanned per week"
     content4 = "\t- Performed "+str(scans)+" scans at an average of "+str(weeklyScans)+" scans per week"
     content5 = "\t- Discovered "+str(discovered)+" new violations ("+str(disCri)+" of them Critical)"
-    content6 = "\t- Fixed "+str(fixed)+" and waived "+str(waived)+" violations from your open backlog"
+    content6 = "\t- Fixed "+str(fixed)+" ("+str(fixedCri)+" of them Critical) and waived "+str(waived)+" violations ("+str(waivedCri)+" of them Critical) from your open backlog"
     content7 = "\t  Which means that your Fixing Rate (Fixed & Waived / Discovered) is "+str(dealtRate)+"%"
     content8 = "\t- On average, each application has "+str(riskRatioAvg)+" Open Critical violations"
     content9 = "\t\t\t Most Criticals: "+str(mostCri)+" with "+str(mostCriVal)+" Critical violations"
@@ -373,7 +375,7 @@ def executive():
     pdf.ln(10)
     pdf.cell(0,0,content5,0)
     pdf.ln(10)
-    pdf.cell(0,0,content6,0)
+    pdf.multi_cell(0,7,content6,0)
     pdf.ln(10)
     pdf.set_text_color(0, 0, 255)
     pdf.cell(0,0,content7,0)
@@ -738,7 +740,9 @@ def executiveSec():
     leastCri = data_Open_App[-1][0]
     leastCriVal = data_Open_App[-1][1]
     fixed = sum(Security["fixedCounts"]["TOTAL"])
+    fixedCri = sum(Security["fixedCounts"]["CRITICAL"])
     waived = sum(Security["waivedCounts"]["TOTAL"])
+    waivedCri = sum(Security["waivedCounts"]["CRITICAL"])
     dealt = fixed + waived
     if discovered > 0:
         dealtRate = round((dealt / discovered) * 100,1)
@@ -753,7 +757,7 @@ def executiveSec():
     content3 = "\t- Scanned applications at an average of "+str(weeklyScanned)+" apps scanned per week"
     content4 = "\t- Performed "+str(scans)+" scans at an average of "+str(weeklyScans)+" scans per week"
     content5 = "\t- Discovered "+str(discovered)+" new violations ("+str(disCri)+" of them Critical)"
-    content6 = "\t- Fixed "+str(fixed)+" and waived "+str(waived)+" violations from your open backlog"
+    content6 = "\t- Fixed "+str(fixed)+" ("+str(fixedCri)+" of them Critical) and waived "+str(waived)+" violations ("+str(waivedCri)+" of them Critical) from your open backlog"
     content7 = "\t  Which means that your Fixing Rate (Fixed & Waived / Discovered) is "+str(dealtRate)+"%"
     content8 = "\t- On average, each application has "+str(riskRatioAvg)+" Open Critical violations"
     content9 = "\t\t\t Most Criticals: "+str(mostCri)+" with "+str(mostCriVal)+" Critical violations"
@@ -774,7 +778,7 @@ def executiveSec():
     pdf.ln(10)
     pdf.cell(0,0,content5,0)
     pdf.ln(10)
-    pdf.cell(0,0,content6,0)
+    pdf.multi_cell(0,7,content6,0)
     pdf.ln(10)
     pdf.set_text_color(0, 0, 255)
     pdf.cell(0,0,content7,0)
@@ -1137,7 +1141,9 @@ def executiveLic():
     leastCri = data_Open_App[-1][0]
     leastCriVal = data_Open_App[-1][1]
     fixed = sum(licences["fixedCounts"]["TOTAL"])
+    fixedCri = sum(licences["fixedCounts"]["CRITICAL"])
     waived = sum(licences["waivedCounts"]["TOTAL"])
+    waivedCri = sum(licences["waivedCounts"]["CRITICAL"])
     dealt = fixed + waived
     if discovered > 0:
         dealtRate = round((dealt / discovered) * 100,1)
@@ -1152,7 +1158,7 @@ def executiveLic():
     content3 = "\t- Scanned applications at an average of "+str(weeklyScanned)+" apps scanned per week"
     content4 = "\t- Performed "+str(scans)+" scans at an average of "+str(weeklyScans)+" scans per week"
     content5 = "\t- Discovered "+str(discovered)+" new violations ("+str(disCri)+" of them Critical)"
-    content6 = "\t- Fixed "+str(fixed)+" and waived "+str(waived)+" violations from your open backlog"
+    content6 = "\t- Fixed "+str(fixed)+" ("+str(fixedCri)+" of them Critical) and waived "+str(waived)+" violations ("+str(waivedCri)+" of them Critical) from your open backlog"
     content7 = "\t  Which means that your Fixing Rate (Fixed & Waived / Discovered) is "+str(dealtRate)+"%"
     content8 = "\t- On average, each application has "+str(riskRatioAvg)+" Open Critical violations"
     content9 = "\t\t\t Most Criticals: "+str(mostCri)+" with "+str(mostCriVal)+" Critical violations"
@@ -1173,7 +1179,7 @@ def executiveLic():
     pdf.ln(10)
     pdf.cell(0,0,content5,0)
     pdf.ln(10)
-    pdf.cell(0,0,content6,0)
+    pdf.multi_cell(0,7,content6,0)
     pdf.ln(10)
     pdf.set_text_color(0, 0, 255)
     pdf.cell(0,0,content7,0)

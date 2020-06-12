@@ -358,22 +358,34 @@ def insights():
     weeks = len(scope)
     weeks1 = weeksWithData(summary1["weeks"])
     weeks2 = weeksWithData(summary2["weeks"])
+
     onboarded = summary2["appOnboard"][-1] - summary1["appOnboard"][-1]
     onboarded1 = summary1["appOnboard"][-1]
     onboarded2 = summary2["appOnboard"][-1]
     weeklyOnboard = average(onboarded,weeks,0,0)
     weeklyOnboard1 = average(onboarded1,weeks1,0,0)
     weeklyOnboard2 = average(onboarded2,weeks2,0,0)
-    scanned = sum(summary2["appNumberScan"]) - sum(summary1["appNumberScan"])
+
+    scanned = sum(getScope(summary1["appNumberScan"],summary2["appNumberScan"]))
     scanned1 = sum(summary1["appNumberScan"])
-    print(scanned1)
-    print(weeks1)
+    scanned2 = sum(summary2["appNumberScan"])
     weeklyScanned = average(scanned,weeks,0,0)
     weeklyScanned1 = average(scanned1,weeks1,0,0)
+
     scans = sum(summary2["weeklyScans"]) - sum(summary1["weeklyScans"])
+    scans1 = sum(summary1["weeklyScans"])
+    scans2 = sum(summary2["weeklyScans"])                
     weeklyScans = average(scans,weeks,0,0)
+    weeklyScans1 = average(scans1,weeks1,0,0)
+    weeklyScans2 = average(scans2,weeks2,0,0)
+
     discovered = sum(summary2["discoveredCounts"]["TOTAL"]) - sum(summary1["discoveredCounts"]["TOTAL"])
+    discovered1 = sum(summary1["discoveredCounts"]["TOTAL"])
+    discovered2 = sum(summary2["discoveredCounts"]["TOTAL"])
     disCri = sum(summary2["discoveredCounts"]["CRITICAL"]) - sum(summary1["discoveredCounts"]["CRITICAL"])
+    disCri1 = sum(summary1["discoveredCounts"]["CRITICAL"])
+    disCri2 = sum(summary2["discoveredCounts"]["CRITICAL"])
+    
     if len(data_Open_App1) > 0:
         mostCri = data_Open_App2[0][0]
         mostCriVal = data_Open_App2[0][1]
@@ -386,58 +398,170 @@ def insights():
     else:
         leastCri = "Error: No applications found!"
         leastCriVal = 0
+
     fixed = sum(summary2["fixedCounts"]["TOTAL"]) - sum(summary1["fixedCounts"]["TOTAL"])
+    fixed1 = sum(summary1["fixedCounts"]["TOTAL"])
+    fixed2 sum(summary2["fixedCounts"]["TOTAL"])
+    fixCri =
+    fixCri1 =
+    fixCri2 = 
+
     waived = sum(summary2["waivedCounts"]["TOTAL"]) - sum(summary1["waivedCounts"]["TOTAL"])
+    waived1 = sum(summary1["waivedCounts"]["TOTAL"])
+    waived2 = sum(summary2["waivedCounts"]["TOTAL"])
+    waivedCri = 
+    waivedCri1 = 
+    waivedCri2 = 
+    
     dealt = fixed + waived
     if discovered > 0:
         dealtRate = round((dealt / discovered) * 100,1)
     else:
         dealtRate = 0
+        
     riskRatio = [float(i) for i in summary2["riskRatioCritical"]]
     riskRatio = riskRatio[-weeks:]
     riskRatioAvg = average(sum(riskRatio),weeks,0,0)
+    
     mttr = summary2["mttrCriticalThreat"][-weeks:]
     mttrAvg = nonzeroAvg(mttr,0,0)
+
+
+
+    pdf.print_chapter('Insights Summary (all violations)',"")
+    
     content0 = "Report run on: "+str(today)+" comparing "+str(filenameBefore)+" with "+str(filenameAfter)+" from w/c "+str(scope[0])+" to w/c "+str(scope[-1])
+    pdf.multi_cell(0,5,content0,0)
+    pdf.ln(10)
+    
     content1 = "During the "+str(weeks)+" weeks in scope, your organisation:"
+    pdf.set_font('Times', 'B', 24)
+    pdf.cell(0,0,content1,0)
+    pdf.ln(10)
+    pdf.set_font('Times', 'B', 18)
+    
     content2 = "Onboarded "+str(onboarded)+" applications (going from "+str(onboarded1)+" to "+str(onboarded2)+" apps), at an average of "+str(weeklyOnboard)+" per week (previously "+str(weeklyOnboard1)+" apps onboarded per week)."
+    pdf.multi_cell(0,7,content2,0)
+    pdf.ln(1)
     if weeklyOnboard > weeklyOnboard1:
         content21 = "This represents a "+str(average(weeklyOnboard,weeklyOnboard1,1,0) - 100)+"% increase in the onboarding rate."
+        pdf.set_text_color(0, 153, 0)
+        pdf.multi_cell(0,7,content21,0)
     elif weeklyOnboard < weeklyOnboard1:
-        content21 = "This represents a "+str(100 - average(weeklyOnboard,weeklyOnboard1,1,0))+"% reduction in the onboarding rate."
+        content21 = "This represents a "+str(100 - average(weeklyOnboard,weeklyOnboard1,1,0))+"% reduction in the onboarding rate. Have all apps been onboarded yet?"
+        pdf.set_text_color(255, 0, 0)
+        pdf.multi_cell(0,7,content21,0)
     elif onboarded1 == onboarded2:
         content21 = "No new applications have been onboarded during this time period. Have all apps been onboarded yet?"
+        pdf.set_text_color(255, 0, 0)
+        pdf.multi_cell(0,7,content21,0)
     else:
         content21 = "This represents a stable onboarding pattern."
+        pdf.set_text_color(0, 0, 255)
+        pdf.multi_cell(0,7,content21,0)
+    pdf.ln(10)
+    pdf.set_text_color(0, 0, 0)
 
-    content3 = "Scanned applications at an average of "+str(weeklyScanned)+" apps scanned per week (previously "+str(weeklyScanned1)+" apps scanned per week)."
+    content3 = "Scanned applications at an average of "+str(weeklyScanned)+" apps scanned per week (previously "+str(weeklyScanned1)+" apps scanned per week). Scanning coverage is "+str(average(weeklyScanned,onboarded2,1,0))+"% (percentage of total apps scanned)."
+    pdf.multi_cell(0,7,content3,0)
+    pdf.ln(1)
+    if weeklyScanned > weeklyScanned1:
+        content31 = "This represents a "+str(average(weeklyScanned,weeklyScanned1,1,0) - 100)+"% increase in the scanning coverage rate."
+        pdf.set_text_color(0, 153, 0)
+        pdf.multi_cell(0,7,content31,0)
+    elif weeklyScanned < weeklyScanned1:
+        content31 = "This represents a "+str(100 - average(weeklyScanned,weeklyScanned1,1,0))+"% reduction in the scanning coverage rate."
+        pdf.set_text_color(255, 0, 0)
+        pdf.multi_cell(0,7,content31,0)
+    elif scanned == 0:
+        content31 = "No applications have been scanned during this time period. Is there a problem with the CI integration or with the uptake of IQ within the development teams?"
+        pdf.set_text_color(255, 0, 0)
+        pdf.multi_cell(0,7,content31,0)
+    else:
+        content31 = "This represents a stable app scanning pattern."
+        pdf.set_text_color(0, 0, 255)
+        pdf.multi_cell(0,7,content31,0)
+    pdf.ln(10)
+    pdf.set_text_color(0, 0, 0)
+        
+    content4 = "Performed "+str(scans)+" scans at an average of "+str(weeklyScans)+" scans per week (previously "+str(weeklyScans1)+" scans per week)."
+    pdf.multi_cell(0,7,content4,0)
+    pdf.ln(1)
+    if weeklyScans > weeklyScans1:
+        content41 = "This represents a "+str(round(average(weeklyScans,weeklyScans1,1,0) - 100,1))+"% increase in the scanning rate."
+        pdf.set_text_color(0, 153, 0)
+        pdf.multi_cell(0,7,content41,0)
+    elif weeklyScans < weeklyScans1:
+        content41 = "This represents a "+str(100 - average(weeklyScans,weeklyScans1,1,0))+"% reduction in the scanning rate."
+        pdf.set_text_color(255, 0, 0)
+        pdf.multi_cell(0,7,content41,0)
+    elif scans == 0:
+        content41 = "No scans have been performed during this time period. Is there a problem with the CI integration or with the uptake of IQ within the development teams?"
+        pdf.set_text_color(255, 0, 0)
+        pdf.multi_cell(0,7,content41,0)
+    else:
+        content41 = "This represents a stable scanning pattern."
+        pdf.set_text_color(0, 0, 255)
+        pdf.multi_cell(0,7,content41,0)
+    pdf.ln(10)
+    pdf.set_text_color(0, 0, 0)
     
-    content4 = "\t- Performed "+str(scans)+" scans at an average of "+str(weeklyScans)+" scans per week"
-    content5 = "\t- Discovered "+str(discovered)+" new violations ("+str(disCri)+" of them Critical)"
-    content6 = "\t- Fixed "+str(fixed)+" and waived "+str(waived)+" violations from your open backlog"
+    content5 = "Discovered "+str(discovered)+" new violations (previously "+str(discovered1)+" violations). Of these, "+str(disCri)+" were Critical (previously "+str(disCri1)+" were Critical)."
+    pdf.multi_cell(0,7,content5,0)
+    pdf.ln(1)
+    if discovered > discovered1:
+        content51 = "This represents a "+str(round(average(discovered,discovered1,1,0) - 100,1))+"% increase in the discovery rate. This could indicate that development teams are not selecting safer OSS components. Have you integrated the IDE plugins and Chrome extension?"
+        pdf.set_text_color(255, 0, 0)
+        pdf.multi_cell(0,7,content51,0)
+    elif discovered < discovered1:
+        content51 = "This represents a "+str(100 - average(discovered,discovered1,1,0))+"% reduction in the discovery rate. This could indicate that development teams are selecting safer OSS components, hence shifting left."
+        pdf.set_text_color(0, 153, 0)
+        pdf.multi_cell(0,7,content51,0)
+    elif discovered == 0 and scans != 0:
+        content51 = "No new discovered violations during this time period. This could indicate that development teams are selecting safer OSS components, hence shifting left."
+        pdf.set_text_color(0, 153, 0)
+        pdf.multi_cell(0,7,content51,0)
+    else:
+        content51 = "This represents a stable discovery rate."
+        pdf.set_text_color(0, 0, 255)
+        pdf.multi_cell(0,7,content51,0)
+    pdf.ln(10)
+    pdf.set_text_color(0, 0, 0)
+
+    content6 = "Fixed "+str(fixed)+" new violations (previously "+str(fixed1)+" violations). Of these, "+str(disCri)+" were Critical (previously "+str(disCri1)+" were Critical)."
+    pdf.multi_cell(0,7,content6,0)
+    pdf.ln(1)
+    if fixed > fixed1:
+        content61 = "This represents a "+str(round(average(fixed,fixed1,1,0) - 100,1))+"% increase in the discovery rate. This could indicate that development teams are not selecting safer OSS components. Have you integrated the IDE plugins and Chrome extension?"
+        pdf.set_text_color(255, 0, 0)
+        pdf.multi_cell(0,7,content61,0)
+    elif fixed < fixed1:
+        content61 = "This represents a "+str(100 - average(fixed,fixed1,1,0))+"% reduction in the discovery rate. This could indicate that development teams are selecting safer OSS components, hence shifting left."
+        pdf.set_text_color(0, 153, 0)
+        pdf.multi_cell(0,7,content61,0)
+    elif fixed == 0 and scans != 0:
+        content61 = "No new fixed violations during this time period. This could indicate that development teams are selecting safer OSS components, hence shifting left."
+        pdf.set_text_color(0, 153, 0)
+        pdf.multi_cell(0,7,content61,0)
+    else:
+        content61 = "This represents a stable discovery rate."
+        pdf.set_text_color(0, 0, 255)
+        pdf.multi_cell(0,7,content61,0)
+    pdf.ln(10)
+    pdf.set_text_color(0, 0, 0)
+
+    
+    content6 = "Fixed "+str(fixed)+" and waived "+str(waived)+" violations from your open backlog"
     content7 = "\t  Which means that your Fixing Rate (Fixed & Waived / Discovered) is "+str(dealtRate)+"%"
     content8 = "\t- On average, each application has "+str(riskRatioAvg)+" Open Critical violations"
     content9 = "\t\t\t Most Criticals: "+str(mostCri)+" with "+str(mostCriVal)+" Critical violations"
     content10 = "\t\t\t Least Criticals: "+str(leastCri)+" with "+str(leastCriVal)+" Critical violations"
     content11 = "\t- It took an average of "+str(mttrAvg)+" days to fix Critical violations"
 
-    pdf.print_chapter('Insights Summary (all violations)',"")
-    pdf.multi_cell(0,5,content0,0)
-    pdf.ln(10)
-    pdf.set_font('Times', 'B', 24)
-    pdf.cell(0,0,content1,0)
-    pdf.ln(10)
-    pdf.set_font('Times', 'B', 18)
-    pdf.multi_cell(0,7,content2,0)
-    pdf.ln(1)
-    pdf.multi_cell(0,7,content21,0)
-    pdf.ln(10)
-    pdf.cell(0,0,content3,0)
-    pdf.ln(10)
-    pdf.cell(0,0,content4,0)
-    pdf.ln(10)
-    pdf.cell(0,0,content5,0)
-    pdf.ln(10)
+
+
+    
+
     pdf.cell(0,0,content6,0)
     pdf.ln(10)
     pdf.set_text_color(0, 0, 255)
