@@ -18,6 +18,9 @@ import time
 import plotly.graph_objects as go
 import argparse
 
+today = datetime.datetime.today()
+today = today.strftime("%Y-%m-%d")
+
 parser = argparse.ArgumentParser(description='get some reports')
 parser.add_argument('-e','--executive', help='generates executive report for all violations', action='store_true', required=False)
 parser.add_argument('-es','--executiveSec', help='generates executive report only for Security violations', action='store_true', required=False)
@@ -25,7 +28,7 @@ parser.add_argument('-el','--executiveLic', help='generates executive report onl
 parser.add_argument('-t','--tables', help='generates a report in table format for all violations', action='store_true', required=False)
 parser.add_argument('-ts','--tablesSec', help='generates a report in table format only for Security violations', action='store_true', required=False)
 parser.add_argument('-tl','--tablesLic', help='generates a report in table format only for Licensing violations', action='store_true', required=False)
-parser.add_argument('-f','--file', help='input file', default='./output/successmetrics.json',dest='jsonFile', action='store', required=False)
+parser.add_argument('-f','--file', help='input file', default='./output/'+str(today)+'_successmetrics.json',dest='jsonFile', action='store', required=False)
 
 args = vars(parser.parse_args())
 
@@ -312,12 +315,13 @@ def executive():
     ###########################
     
     weeks = len(summary["weeks"])
+    scope = weeksWithData(summary["appOnboard"])
     onboarded = summary["appOnboard"][-1]
-    weeklyOnboard = average(onboarded,weeksWithData(summary["appOnboard"]),0,0)
+    weeklyOnboard = average(onboarded,scope,0,0)
     scanned = sum(summary["appNumberScan"])
-    weeklyScanned = average(scanned,weeksWithData(summary["appNumberScan"]),0,0)
+    weeklyScanned = average(scanned,scope,0,0)
     scans = sum(summary["weeklyScans"])
-    weeklyScans = average(scans,weeksWithData(summary["weeklyScans"]),0,0)
+    weeklyScans = average(scans,scope,0,0)
     discovered = sum(summary["discoveredCounts"]["TOTAL"])
     disCri = sum(summary["discoveredCounts"]["CRITICAL"])
     if len(data_Open_App) > 0:
@@ -340,7 +344,7 @@ def executive():
     else:
         dealtRate = 0
     riskRatio = [float(i) for i in summary["riskRatioCritical"]]
-    riskRatioAvg = average(sum(riskRatio),weeksWithData(riskRatio),0,0)
+    riskRatioAvg = average(sum(riskRatio),scope,0,0)
     mttrAvg = nonzeroAvg(summary["mttrCriticalThreat"],0,0)
     content0 = "Report run on: "+str(today)
     content1 = "In the past "+str(weeks)+" weeks your organisation:"
@@ -720,12 +724,13 @@ def executiveSec():
     ###########################
     
     weeks = len(Security["weeks"])
+    scope = weeksWithData(Security["appOnboard"])
     onboarded = Security["appOnboard"][-1]
-    weeklyOnboard = average(onboarded,weeksWithData(Security["appOnboard"]),0,0)
+    weeklyOnboard = average(onboarded,scope,0,0)
     scanned = sum(Security["appNumberScan"])
-    weeklyScanned = average(scanned,weeksWithData(Security["appNumberScan"]),0,0)
+    weeklyScanned = average(scanned,scope,0,0)
     scans = sum(Security["weeklyScans"])
-    weeklyScans = average(scans,weeksWithData(Security["weeklyScans"]),0,0)
+    weeklyScans = average(scans,scope,0,0)
     discovered = sum(Security["discoveredCounts"]["TOTAL"])
     disCri = sum(Security["discoveredCounts"]["CRITICAL"])
     mostCri = data_Open_App[0][0]
@@ -740,7 +745,7 @@ def executiveSec():
     else:
         dealtRate = 0
     riskRatio = [float(i) for i in Security["riskRatioCritical"]]
-    riskRatioAvg = average(sum(riskRatio),weeksWithData(riskRatio),0,0)
+    riskRatioAvg = average(sum(riskRatio),scope,0,0)
     mttrAvg = nonzeroAvg(Security["mttrCriticalThreat"],0,0)
     content0 = "Report run on: "+str(today)
     content1 = "In the past "+str(weeks)+" weeks your organisation:"
@@ -1118,12 +1123,13 @@ def executiveLic():
 ###########################
     
     weeks = len(licences["weeks"])
+    scope = weeksWithData(licences["appOnboard"])
     onboarded = licences["appOnboard"][-1]
-    weeklyOnboard = average(onboarded,weeksWithData(licences["appOnboard"]),0,0)
+    weeklyOnboard = average(onboarded,scope,0,0)
     scanned = sum(licences["appNumberScan"])
-    weeklyScanned = average(scanned,weeksWithData(licences["appNumberScan"]),0,0)
+    weeklyScanned = average(scanned,scope,0,0)
     scans = sum(licences["weeklyScans"])
-    weeklyScans = average(scans,weeksWithData(licences["weeklyScans"]),0,0)
+    weeklyScans = average(scans,scope,0,0)
     discovered = sum(licences["discoveredCounts"]["TOTAL"])
     disCri = sum(licences["discoveredCounts"]["CRITICAL"])
     mostCri = data_Open_App[0][0]
@@ -1138,7 +1144,7 @@ def executiveLic():
     else:
         dealtRate = 0
     riskRatio = [float(i) for i in licences["riskRatioCritical"]]
-    riskRatioAvg = average(sum(riskRatio),weeksWithData(riskRatio),0,0)
+    riskRatioAvg = average(sum(riskRatio),scope,0,0)
     mttrAvg = nonzeroAvg(licences["mttrCriticalThreat"],0,0)
     content0 = "Report run on: "+str(today)
     content1 = "In the past "+str(weeks)+" weeks your organisation:"

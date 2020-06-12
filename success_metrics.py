@@ -80,7 +80,7 @@ def appChecker(iq_url):
 
     print( "saved to output/snapshot.json" )
 
-    return snap,len(appList)
+    return snap,len(appList),today
     
 
 #---------------------------------
@@ -102,7 +102,7 @@ def checkDates(start_date,end_date):
 
 
 #---------------------------------
-def runScript(args,appId,orgId,first,last):
+def runScript(args,appId,orgId,first,last,today):
 
                 t,segments = 0, 11
                 printProgressBar(t,segments)
@@ -158,16 +158,16 @@ def runScript(args,appId,orgId,first,last):
                                 reportSec["weeks"].append( get_week_only( recency ) )
                                 
                 elif args["dateRange"]:
-                        #print("scope: ",scope)
                         for recency in range(scope, 0, -1):
                                 reportSummary["timePeriodStart"].append( get_week_start_range( last, recency ) )
                                 reportLic["timePeriodStart"].append( get_week_start_range( last, recency ) )
                                 reportSec["timePeriodStart"].append( get_week_start_range( last, recency ) )
                                 reportSummary["weeks"].append( get_week_only_range( last, recency ) )
-                                #print(reportSummary["weeks"])
+                                #print("reportSummary[weeks]: "+str(reportSummary["weeks"]))
                                 reportLic["weeks"].append( get_week_only_range( last, recency ) )
                                 reportSec["weeks"].append( get_week_only_range( last, recency ) )
 
+                #print("timeperiodstart: "+str(reportSummary["timePeriodStart"]))
                 reportSummary["dates"] = reportSummary["timePeriodStart"]
                 reportLic["dates"] = reportLic["timePeriodStart"]
                 reportSec["dates"] = reportSec["timePeriodStart"]
@@ -189,6 +189,8 @@ def runScript(args,appId,orgId,first,last):
                 # set empty range for scope
                 for fields in ["appNumberScan", "appOnboard", "weeklyScans","riskRatioCritical","riskRatioSevere","riskRatioModerate","riskRatioLow"]:
                         reportCounts.update({ fields : zeros(reportSummary["timePeriodStart"]) })
+                        #print("reportSummary[timeperiodstart]"+str(reportSummary["timePeriodStart"]))
+                        #print("reportCounts: "+str(reportCounts))
                         reportCountsLic.update({ fields : zeros(reportLic["timePeriodStart"]) })
                         reportCountsSec.update({ fields : zeros(reportSec["timePeriodStart"]) })
 
@@ -231,6 +233,8 @@ def runScript(args,appId,orgId,first,last):
                         app.update( {"summary": app_summary} )
                         app.update( {"licences": app_summary} )
                         app.update( {"security": app_summary} )
+
+                        #print(app_summary["dates"])
                         
                         for date_no in app_summary["dates"]:
                                 position = app_summary["dates"].index(date_no)
@@ -409,13 +413,13 @@ def runScript(args,appId,orgId,first,last):
 
                 ## make an output directory
                 os.makedirs("output", exist_ok=True)
-                print("Generating successmetrics.json")
-                with open("output/successmetrics.json",'w') as f:
+                print("Generating "+str(today)+"_successmetrics.json")
+                with open("output/"+str(today)+"_successmetrics.json",'w') as f:
                         if args["pretty"]:
                                 f.write(json.dumps(report, indent=4))
                         else:
                                 json.dump(report, f)
-                print( "saved to output/successmetrics.json" )
+                print( "saved to output/"+str(today)+"_successmetrics.json" )
                 #-----------------------------------------------------------------------------------
                 # one more thing...
                 if args["reports"] == True:
@@ -481,8 +485,8 @@ def main():
         if not os.path.exists("output"):
             os.mkdir("output")
 
-        # checking app number and creating snapshot
-        snap,appNumber = appChecker(args["url"])
+        # checking app number, creating snapshot and storing today's date
+        snap,appNumber,today = appChecker(args["url"])
 
         #search for applicationId
         if args["snapshot"]:
@@ -517,7 +521,7 @@ def main():
         
 #-------------------
 
-        runScript(args,appId,orgId,first,last)
+        runScript(args,appId,orgId,first,last,today)
                 
 
 #-----------------------------------------------------------------------------------
@@ -579,7 +583,7 @@ def get_scope(first,last):
         d1 = date(int(last[0]),int(last[1]),int(last[2]))
         d2 = date(int(first[0]),int(first[1]),int(first[2]))
         scope = (d1-d2).days//7
-        scope += 2
+        scope += 1
         #print(scope)
         return scope
                                                   
