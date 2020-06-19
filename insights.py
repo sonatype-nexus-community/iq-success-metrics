@@ -1,4 +1,4 @@
-# Copyright 2019 Sonatype Inc.
+# Copyright 2020 Sonatype Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ import datetime
 import time
 import plotly.graph_objects as go
 import argparse
+import statistics
 
 parser = argparse.ArgumentParser(description='generate insights report')
 parser.add_argument('-all','--insights', help='generates insights report for all violations', action='store_true', required=False)
@@ -290,10 +291,30 @@ def weeksWithData(scope):
 #---------------------------------
 
 def getScope(scope1,scope2):
-    index = scope2.index(scope1[-1])
-    #print(index)
-    scope = scope2[index+1:]
-    #print(scope)
+    S1 = set(scope1)
+    S2 = set(scope2)
+    inter = S1.intersection(S2)
+    #print(inter)
+    if inter != {}:
+        if scope2[-1] >= scope1[-1]:
+            index = scope2.index(scope1[-1])
+            scope = scope2[index+1:]
+        elif scope1[-1] > scope2[-1]:
+            print("The date ranges for before and after json files are swapped. Please, run the command again but swapping the files for before and after. \nExiting...")
+            raise SystemExit
+        if scope == []:
+            print("The date ranges for before and after json files are identical. There is no delta to analyse. \nExiting...")
+            raise SystemExit
+        #print("scope1: "+str(scope1))
+        #print("scope2: "+str(scope2))
+        #print("index: "+str(index))
+        #print("scope1[-1]: "+str(scope1[-1]))
+        #print("length of scope1: "+str(len(scope1)))
+        #print("length of scope2: "+str(len(scope2)))
+        #print("scope: "+str(scope))
+    else:
+        print("The date ranges for before and after json files do not intersect. There is a gap in the data. \nPlease generate new json files extending the date ranges so that both json files intersect. \nExiting...")
+        raise SystemExit
     return(scope)
 
 #---------------------------------
@@ -301,7 +322,7 @@ def getScope(scope1,scope2):
 #INSIGHTS: Insights report (comparison between two different json files)
 def insights():
 
-    pages, t, graphNo = [], 0, 1
+    pages, t, graphNo = [], 0, 2
     appName, orgName, OpeLow, OpeMod, OpeSev, OpeCri, mttrLow, mttrMod, mttrSev, mttrCri = [],[],[],[],[],[],[],[],[],[]
     printProgressBar(t,graphNo)
     
@@ -366,10 +387,11 @@ def insights():
     weeklyOnboard1 = average(onboarded1,weeks1,0,0)
     weeklyOnboard2 = average(onboarded2,weeks2,0,0)
 
-    scanned = sum(getScope(summary1["appNumberScan"],summary2["appNumberScan"]))
     scanned1 = sum(summary1["appNumberScan"])
     scanned2 = sum(summary2["appNumberScan"])
-    weeklyScanned = average(scanned,weeks,0,0)
+    scanned = summary2["appNumberScan"][-weeks:]
+    #print("scanned: "+str(scanned))
+    weeklyScanned = average(sum(scanned),weeks,0,0)
     weeklyScanned1 = average(scanned1,weeks1,0,0)
 
     scans = sum(summary2["weeklyScans"]) - sum(summary1["weeklyScans"])
@@ -401,30 +423,47 @@ def insights():
 
     fixed = sum(summary2["fixedCounts"]["TOTAL"]) - sum(summary1["fixedCounts"]["TOTAL"])
     fixed1 = sum(summary1["fixedCounts"]["TOTAL"])
-    fixed2 sum(summary2["fixedCounts"]["TOTAL"])
-    fixCri =
-    fixCri1 =
-    fixCri2 = 
+    fixed2 = sum(summary2["fixedCounts"]["TOTAL"])
+    fixedCri = sum(summary2["fixedCounts"]["CRITICAL"]) - sum(summary1["fixedCounts"]["CRITICAL"])
+    fixedCri1 = sum(summary1["fixedCounts"]["CRITICAL"])
+    fixedCri2 = sum(summary2["fixedCounts"]["CRITICAL"])
 
     waived = sum(summary2["waivedCounts"]["TOTAL"]) - sum(summary1["waivedCounts"]["TOTAL"])
     waived1 = sum(summary1["waivedCounts"]["TOTAL"])
     waived2 = sum(summary2["waivedCounts"]["TOTAL"])
-    waivedCri = 
-    waivedCri1 = 
-    waivedCri2 = 
+    waivedCri = sum(summary2["waivedCounts"]["CRITICAL"]) - sum(summary1["waivedCounts"]["CRITICAL"])
+    waivedCri1 = sum(summary1["waivedCounts"]["CRITICAL"])
+    waivedCri2 = sum(summary2["waivedCounts"]["CRITICAL"])
+
+    opened1 = summary1["openCountsAtTimePeriodEnd"]["TOTAL"][-1]
+    opened2 = summary2["openCountsAtTimePeriodEnd"]["TOTAL"][-1]
+    openedCri1 = summary1["openCountsAtTimePeriodEnd"]["CRITICAL"][-1]
+    openedCri2 = summary2["openCountsAtTimePeriodEnd"]["CRITICAL"][-1]
     
     dealt = fixed + waived
     if discovered > 0:
         dealtRate = round((dealt / discovered) * 100,1)
     else:
         dealtRate = 0
+    dealt1 = fixed1 + waived1
+    if discovered1 > 0:
+        dealtRate1 = round((dealt1 / discovered1) * 100,1)
+    else:
+        dealtRate1 = 0
         
     riskRatio = [float(i) for i in summary2["riskRatioCritical"]]
     riskRatio = riskRatio[-weeks:]
     riskRatioAvg = average(sum(riskRatio),weeks,0,0)
+    riskRatio1 = [float(i) for i in summary1["riskRatioCritical"]]
+    riskRatioAvg1 = average(sum(riskRatio1),weeks1,0,0)
+
+    sigma = round(statistics.stdev(riskRatio),1)
+    sigma1 = round(statistics.stdev(riskRatio1),1)
     
     mttr = summary2["mttrCriticalThreat"][-weeks:]
     mttrAvg = nonzeroAvg(mttr,0,0)
+    mttr1 = summary1["mttrCriticalThreat"]
+    mttrAvg1 = nonzeroAvg(mttr1,0,0)
 
 
 
@@ -444,11 +483,11 @@ def insights():
     pdf.multi_cell(0,7,content2,0)
     pdf.ln(1)
     if weeklyOnboard > weeklyOnboard1:
-        content21 = "This represents a "+str(average(weeklyOnboard,weeklyOnboard1,1,0) - 100)+"% increase in the onboarding rate."
+        content21 = "This represents a "+str(round(average(weeklyOnboard,weeklyOnboard1,1,0) - 100,1))+"% increase in the onboarding rate."
         pdf.set_text_color(0, 153, 0)
         pdf.multi_cell(0,7,content21,0)
     elif weeklyOnboard < weeklyOnboard1:
-        content21 = "This represents a "+str(100 - average(weeklyOnboard,weeklyOnboard1,1,0))+"% reduction in the onboarding rate. Have all apps been onboarded yet?"
+        content21 = "This represents a "+str(round(100 - average(weeklyOnboard,weeklyOnboard1,1,0),1))+"% reduction in the onboarding rate. Have all apps been onboarded yet?"
         pdf.set_text_color(255, 0, 0)
         pdf.multi_cell(0,7,content21,0)
     elif onboarded1 == onboarded2:
@@ -462,15 +501,15 @@ def insights():
     pdf.ln(10)
     pdf.set_text_color(0, 0, 0)
 
-    content3 = "Scanned applications at an average of "+str(weeklyScanned)+" apps scanned per week (previously "+str(weeklyScanned1)+" apps scanned per week). Scanning coverage is "+str(average(weeklyScanned,onboarded2,1,0))+"% (percentage of total apps scanned)."
+    content3 = "Scanned applications at an average of "+str(weeklyScanned)+" apps scanned per week (previously "+str(weeklyScanned1)+" apps scanned per week). Scanning coverage is "+str(round(average(weeklyScanned,onboarded2,1,0),1))+"% (percentage of total apps scanned)."
     pdf.multi_cell(0,7,content3,0)
     pdf.ln(1)
     if weeklyScanned > weeklyScanned1:
-        content31 = "This represents a "+str(average(weeklyScanned,weeklyScanned1,1,0) - 100)+"% increase in the scanning coverage rate."
+        content31 = "This represents a "+str(round(average(weeklyScanned,weeklyScanned1,1,0) - 100,1))+"% increase in the scanning coverage rate."
         pdf.set_text_color(0, 153, 0)
         pdf.multi_cell(0,7,content31,0)
     elif weeklyScanned < weeklyScanned1:
-        content31 = "This represents a "+str(100 - average(weeklyScanned,weeklyScanned1,1,0))+"% reduction in the scanning coverage rate."
+        content31 = "This represents a "+str(round(100 - average(weeklyScanned,weeklyScanned1,1,0),1))+"% reduction in the scanning coverage rate."
         pdf.set_text_color(255, 0, 0)
         pdf.multi_cell(0,7,content31,0)
     elif scanned == 0:
@@ -492,7 +531,7 @@ def insights():
         pdf.set_text_color(0, 153, 0)
         pdf.multi_cell(0,7,content41,0)
     elif weeklyScans < weeklyScans1:
-        content41 = "This represents a "+str(100 - average(weeklyScans,weeklyScans1,1,0))+"% reduction in the scanning rate."
+        content41 = "This represents a "+str(round(100 - average(weeklyScans,weeklyScans1,1,0),1))+"% reduction in the scanning rate."
         pdf.set_text_color(255, 0, 0)
         pdf.multi_cell(0,7,content41,0)
     elif scans == 0:
@@ -514,7 +553,7 @@ def insights():
         pdf.set_text_color(255, 0, 0)
         pdf.multi_cell(0,7,content51,0)
     elif discovered < discovered1:
-        content51 = "This represents a "+str(100 - average(discovered,discovered1,1,0))+"% reduction in the discovery rate. This could indicate that development teams are selecting safer OSS components, hence shifting left."
+        content51 = "This represents a "+str(round(100 - average(discovered,discovered1,1,0),1))+"% reduction in the discovery rate. This could indicate that development teams are selecting safer OSS components, hence shifting left."
         pdf.set_text_color(0, 153, 0)
         pdf.multi_cell(0,7,content51,0)
     elif discovered == 0 and scans != 0:
@@ -525,56 +564,263 @@ def insights():
         content51 = "This represents a stable discovery rate."
         pdf.set_text_color(0, 0, 255)
         pdf.multi_cell(0,7,content51,0)
+    pdf.ln(1)
+    pdf.set_text_color(0, 0, 0)
+    if (disCri >= disCri1) and (discovered >= discovered1):
+        content52 = "This also represents a "+str(round(average(disCri,disCri1,1,0) - 100,1))+"% increase in the discovery rate for Critical violations."
+        pdf.set_text_color(255, 0, 0)
+        pdf.multi_cell(0,7,content52,0)
+    elif (disCri >= disCri1) and (discovered < discovered1):
+        content52 = "However, there is a "+str(round(average(disCri,disCri1,1,0) - 100,1))+"% increase in the discovery rate for Critical violations."
+        pdf.set_text_color(255, 0, 0)
+        pdf.multi_cell(0,7,content52,0)
+    elif (disCri < disCri1) and (discovered >= discovered1):
+        content52 = "However, there is a "+str(round(100 - average(disCri,disCri1,1,0),1))+"% reduction in the discovery rate for Critical violations."
+        pdf.set_text_color(0, 153, 0)
+        pdf.multi_cell(0,7,content52,0)
+    elif (disCri < disCri1) and (discovered < discovered1):
+        content52 = "This also represents a "+str(round(average(disCri,disCri1,1,0) - 100,1))+"% reduction in the discovery rate for Critical violations."
+        pdf.set_text_color(0, 153, 0)
+        pdf.multi_cell(0,7,content52,0)        
+    else:
+        content52 = "This represents a stable discovery rate for Critical violations."
+        pdf.set_text_color(0, 0, 255)
+        pdf.multi_cell(0,7,content52,0)
     pdf.ln(10)
     pdf.set_text_color(0, 0, 0)
 
-    content6 = "Fixed "+str(fixed)+" new violations (previously "+str(fixed1)+" violations). Of these, "+str(disCri)+" were Critical (previously "+str(disCri1)+" were Critical)."
+    
+
+    content6 = "Fixed "+str(fixed)+" violations (previously "+str(fixed1)+" violations) from your open backlog. Of these, "+str(fixedCri)+" were Critical (previously "+str(fixedCri1)+" were Critical)."
     pdf.multi_cell(0,7,content6,0)
     pdf.ln(1)
     if fixed > fixed1:
-        content61 = "This represents a "+str(round(average(fixed,fixed1,1,0) - 100,1))+"% increase in the discovery rate. This could indicate that development teams are not selecting safer OSS components. Have you integrated the IDE plugins and Chrome extension?"
-        pdf.set_text_color(255, 0, 0)
+        content61 = "This represents a "+str(round(average(fixed,fixed1,1,0) - 100,1))+"% increase in the fixing rate."
+        pdf.set_text_color(0, 153, 0)
         pdf.multi_cell(0,7,content61,0)
     elif fixed < fixed1:
-        content61 = "This represents a "+str(100 - average(fixed,fixed1,1,0))+"% reduction in the discovery rate. This could indicate that development teams are selecting safer OSS components, hence shifting left."
-        pdf.set_text_color(0, 153, 0)
-        pdf.multi_cell(0,7,content61,0)
-    elif fixed == 0 and scans != 0:
-        content61 = "No new fixed violations during this time period. This could indicate that development teams are selecting safer OSS components, hence shifting left."
-        pdf.set_text_color(0, 153, 0)
+        content61 = "This represents a "+str(round(100 - average(fixed,fixed1,1,0),1))+"% reduction in the fixing rate."
+        pdf.set_text_color(255, 0, 0)
         pdf.multi_cell(0,7,content61,0)
     else:
-        content61 = "This represents a stable discovery rate."
+        content61 = "This represents a stable fixing rate."
         pdf.set_text_color(0, 0, 255)
         pdf.multi_cell(0,7,content61,0)
+    pdf.ln(1)
+    pdf.set_text_color(0, 0, 0)
+    if (fixedCri >= fixedCri1) and (fixed >= fixed1):
+        content62 = "This also represents a "+str(round(average(fixedCri,fixedCri1,1,0) - 100,1))+"% increase in the fixing rate for Critical violations."
+        pdf.set_text_color(0, 153, 0)
+        pdf.multi_cell(0,7,content62,0)
+    elif (fixedCri >= fixedCri1) and (fixed < fixed1):
+        content62 = "However, there is a "+str(round(average(fixedCri,fixedCri1,1,0) - 100,1))+"% increase in the fixing rate for Critical violations."
+        pdf.set_text_color(0, 153, 0)
+        pdf.multi_cell(0,7,content62,0)
+    elif (fixedCri < fixedCri1) and (fixed >= fixed1):
+        content62 = "However, there is a "+str(round(100 - average(fixedCri,fixedCri1,1,0),1))+"% reduction in the fixing rate for Critical violations."
+        pdf.set_text_color(255, 0, 0)
+        pdf.multi_cell(0,7,content62,0)
+    elif (fixedCri < fixedCri1) and (fixed < fixed1):
+        content62 = "This also represents a "+str(round(average(fixedCri,fixedCri1,1,0) - 100,1))+"% reduction in the fixing rate for Critical violations."
+        pdf.set_text_color(255, 0, 0)
+        pdf.multi_cell(0,7,content62,0)        
+    else:
+        content62 = "This represents a stable fixing rate for Critical violations."
+        pdf.set_text_color(0, 0, 255)
+        pdf.multi_cell(0,7,content62,0)
     pdf.ln(10)
     pdf.set_text_color(0, 0, 0)
 
-    
-    content6 = "Fixed "+str(fixed)+" and waived "+str(waived)+" violations from your open backlog"
-    content7 = "\t  Which means that your Fixing Rate (Fixed & Waived / Discovered) is "+str(dealtRate)+"%"
-    content8 = "\t- On average, each application has "+str(riskRatioAvg)+" Open Critical violations"
-    content9 = "\t\t\t Most Criticals: "+str(mostCri)+" with "+str(mostCriVal)+" Critical violations"
-    content10 = "\t\t\t Least Criticals: "+str(leastCri)+" with "+str(leastCriVal)+" Critical violations"
-    content11 = "\t- It took an average of "+str(mttrAvg)+" days to fix Critical violations"
-
-
-
-    
-
-    pdf.cell(0,0,content6,0)
-    pdf.ln(10)
-    pdf.set_text_color(0, 0, 255)
-    pdf.cell(0,0,content7,0)
-    pdf.ln(15)
+    content7 = "Waived "+str(waived)+" violations (previously "+str(waived1)+" violations) from your open backlog. Of these, "+str(waivedCri)+" were Critical (previously "+str(waivedCri1)+" were Critical)."
+    pdf.multi_cell(0,7,content7,0)
+    pdf.ln(1)
+    if waived > waived1:
+        content71 = "This represents a "+str(round(average(waived,waived1,1,0) - 100,1))+"% increase in the waiving rate."
+        pdf.set_text_color(0, 0, 255)
+        pdf.multi_cell(0,7,content71,0)
+    elif waived < waived1:
+        content71 = "This represents a "+str(round(100 - average(waived,waived1,1,0),1))+"% reduction in the waiving rate."
+        pdf.set_text_color(0, 0, 255)
+        pdf.multi_cell(0,7,content71,0)
+    else:
+        content71 = "This represents a stable waiving rate."
+        pdf.set_text_color(0, 0, 255)
+        pdf.multi_cell(0,7,content71,0)
+    pdf.ln(1)
     pdf.set_text_color(0, 0, 0)
-    pdf.cell(0,0,content8,0)
+    if (waivedCri >= waivedCri1) and (waived >= waived1):
+        content72 = "This also represents a "+str(round(average(waivedCri,waivedCri1,1,0) - 100,1))+"% increase in the waiving rate for Critical violations."
+        pdf.set_text_color(0, 0, 255)
+        pdf.multi_cell(0,7,content72,0)
+    elif (waivedCri >= waivedCri1) and (waived < waived1):
+        content72 = "However, there is a "+str(round(average(waivedCri,waivedCri1,1,0) - 100,1))+"% increase in the waiving rate for Critical violations."
+        pdf.set_text_color(0, 0, 255)
+        pdf.multi_cell(0,7,content72,0)
+    elif (waivedCri < waivedCri1) and (waived >= waived1):
+        content72 = "However, there is a "+str(round(100 - average(waivedCri,waivedCri1,1,0),1))+"% reduction in the waiving rate for Critical violations."
+        pdf.set_text_color(0, 0, 255)
+        pdf.multi_cell(0,7,content72,0)
+    elif (waivedCri < waivedCri1) and (waived < waived1):
+        content72 = "This also represents a "+str(round(average(waivedCri,waivedCri1,1,0) - 100,1))+"% reduction in the waiving rate for Critical violations."
+        pdf.set_text_color(0, 0, 255)
+        pdf.multi_cell(0,7,content72,0)        
+    else:
+        content72 = "This represents a stable waiving rate for Critical violations."
+        pdf.set_text_color(0, 0, 255)
+        pdf.multi_cell(0,7,content72,0)
     pdf.ln(10)
-    pdf.cell(0,0,content9,0)
+    pdf.set_text_color(0, 0, 0)
+    
+    content8 = "Your organisation currently has "+str(opened2)+" open violations in their backlog (previously "+str(opened1)+" violations). Of these, "+str(openedCri2)+" were Critical (previously "+str(openedCri1)+" were Critical)."
+    pdf.multi_cell(0,7,content8,0)
+    pdf.ln(1)
+    if opened2 > opened1:
+        content81 = "This represents a "+str(round(average(opened2,opened1,1,0) - 100,1))+"% increase in violations in the backlog."
+        pdf.set_text_color(255, 0, 0)
+        pdf.multi_cell(0,7,content81,0)
+    elif opened2 < opened1:
+        content81 = "This represents a "+str(round(100 - average(opened2,opened1,1,0),1))+"% reduction in violations in the backlog."
+        pdf.set_text_color(0, 153, 0)
+        pdf.multi_cell(0,7,content81,0)
+    else:
+        content81 = "There were the same number of violations in the open backlog at the beginning and at the end of the period in scope."
+        pdf.set_text_color(0, 0, 255)
+        pdf.multi_cell(0,7,content81,0)
+    pdf.ln(1)
+    pdf.set_text_color(0, 0, 0)
+    if (openedCri2 >= openedCri1) and (opened2 >= opened1):
+        content82 = "This also represents a "+str(round(average(openedCri2,openedCri1,1,0) - 100,1))+"% increase in Critical violations in the backlog."
+        pdf.set_text_color(255, 0, 0)
+        pdf.multi_cell(0,7,content82,0)
+    elif (openedCri2 >= openedCri1) and (opened2 < opened1):
+        content82 = "However, there is a "+str(round(average(openedCri2,openedCri1,1,0) - 100,1))+"% increase in Critical violations in the backlog."
+        pdf.set_text_color(255, 0, 0)
+        pdf.multi_cell(0,7,content82,0)
+    elif (openedCri2 < openedCri1) and (opened2 >= opened1):
+        content82 = "However, there is a "+str(round(100 - average(openedCri2,openedCri1,1,0),1))+"% reduction in Critical violations in the backlog."
+        pdf.set_text_color(0, 153, 0)
+        pdf.multi_cell(0,7,content82,0)
+    elif (openedCri2 < openedCri1) and (opened2 < opened1):
+        content82 = "This also represents a "+str(round(average(openedCri2,openedCri1,1,0) - 100,1))+"% reduction in Critical violations in the backlog."
+        pdf.set_text_color(0, 153, 0)
+        pdf.multi_cell(0,7,content82,0)        
+    else:
+        content82 = "There were the same number of Critical violations in the open backlog at the beginning and at the end of the period in scope."
+        pdf.set_text_color(0, 0, 255)
+        pdf.multi_cell(0,7,content82,0)
     pdf.ln(10)
-    pdf.cell(0,0,content10,0)
+    pdf.set_text_color(0, 0, 0)
+    
+    content9 = "Your organisation currently has a Backlog Dealing rate ((Fixed + Waived) / Discovered) of "+str(dealtRate)+"% (previously it was "+str(dealtRate1)+"%)."
+    pdf.multi_cell(0,7,content9,0)
+    pdf.ln(1)
+    if dealtRate > dealtRate1:
+        content91 = "This represents a "+str(round(average(dealtRate,dealtRate1,1,0) - 100,1))+"% increase in the Backlog Dealing rate, which means that the backlog is reducing."
+        pdf.set_text_color(0, 153, 0)
+        pdf.multi_cell(0,7,content91,0)
+    elif dealtRate < dealtRate1:
+        content91 = "This represents a "+str(round(100 - average(dealtRate,dealtRate1,1,0),1))+"% reduction in the Backlog Dealing rate, which means that the backlog is increasing."
+        pdf.set_text_color(255, 0, 0)
+        pdf.multi_cell(0,7,content91,0)
+    else:
+        content91 = "The Backlog Dealing rate was the same at the beginning and at the end of the period in scope."
+        pdf.set_text_color(0, 0, 255)
+        pdf.multi_cell(0,7,content91,0)
+    pdf.ln(10)
+    pdf.set_text_color(0, 0, 0)
+    
+    content10 = "On average, each application had "+str(round(riskRatioAvg,1))+" open Critical violations (previously "+str(round(riskRatioAvg1,1))+" open Critical violations)."
+    pdf.multi_cell(0,7,content10,0)
+    pdf.ln(1)
+    if riskRatioAvg > riskRatioAvg1:
+        content101 = "This represents a "+str(round(average(riskRatioAvg,riskRatioAvg1,1,0) - 100,1))+"% increase in the risk ratio."
+        pdf.set_text_color(255, 0, 0)
+        pdf.multi_cell(0,7,content101,0)
+    elif riskRatioAvg < riskRatioAvg1:
+        content101 = "This represents a "+str(round(100 - average(riskRatioAvg,riskRatioAvg1,1,0),1))+"% reduction in the risk ratio."
+        pdf.set_text_color(0, 153, 0)
+        pdf.multi_cell(0,7,content101,0)
+    else:
+        content101 = "The risk ratio was the same at the beginning and at the end of the period in scope."
+        pdf.set_text_color(0, 0, 255)
+        pdf.multi_cell(0,7,content101,0)
+    pdf.ln(10)
+    pdf.set_text_color(0, 0, 0)
+
+    content11 = "The standard deviation was "+str(sigma)+" open Critical violations (previously "+str(sigma1)+" open Critical violations)."
+    pdf.multi_cell(0,7,content11,0)
+    pdf.ln(1)
+    if sigma > sigma1:
+        content111 = "This represents a "+str(round(average(sigma,sigma1,1,0) - 100,1))+"% increase in the spread of Critical violations."
+        pdf.set_text_color(255, 0, 0)
+        pdf.multi_cell(0,7,content111,0)
+    elif sigma < sigma1:
+        content111 = "This represents a "+str(round(100 - average(sigma,sigma1,1,0),1))+"% reduction in the spread of Critical violations."
+        pdf.set_text_color(0, 153, 0)
+        pdf.multi_cell(0,7,content111,0)
+    else:
+        content111 = "The standard deviation was the same at the beginning and at the end of the period in scope."
+        pdf.set_text_color(0, 0, 255)
+        pdf.multi_cell(0,7,content111,0)
+    pdf.ln(10)
+    pdf.set_text_color(0, 0, 0)
+
+    content12 = "Based on the current average and standard deviation, below is a table with the applications to be prioritised for remediation (all apps with more than "+str(round(riskRatioAvg+sigma,1))+" open Critical violations):"
+    pdf.multi_cell(0,7,content12,0)
+    pdf.ln(5)
+    #-------------------------------------------------------------------------
+    ################################
+    #Loading data for json2 (after)
+    ################################
+    header_Open_App = ['Application', 'Critical','Severe','Moderate','Low']
+    data_Open_App= []
+    for app in apps2:
+        critical2 = app['summary']['openCountsAtTimePeriodEnd']['TOTAL']['CRITICAL']['rng'][-1]
+        severe2 = app['summary']['openCountsAtTimePeriodEnd']['TOTAL']['SEVERE']['rng'][-1]
+        moderate2 = app['summary']['openCountsAtTimePeriodEnd']['TOTAL']['MODERATE']['rng'][-1]
+        low2 = app['summary']['openCountsAtTimePeriodEnd']['TOTAL']['LOW']['rng'][-1]
+        aux2 = [critical2,severe2,moderate2,low2]
+        data_Open_App.append([app['applicationName']] + aux2)
+    data_Open_App.sort(key = lambda data_Open_App: data_Open_App[1], reverse = True)
+    aux2=[]
+    if len(data_Open_App) <= 100:
+        for i in range(0,len(data_Open_App)):
+            aux2.append([data_Open_App[i][0],str(data_Open_App[i][1]),str(data_Open_App[i][2]),str(data_Open_App[i][3]),str(data_Open_App[i][4])])
+    else:
+        for i in range(0,100):
+            aux2.append([data_Open_App[i][0],str(data_Open_App[i][1]),str(data_Open_App[i][2]),str(data_Open_App[i][3]),str(data_Open_App[i][4])])
+    
+    for app in range(0,len(aux2)):
+        if float(aux2[app][1]) >= riskRatioAvg+sigma:
+            low_index = app
+    data_Open_App = aux2[:low_index+1]
+    pdf.fancy_table(header_Open_App, data_Open_App)
     pdf.ln(15)
-    pdf.cell(0,0,content11,0)
+    t +=1
+    printProgressBar(t,graphNo)
+
+    #---------------------------------------------------------------------
+
+    pdf.set_font('Times', 'B', 18)
+    content13 = "It took an average of "+str(mttrAvg)+" days to fix Critical violations (previously "+str(mttrAvg1)+" days to fix Critical violations)."
+
+    pdf.cell(0,0,content13,0)
+    pdf.ln(5)
+    if mttrAvg > mttrAvg1:
+        content131 = "This represents a "+str(round(average(mttrAvg,mttrAvg1,1,0) - 100,1))+"% increase in the MTTR for Critical violations."
+        pdf.set_text_color(255, 0, 0)
+        pdf.multi_cell(0,7,content131,0)
+    elif mttrAvg < mttrAvg1:
+        content131 = "This represents a "+str(round(100 - average(mttrAvg,mttrAvg1,1,0),1))+"% reduction in the MTTR for Critical violations."
+        pdf.set_text_color(0, 153, 0)
+        pdf.multi_cell(0,7,content131,0)
+    else:
+        content131 = "The MTTR for Critical violations was the same at the beginning and at the end of the period in scope."
+        pdf.set_text_color(0, 0, 255)
+        pdf.multi_cell(0,7,content131,0)
+    pdf.ln(10)
+    pdf.set_text_color(0, 0, 0)
+
 
     t +=1
     printProgressBar(t,graphNo)
