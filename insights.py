@@ -20,7 +20,7 @@ import argparse
 import statistics
 
 parser = argparse.ArgumentParser(description='generate insights report')
-parser.add_argument('-all','--insights', help='generates insights report for all violations', action='store_true', required=False)
+parser.add_argument('-all','--insightsAll', help='generates insights report for all violations', action='store_true', required=False)
 parser.add_argument('-s','--insightsSec', help='generates insights report only for Security violations', action='store_true', required=False)
 parser.add_argument('-l','--insightsLic', help='generates insights report only for Licensing violations', action='store_true', required=False)
 parser.add_argument('-before','--beforeFile', help='enter the path to the earlier json file to compare',dest='jsonBefore', action='store', required=True)
@@ -320,7 +320,7 @@ def getScope(scope1,scope2):
 #---------------------------------
 
 #INSIGHTS: Insights report (comparison between two different json files)
-def insights():
+def insights(apps1,apps2,summary1,summary2,report):
 
     pages, t, graphNo = [], 0, 2
     appName, orgName, OpeLow, OpeMod, OpeSev, OpeCri, mttrLow, mttrMod, mttrSev, mttrCri = [],[],[],[],[],[],[],[],[],[]
@@ -329,16 +329,23 @@ def insights():
     pdf = PDF()
     pdf.alias_nb_pages()
 
+    if report == 'summary':
+        selector = 'TOTAL'
+    if report == 'security':
+        selector = 'SECURITY'
+    if report == 'licences':
+        selector = 'LICENSE'
+
     ################################
     #Loading data for json1 (before)
     ################################
     header_Open_App1 = ['Application', 'Critical','Severe','Moderate','Low']
     data_Open_App1= []
     for app in apps1:
-        critical1 = app['summary']['openCountsAtTimePeriodEnd']['TOTAL']['CRITICAL']['rng'][-1]
-        severe1 = app['summary']['openCountsAtTimePeriodEnd']['TOTAL']['SEVERE']['rng'][-1]
-        moderate1 = app['summary']['openCountsAtTimePeriodEnd']['TOTAL']['MODERATE']['rng'][-1]
-        low1 = app['summary']['openCountsAtTimePeriodEnd']['TOTAL']['LOW']['rng'][-1]
+        critical1 = app[report]['openCountsAtTimePeriodEnd'][selector]['CRITICAL']['rng'][-1]
+        severe1 = app[report]['openCountsAtTimePeriodEnd'][selector]['SEVERE']['rng'][-1]
+        moderate1 = app[report]['openCountsAtTimePeriodEnd'][selector]['MODERATE']['rng'][-1]
+        low1 = app[report]['openCountsAtTimePeriodEnd'][selector]['LOW']['rng'][-1]
         aux1 = [critical1,severe1,moderate1,low1]
         data_Open_App1.append([app['applicationName']] + aux1)
     data_Open_App1.sort(key = lambda data_Open_App1: data_Open_App1[1], reverse = True)
@@ -358,10 +365,10 @@ def insights():
     header_Open_App2 = ['Application', 'Critical','Severe','Moderate','Low']
     data_Open_App2= []
     for app in apps2:
-        critical2 = app['summary']['openCountsAtTimePeriodEnd']['TOTAL']['CRITICAL']['rng'][-1]
-        severe2 = app['summary']['openCountsAtTimePeriodEnd']['TOTAL']['SEVERE']['rng'][-1]
-        moderate2 = app['summary']['openCountsAtTimePeriodEnd']['TOTAL']['MODERATE']['rng'][-1]
-        low2 = app['summary']['openCountsAtTimePeriodEnd']['TOTAL']['LOW']['rng'][-1]
+        critical2 = app[report]['openCountsAtTimePeriodEnd'][selector]['CRITICAL']['rng'][-1]
+        severe2 = app[report]['openCountsAtTimePeriodEnd'][selector]['SEVERE']['rng'][-1]
+        moderate2 = app[report]['openCountsAtTimePeriodEnd'][selector]['MODERATE']['rng'][-1]
+        low2 = app[report]['openCountsAtTimePeriodEnd'][selector]['LOW']['rng'][-1]
         aux2 = [critical2,severe2,moderate2,low2]
         data_Open_App2.append([app['applicationName']] + aux2)
     data_Open_App2.sort(key = lambda data_Open_App2: data_Open_App2[1], reverse = True)
@@ -466,8 +473,12 @@ def insights():
     mttrAvg1 = nonzeroAvg(mttr1,0,0)
 
 
-
-    pdf.print_chapter('Insights Summary (all violations)',"")
+    if report == 'summary':
+        pdf.print_chapter('Insights Summary (all violations)',"")
+    elif report == 'security':
+        pdf.print_chapter('Insights Summary (only security violations)',"")
+    elif report =='licences':
+        pdf.print_chapter('Insights Summary (only licensing violations)',"")
     
     content0 = "Report run on: "+str(today)+" comparing "+str(filenameBefore)+" with "+str(filenameAfter)+" from w/c "+str(scope[0])+" to w/c "+str(scope[-1])
     pdf.multi_cell(0,5,content0,0)
@@ -566,11 +577,11 @@ def insights():
         pdf.multi_cell(0,7,content51,0)
     pdf.ln(1)
     pdf.set_text_color(0, 0, 0)
-    if (disCri >= disCri1) and (discovered >= discovered1):
+    if (disCri > disCri1) and (discovered >= discovered1):
         content52 = "This also represents a "+str(round(average(disCri,disCri1,1,0) - 100,1))+"% increase in the discovery rate for Critical violations."
         pdf.set_text_color(255, 0, 0)
         pdf.multi_cell(0,7,content52,0)
-    elif (disCri >= disCri1) and (discovered < discovered1):
+    elif (disCri > disCri1) and (discovered < discovered1):
         content52 = "However, there is a "+str(round(average(disCri,disCri1,1,0) - 100,1))+"% increase in the discovery rate for Critical violations."
         pdf.set_text_color(255, 0, 0)
         pdf.multi_cell(0,7,content52,0)
@@ -608,11 +619,11 @@ def insights():
         pdf.multi_cell(0,7,content61,0)
     pdf.ln(1)
     pdf.set_text_color(0, 0, 0)
-    if (fixedCri >= fixedCri1) and (fixed >= fixed1):
+    if (fixedCri > fixedCri1) and (fixed >= fixed1):
         content62 = "This also represents a "+str(round(average(fixedCri,fixedCri1,1,0) - 100,1))+"% increase in the fixing rate for Critical violations."
         pdf.set_text_color(0, 153, 0)
         pdf.multi_cell(0,7,content62,0)
-    elif (fixedCri >= fixedCri1) and (fixed < fixed1):
+    elif (fixedCri > fixedCri1) and (fixed < fixed1):
         content62 = "However, there is a "+str(round(average(fixedCri,fixedCri1,1,0) - 100,1))+"% increase in the fixing rate for Critical violations."
         pdf.set_text_color(0, 153, 0)
         pdf.multi_cell(0,7,content62,0)
@@ -648,11 +659,11 @@ def insights():
         pdf.multi_cell(0,7,content71,0)
     pdf.ln(1)
     pdf.set_text_color(0, 0, 0)
-    if (waivedCri >= waivedCri1) and (waived >= waived1):
+    if (waivedCri > waivedCri1) and (waived >= waived1):
         content72 = "This also represents a "+str(round(average(waivedCri,waivedCri1,1,0) - 100,1))+"% increase in the waiving rate for Critical violations."
         pdf.set_text_color(0, 0, 255)
         pdf.multi_cell(0,7,content72,0)
-    elif (waivedCri >= waivedCri1) and (waived < waived1):
+    elif (waivedCri > waivedCri1) and (waived < waived1):
         content72 = "However, there is a "+str(round(average(waivedCri,waivedCri1,1,0) - 100,1))+"% increase in the waiving rate for Critical violations."
         pdf.set_text_color(0, 0, 255)
         pdf.multi_cell(0,7,content72,0)
@@ -688,11 +699,11 @@ def insights():
         pdf.multi_cell(0,7,content81,0)
     pdf.ln(1)
     pdf.set_text_color(0, 0, 0)
-    if (openedCri2 >= openedCri1) and (opened2 >= opened1):
+    if (openedCri2 > openedCri1) and (opened2 >= opened1):
         content82 = "This also represents a "+str(round(average(openedCri2,openedCri1,1,0) - 100,1))+"% increase in Critical violations in the backlog."
         pdf.set_text_color(255, 0, 0)
         pdf.multi_cell(0,7,content82,0)
-    elif (openedCri2 >= openedCri1) and (opened2 < opened1):
+    elif (openedCri2 > openedCri1) and (opened2 < opened1):
         content82 = "However, there is a "+str(round(average(openedCri2,openedCri1,1,0) - 100,1))+"% increase in Critical violations in the backlog."
         pdf.set_text_color(255, 0, 0)
         pdf.multi_cell(0,7,content82,0)
@@ -765,9 +776,6 @@ def insights():
     pdf.ln(10)
     pdf.set_text_color(0, 0, 0)
 
-    content12 = "Based on the current average and standard deviation, below is a table with the applications to be prioritised for remediation (all apps with more than "+str(round(riskRatioAvg+sigma,1))+" open Critical violations):"
-    pdf.multi_cell(0,7,content12,0)
-    pdf.ln(5)
     #-------------------------------------------------------------------------
     ################################
     #Loading data for json2 (after)
@@ -775,10 +783,10 @@ def insights():
     header_Open_App = ['Application', 'Critical','Severe','Moderate','Low']
     data_Open_App= []
     for app in apps2:
-        critical2 = app['summary']['openCountsAtTimePeriodEnd']['TOTAL']['CRITICAL']['rng'][-1]
-        severe2 = app['summary']['openCountsAtTimePeriodEnd']['TOTAL']['SEVERE']['rng'][-1]
-        moderate2 = app['summary']['openCountsAtTimePeriodEnd']['TOTAL']['MODERATE']['rng'][-1]
-        low2 = app['summary']['openCountsAtTimePeriodEnd']['TOTAL']['LOW']['rng'][-1]
+        critical2 = app[report]['openCountsAtTimePeriodEnd'][selector]['CRITICAL']['rng'][-1]
+        severe2 = app[report]['openCountsAtTimePeriodEnd'][selector]['SEVERE']['rng'][-1]
+        moderate2 = app[report]['openCountsAtTimePeriodEnd'][selector]['MODERATE']['rng'][-1]
+        low2 = app[report]['openCountsAtTimePeriodEnd'][selector]['LOW']['rng'][-1]
         aux2 = [critical2,severe2,moderate2,low2]
         data_Open_App.append([app['applicationName']] + aux2)
     data_Open_App.sort(key = lambda data_Open_App: data_Open_App[1], reverse = True)
@@ -794,8 +802,14 @@ def insights():
         if float(aux2[app][1]) >= riskRatioAvg+sigma:
             low_index = app
     data_Open_App = aux2[:low_index+1]
-    pdf.fancy_table(header_Open_App, data_Open_App)
-    pdf.ln(15)
+
+    if low_index > 0: 
+        content12 = "Based on the current average and standard deviation, below is a table with the applications to be prioritised for remediation (all apps with more than "+str(round(riskRatioAvg+sigma,1))+" open Critical violations):"
+        pdf.multi_cell(0,7,content12,0)
+        pdf.ln(5)
+
+        pdf.fancy_table(header_Open_App, data_Open_App)
+        pdf.ln(15)
     t +=1
     printProgressBar(t,graphNo)
 
@@ -829,15 +843,25 @@ def insights():
 
     
     #-------------------------------------------------------------------------
-    pdf.output('./output/insights_report.pdf', 'F')
+    return pdf
+
+
+#-------------------------------------------------------------------------
+def insightsAll():
+    pdf = insights(apps1,apps2,summary1,summary2,'summary')
+    pdf.output('./output/insights_report_all.pdf', 'F')
 
 
 #-------------------------------------------------------------------------
 def insightsSec():
-    print("Report not yet implemented")
+    pdf = insights(apps1,apps2,Security1,Security2,'security')
+    pdf.output('./output/insights_report_security.pdf', 'F')
+    #print("Report not yet implemented")
 #-------------------------------------------------------------------------
 def insightsLic():
-    print("Report not yet implemented")
+    pdf = insights(apps1,apps2,licences1,licences2,'licences')
+    pdf.output('./output/insights_report_licences.pdf', 'F')
+    #print("Report not yet implemented")
 #-------------------------------------------------------------------------
 #-------------------------------------------------------------------------
 
