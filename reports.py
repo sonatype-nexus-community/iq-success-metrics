@@ -316,7 +316,7 @@ def executive():
     
     weeks = len(summary["weeks"])
     scope = weeksWithData(summary["appOnboard"])
-    onboarded = summary["appOnboard"][-1]
+    onboarded = summary["appOnboard"][-1] - summary["appOnboard"][0]
     weeklyOnboard = average(onboarded,scope,0,0)
     scanned = sum(summary["appNumberScan"])
     weeklyScanned = average(scanned,scope,0,0)
@@ -727,7 +727,7 @@ def executiveSec():
     
     weeks = len(Security["weeks"])
     scope = weeksWithData(Security["appOnboard"])
-    onboarded = Security["appOnboard"][-1]
+    onboarded = Security["appOnboard"][-1] - Security["appOnboard"][0]
     weeklyOnboard = average(onboarded,scope,0,0)
     scanned = sum(Security["appNumberScan"])
     weeklyScanned = average(scanned,scope,0,0)
@@ -1128,7 +1128,7 @@ def executiveLic():
     
     weeks = len(licences["weeks"])
     scope = weeksWithData(licences["appOnboard"])
-    onboarded = licences["appOnboard"][-1]
+    onboarded = licences["appOnboard"][-1] - licences["appOnboard"][0]
     weeklyOnboard = average(onboarded,scope,0,0)
     scanned = sum(licences["appNumberScan"])
     weeklyScanned = average(scanned,scope,0,0)
