@@ -414,6 +414,10 @@ def insights(apps1,apps2,summary1,summary2,report):
     disCri = sum(summary2["discoveredCounts"]["CRITICAL"]) - sum(summary1["discoveredCounts"]["CRITICAL"])
     disCri1 = sum(summary1["discoveredCounts"]["CRITICAL"])
     disCri2 = sum(summary2["discoveredCounts"]["CRITICAL"])
+    if discovered < 0:
+        discovered = discovered2
+    if disCri < 0:
+        disCri = disCri2
     
     if len(data_Open_App1) > 0:
         mostCri = data_Open_App2[0][0]
@@ -434,6 +438,10 @@ def insights(apps1,apps2,summary1,summary2,report):
     fixedCri = sum(summary2["fixedCounts"]["CRITICAL"]) - sum(summary1["fixedCounts"]["CRITICAL"])
     fixedCri1 = sum(summary1["fixedCounts"]["CRITICAL"])
     fixedCri2 = sum(summary2["fixedCounts"]["CRITICAL"])
+    if fixed < 0:
+        fixed = fixed2
+    if fixedCri < 0:
+        fixedCri = fixedCri2
 
     waived = sum(summary2["waivedCounts"]["TOTAL"]) - sum(summary1["waivedCounts"]["TOTAL"])
     waived1 = sum(summary1["waivedCounts"]["TOTAL"])
@@ -441,6 +449,10 @@ def insights(apps1,apps2,summary1,summary2,report):
     waivedCri = sum(summary2["waivedCounts"]["CRITICAL"]) - sum(summary1["waivedCounts"]["CRITICAL"])
     waivedCri1 = sum(summary1["waivedCounts"]["CRITICAL"])
     waivedCri2 = sum(summary2["waivedCounts"]["CRITICAL"])
+    if waived < 0:
+        waived = waived2
+    if waivedCri < 0:
+        waivedCri = waivedCri2
 
     opened1 = summary1["openCountsAtTimePeriodEnd"]["TOTAL"][-1]
     opened2 = summary2["openCountsAtTimePeriodEnd"]["TOTAL"][-1]
@@ -534,7 +546,7 @@ def insights(apps1,apps2,summary1,summary2,report):
     pdf.ln(10)
     pdf.set_text_color(0, 0, 0)
         
-    content4 = "Performed "+str(scans)+" scans at an average of "+str(weeklyScans)+" scans per week (previously "+str(weeklyScans1)+" scans per week)."
+    content4 = "Performed "+str(scans)+" scans (previously "+str(scans1)+" scans) at an average of "+str(weeklyScans)+" scans per week (previously "+str(weeklyScans1)+" scans per week)."
     pdf.multi_cell(0,7,content4,0)
     pdf.ln(1)
     if weeklyScans > weeklyScans1:
@@ -555,7 +567,7 @@ def insights(apps1,apps2,summary1,summary2,report):
         pdf.multi_cell(0,7,content41,0)
     pdf.ln(10)
     pdf.set_text_color(0, 0, 0)
-    
+
     content5 = "Discovered "+str(discovered)+" new violations (previously "+str(discovered1)+" violations). Of these, "+str(disCri)+" were Critical (previously "+str(disCri1)+" were Critical)."
     pdf.multi_cell(0,7,content5,0)
     pdf.ln(1)
@@ -590,7 +602,7 @@ def insights(apps1,apps2,summary1,summary2,report):
         pdf.set_text_color(0, 153, 0)
         pdf.multi_cell(0,7,content52,0)
     elif (disCri < disCri1) and (discovered < discovered1):
-        content52 = "This also represents a "+str(round(average(disCri,disCri1,1,0) - 100,1))+"% reduction in the discovery rate for Critical violations."
+        content52 = "This also represents a "+str(round(100 - average(disCri,disCri1,1,0),1))+"% reduction in the discovery rate for Critical violations."
         pdf.set_text_color(0, 153, 0)
         pdf.multi_cell(0,7,content52,0)        
     else:
@@ -599,8 +611,6 @@ def insights(apps1,apps2,summary1,summary2,report):
         pdf.multi_cell(0,7,content52,0)
     pdf.ln(10)
     pdf.set_text_color(0, 0, 0)
-
-    
 
     content6 = "Fixed "+str(fixed)+" violations (previously "+str(fixed1)+" violations) from your open backlog. Of these, "+str(fixedCri)+" were Critical (previously "+str(fixedCri1)+" were Critical)."
     pdf.multi_cell(0,7,content6,0)
@@ -632,7 +642,7 @@ def insights(apps1,apps2,summary1,summary2,report):
         pdf.set_text_color(255, 0, 0)
         pdf.multi_cell(0,7,content62,0)
     elif (fixedCri < fixedCri1) and (fixed < fixed1):
-        content62 = "This also represents a "+str(round(average(fixedCri,fixedCri1,1,0) - 100,1))+"% reduction in the fixing rate for Critical violations."
+        content62 = "This also represents a "+str(round(100 - average(fixedCri,fixedCri1,1,0),1))+"% reduction in the fixing rate for Critical violations."
         pdf.set_text_color(255, 0, 0)
         pdf.multi_cell(0,7,content62,0)        
     else:
@@ -672,7 +682,7 @@ def insights(apps1,apps2,summary1,summary2,report):
         pdf.set_text_color(0, 0, 255)
         pdf.multi_cell(0,7,content72,0)
     elif (waivedCri < waivedCri1) and (waived < waived1):
-        content72 = "This also represents a "+str(round(average(waivedCri,waivedCri1,1,0) - 100,1))+"% reduction in the waiving rate for Critical violations."
+        content72 = "This also represents a "+str(round(100 - average(waivedCri,waivedCri1,1,0),1))+"% reduction in the waiving rate for Critical violations."
         pdf.set_text_color(0, 0, 255)
         pdf.multi_cell(0,7,content72,0)        
     else:
@@ -712,7 +722,7 @@ def insights(apps1,apps2,summary1,summary2,report):
         pdf.set_text_color(0, 153, 0)
         pdf.multi_cell(0,7,content82,0)
     elif (openedCri2 < openedCri1) and (opened2 < opened1):
-        content82 = "This also represents a "+str(round(average(openedCri2,openedCri1,1,0) - 100,1))+"% reduction in Critical violations in the backlog."
+        content82 = "This also represents a "+str(round(100 - average(openedCri2,openedCri1,1,0),1))+"% reduction in Critical violations in the backlog."
         pdf.set_text_color(0, 153, 0)
         pdf.multi_cell(0,7,content82,0)        
     else:
@@ -721,7 +731,7 @@ def insights(apps1,apps2,summary1,summary2,report):
         pdf.multi_cell(0,7,content82,0)
     pdf.ln(10)
     pdf.set_text_color(0, 0, 0)
-    
+   
     content9 = "Your organisation currently has a Backlog Dealing rate ((Fixed + Waived) / Discovered) of "+str(dealtRate)+"% (previously it was "+str(dealtRate1)+"%)."
     pdf.multi_cell(0,7,content9,0)
     pdf.ln(1)
