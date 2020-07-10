@@ -595,13 +595,17 @@ def get_week(recency = 0): # recency is number of weeks prior to current week.
 def get_ISO_week(date): # date is needed to calculate ISO week
         d = datetime.date(int(date[0]),int(date[1]),int(date[2]))
         #print(d)
-        period = '{}-W{}'.format(d.year , d.isocalendar()[1])
+        if d.month == 12 and d.isocalendar()[1] == 1:
+            period = '{}-W{}'.format(d.year+1 , d.isocalendar()[1])
+        else:
+            period = '{}-W{}'.format(d.year , d.isocalendar()[1])    
         #print("ISO week: ",period)
         return period
 
 def get_week_date(s):
         d = datetime.datetime.strptime(s, "%Y-%m-%d")
         period = '{}'.format(d.isocalendar()[1])
+        
         return period
 
 def get_metrics(iq_url, scope = 6, appId = [], orgId = []): # scope is number of week prior to current week.
