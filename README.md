@@ -120,6 +120,11 @@ A similar example but using date range would be:
 
 `python3 success_metrics.py -a admin:admin123 -d 2019-06-01:2020-05-05 -u http://localhost:8070 -i 'd8f63854f4ea4405a9600e34f4d4514e','Test App1','MyApp3' -o 'c6f2775a45d44d43a32621536e638a8e','The A Team' -p -r`
 
+### The Docker equivalent for advanced usage
+`docker run --name iq-success-metrics --rm -it -v /tmp/output:/usr/src/app/output sonatypecommunity/iq-success-metrics:latest success_metrics.py -a admin:admin123 -s 50 -u http://host.docker.internal:8070 -i 'd8f63854f4ea4405a9600e34f4d4514e','Test App1','MyApp3' -o 'c6f2775a45d44d43a32621536e638a8e','The A Team' -p -r`
+
+Do not forget to replace http://host.docker.internal:8070 with the URL of your IQ server and use your own user:password instead of admin:admin123.
+
 ### The Snapshot feature
 Since release v4.13, the snapshot feature is available by using the switch -snap.
 Every time you run the script (from v4.13 onwards), the current list of unique IDs for all of the apps in the IQ server will be downloaded and added to the `snapshot.json` file inside the output folder with a timestamp. For example, if you run the script on 4th May 2020 and then again a month later on the 4th June 2020, you would get a `snapshot.json` like this:
@@ -139,10 +144,25 @@ Or using docker:
 
 `docker run --name iq-success-metrics --rm -it -v /tmp/output:/usr/src/app/output sonatypecommunity/iq-success-metrics:latest success_metrics.py -a admin:admin123 -u http://host.docker.internal:8070 -d 2020-01-01:2020-06-04 -snap 2020-05-04 -r`
 
-### The Docker equivalent for advanced usage
-`docker run --name iq-success-metrics --rm -it -v /tmp/output:/usr/src/app/output sonatypecommunity/iq-success-metrics:latest success_metrics.py -a admin:admin123 -s 50 -u http://host.docker.internal:8070 -i 'd8f63854f4ea4405a9600e34f4d4514e','Test App1','MyApp3' -o 'c6f2775a45d44d43a32621536e638a8e','The A Team' -p -r`
+### The Insights feature
+Since release v5.1, the insights feature is available by calling the `insights.py` script. This script compares two json files and generates a pdf report with a detailed analysis providing insights of what has happened between the two time periods covered.
 
-Do not forget to replace http://host.docker.internal:8070 with the URL of your IQ server and use your own user:password instead of admin:admin123.
+Every time you run the `success_metrics.py` script (from v5.1 onwards), a time-stamped json file will be generated. The filename format will be `yyyy-mm-dd_successmetrics.json`. If you run the `success_metrics.py` script multiple times within the same day, the time-stamped json file will overwrite itself so that only the most recent one is kept.
+
+Let's say that you ran the `success_metrics.py` script on 4th May 2020 and a month later on 4th June 2020. If you were on version v5.1 at those dates, you would have a `2020-05-04_successmetrics.json` and a `2020-06-04_successmetrics.json` files in your output folder.
+
+If you wanted to compare what has happened between those dates, you would simply run the following docker command to generate the pdf report for all violations (use `-s` for security violations only and `-l` for licensing violations only):
+
+`docker run --name iq-success-metrics --rm -it -v /tmp/output:/usr/src/app/output sonatypecommunity/iq-success-metrics:latest insights.py -before ./output/2020-05-04_successmetrics.json -after ./output/2020-06-04_successmetrics.json -all`
+
+It is important to select the correct json files with the correct date ranges. Choose the json file with the latest or most recent data for the `-after` switch and the json with the older data for the `-before` switch. Ideally, there should be one or more weeks of data overlapping between the two json files (the script is intelligent enough to pick that up and select the correct data).
+
+Valid examples would be: 
+* json1 with data from 1st Jan 2020 until 4th May 2020 (before) combined with json2 with data from 1st Jan 2020 until 8th June 2020 (after). In this case, the insights report would display data from the first ISO week containing or after 4th May 2020 until the last fully completed ISO week containing or before the 8th June 2020.
+
+* json1 with data from 1st Jan 2020 until 4th May 2020 (before) combined with json2 with data from 4th May 2020 until 8th June 2020 (after). In this case, the insights report would also display data from the first ISO week containing or after 4th May 2020 until the last fully completed ISO week containing or before the 8th June 2020 (both examples are equivalent).
+
+It is not possible to compare two json files that have a gap in data between them (if they don't overlap).
 
 ## Explaining the Success Metrics Data API
 

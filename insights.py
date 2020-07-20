@@ -420,11 +420,13 @@ def insights(apps1,apps2,summary1,summary2,report):
     disCri = sum(summary2["discoveredCounts"]["CRITICAL"]) - sum(summary1["discoveredCounts"]["CRITICAL"])
     disCri1 = sum(summary1["discoveredCounts"]["CRITICAL"])
     disCri2 = sum(summary2["discoveredCounts"]["CRITICAL"])
+
     if disCri < 0:
         disCri = disCri2
     weeklyDisCri = average(disCri,weeks,0,0)
     weeklyDisCri1 = average(disCri1,weeks1,0,0)
     weeklyDisCri2 = average(disCri2,weeks2,0,0)
+
     
     if len(data_Open_App1) > 0:
         mostCri = data_Open_App2[0][0]
@@ -451,11 +453,13 @@ def insights(apps1,apps2,summary1,summary2,report):
     fixedCri = sum(summary2["fixedCounts"]["CRITICAL"]) - sum(summary1["fixedCounts"]["CRITICAL"])
     fixedCri1 = sum(summary1["fixedCounts"]["CRITICAL"])
     fixedCri2 = sum(summary2["fixedCounts"]["CRITICAL"])
+
     if fixedCri < 0:
         fixedCri = fixedCri2
     weeklyFixedCri = average(fixedCri,weeks,0,0)
     weeklyFixedCri1 = average(fixedCri1,weeks1,0,0)
     weeklyFixedCri2 = average(fixedCri2,weeks2,0,0)
+
 
     waived = sum(summary2["waivedCounts"]["TOTAL"]) - sum(summary1["waivedCounts"]["TOTAL"])
     waived1 = sum(summary1["waivedCounts"]["TOTAL"])
@@ -468,11 +472,13 @@ def insights(apps1,apps2,summary1,summary2,report):
     waivedCri = sum(summary2["waivedCounts"]["CRITICAL"]) - sum(summary1["waivedCounts"]["CRITICAL"])
     waivedCri1 = sum(summary1["waivedCounts"]["CRITICAL"])
     waivedCri2 = sum(summary2["waivedCounts"]["CRITICAL"])
+
     if waivedCri < 0:
         waivedCri = waivedCri2
     weeklyWaivedCri = average(waivedCri,weeks,0,0)
     weeklyWaivedCri1 = average(waivedCri1,weeks1,0,0)
     weeklyWaivedCri2 = average(waivedCri2,weeks2,0,0)
+
 
     opened1 = summary1["openCountsAtTimePeriodEnd"]["TOTAL"][-1]
     opened2 = summary2["openCountsAtTimePeriodEnd"]["TOTAL"][-1]
@@ -588,7 +594,9 @@ def insights(apps1,apps2,summary1,summary2,report):
     pdf.ln(10)
     pdf.set_text_color(0, 0, 0)
 
+
     content5 = "Discovered "+str(discovered)+" new violations at an average of "+str(weeklyDiscovered)+" discovered per week (previously "+str(weeklyDiscovered1)+" discovered per week). \nOf these, "+str(disCri)+" were Critical at an average of "+str(weeklyDisCri)+" discovered Criticals per week (previously "+str(weeklyDisCri1)+" discovered Criticals per week)."
+
     pdf.multi_cell(0,7,content5,0)
     pdf.ln(1)
     if weeklyDiscovered > weeklyDiscovered1:
@@ -621,8 +629,10 @@ def insights(apps1,apps2,summary1,summary2,report):
         content52 = "However, there is a "+str(round(100 - average(weeklyDisCri,weeklyDisCri1,1,0),1))+"% reduction in the discovery rate for Critical violations."
         pdf.set_text_color(0, 153, 0)
         pdf.multi_cell(0,7,content52,0)
+
     elif (weeklyDisCri < weeklyDisCri1) and (weeklyDiscovered < weeklyDiscovered1):
         content52 = "This also represents a "+str(round(100 - average(weeklyDisCri,weeklyDisCri1,1,0),1))+"% reduction in the discovery rate for Critical violations."
+
         pdf.set_text_color(0, 153, 0)
         pdf.multi_cell(0,7,content52,0)        
     else:
@@ -632,7 +642,9 @@ def insights(apps1,apps2,summary1,summary2,report):
     pdf.ln(10)
     pdf.set_text_color(0, 0, 0)
 
+
     content6 = "Fixed "+str(fixed)+" violations from your open backlog at an average of "+str(weeklyFixed)+" fixed per week (previously "+str(weeklyFixed1)+" fixed per week). \nOf these, "+str(fixedCri)+" were Critical at an average of "+str(weeklyFixedCri)+" fixed Criticals per week (previously "+str(weeklyFixedCri1)+" fixed Criticals per week)."
+
     pdf.multi_cell(0,7,content6,0)
     pdf.ln(1)
     if weeklyFixed > weeklyFixed1:
@@ -661,8 +673,10 @@ def insights(apps1,apps2,summary1,summary2,report):
         content62 = "However, there is a "+str(round(100 - average(weeklyFixedCri,weeklyFixedCri1,1,0),1))+"% reduction in the fixing rate for Critical violations."
         pdf.set_text_color(255, 0, 0)
         pdf.multi_cell(0,7,content62,0)
+
     elif (weeklyFixedCri < weeklyFixedCri1) and (weeklyFixed < weeklyFixed1):
         content62 = "This also represents a "+str(round(100 - average(weeklyFixedCri,weeklyFixedCri1,1,0),1))+"% reduction in the fixing rate for Critical violations."
+
         pdf.set_text_color(255, 0, 0)
         pdf.multi_cell(0,7,content62,0)        
     else:
@@ -705,8 +719,10 @@ def insights(apps1,apps2,summary1,summary2,report):
         content72 = "However, there is a "+str(round(100 - average(weeklyWaivedCri,weeklyWaivedCri1,1,0),1))+"% reduction in the waiving rate for Critical violations."
         pdf.set_text_color(0, 0, 255)
         pdf.multi_cell(0,7,content72,0)
+
     elif (weeklyWaivedCri < weeklyWaivedCri1) and (weeklyWaived < weeklyWaived1):
         content72 = "This also represents a "+str(round(100 - average(weeklyWaivedCri,weeklyWaivedCri1,1,0),1))+"% reduction in the waiving rate for Critical violations."
+
         pdf.set_text_color(0, 0, 255)
         pdf.multi_cell(0,7,content72,0)        
     elif waivedCri == 0:
