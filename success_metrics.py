@@ -237,35 +237,57 @@ def runScript(args,appId,orgId,first,last,today):
                         #print(app_summary["dates"])
                         
                         for date_no in app_summary["dates"]:
+                                #print(app_summary["dates"])
                                 position = app_summary["dates"].index(date_no)
-                                reportCounts["appOnboard"][date_no] += 1
-                                reportCountsLic["appOnboard"][date_no] += 1
-                                reportCountsSec["appOnboard"][date_no] += 1
+                                #print("position: "+str(position))
+                                if date_no in reportCounts["appOnboard"]:
+                                        reportCounts["appOnboard"][date_no] += 1
+                                if date_no in reportCountsLic["appOnboard"]:
+                                        reportCountsLic["appOnboard"][date_no] += 1
+                                if date_no in reportCountsSec["appOnboard"]:
+                                        reportCountsSec["appOnboard"][date_no] += 1
 
                                 # only include the app's week when they have a value
                                 for mttr in config["mttr"]:
                                         value = app_summary[mttr]["rng"][position]
-                                        if not value is None:
-                                                reportAverages[mttr][date_no].append( value )
-                                                reportAveragesLic[mttr][date_no].append( value )
-                                                reportAveragesSec[mttr][date_no].append( value )
+                                        #print(value)
+                                        if value is not None:
+                                                #print(reportAverages[mttr][date_no])
+                                                if date_no in reportAverages[mttr]:
+                                                        reportAverages[mttr][date_no].append( value )
+                                                if date_no in reportAveragesLic[mttr]:
+                                                        reportAveragesLic[mttr][date_no].append( value )
+                                                if date_no in reportAveragesSec[mttr]:
+                                                        reportAveragesSec[mttr][date_no].append( value )
 
                                 if app_summary["evaluationCount"]["rng"][position] != 0:
-                                        reportCounts["appNumberScan"][date_no] += 1
-                                        reportCountsLic["appNumberScan"][date_no] += 1
-                                        reportCountsSec["appNumberScan"][date_no] += 1
-                                        reportCounts["weeklyScans"][date_no] += app_summary["evaluationCount"]["rng"][position] 
-                                        reportCountsLic["weeklyScans"][date_no] += app_summary["evaluationCount"]["rng"][position] 
-                                        reportCountsSec["weeklyScans"][date_no] += app_summary["evaluationCount"]["rng"][position] 
+                                        if date_no in reportCounts["appNumberScan"]:
+                                                reportCounts["appNumberScan"][date_no] += 1
+                                        if date_no in reportCountsLic["appNumberScan"]:
+                                                reportCountsLic["appNumberScan"][date_no] += 1
+                                        if date_no in reportCountsSec["appNumberScan"]:
+                                                reportCountsSec["appNumberScan"][date_no] += 1
+                                        if date_no in reportCounts["weeklyScans"]:                                    
+                                                reportCounts["weeklyScans"][date_no] += app_summary["evaluationCount"]["rng"][position] 
+                                        if date_no in reportCountsLic["weeklyScans"]:
+                                                reportCountsLic["weeklyScans"][date_no] += app_summary["evaluationCount"]["rng"][position] 
+                                        if date_no in reportCountsSec["weeklyScans"]:
+                                                reportCountsSec["weeklyScans"][date_no] += app_summary["evaluationCount"]["rng"][position] 
 
                                 for status in config["status"]:
                                         for risk in config["risk"]:
-                                                reportCounts[status][risk][date_no] += app_summary[status]["TOTAL"][risk]["rng"][position]
-                                                reportCountsLic[status][risk][date_no] += app_summary[status]["LICENSE"][risk]["rng"][position]
-                                                reportCountsSec[status][risk][date_no] += app_summary[status]["SECURITY"][risk]["rng"][position]
-                                        reportCounts[status]["TOTAL"][date_no] += app_summary[status]["TOTAL"]["rng"][position]
-                                        reportCountsLic[status]["TOTAL"][date_no] += app_summary[status]["LICENSE"]["TOTAL"]["rng"][position]
-                                        reportCountsSec[status]["TOTAL"][date_no] += app_summary[status]["SECURITY"]["TOTAL"]["rng"][position]
+                                                if date_no in reportCounts[status][risk]:
+                                                        reportCounts[status][risk][date_no] += app_summary[status]["TOTAL"][risk]["rng"][position]
+                                                if date_no in reportCountsLic[status][risk]:
+                                                        reportCountsLic[status][risk][date_no] += app_summary[status]["LICENSE"][risk]["rng"][position]
+                                                if date_no in reportCountsSec[status][risk]:
+                                                        reportCountsSec[status][risk][date_no] += app_summary[status]["SECURITY"][risk]["rng"][position]
+                                        if date_no in reportCounts[status]["TOTAL"]:
+                                                reportCounts[status]["TOTAL"][date_no] += app_summary[status]["TOTAL"]["rng"][position]
+                                        if date_no in reportCountsLic[status]["TOTAL"]:
+                                                reportCountsLic[status]["TOTAL"][date_no] += app_summary[status]["LICENSE"]["TOTAL"]["rng"][position]
+                                        if date_no in reportCountsSec[status]["TOTAL"]:
+                                                reportCountsSec[status]["TOTAL"][date_no] += app_summary[status]["SECURITY"]["TOTAL"]["rng"][position]
 
                                 #for rates in config["rates"]:
                                 #        for risk in config["risk"]:
