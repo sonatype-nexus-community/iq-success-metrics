@@ -163,6 +163,7 @@ Valid examples would be:
 * json1 with data from 1st Jan 2020 until 4th May 2020 (before) combined with json2 with data from 4th May 2020 until 8th June 2020 (after). In this case, the insights report would also display data from the first ISO week containing or after 4th May 2020 until the last fully completed ISO week containing or before the 8th June 2020 (both examples are equivalent).
 
 It is not possible to compare two json files that have a gap in data between them (if they don't overlap).
+The best way of ensuring success is to have the same date for both the end date of the "before" file and the start date of the "after" file. e.g. "before" json file from 1st January 2020 until 30th April 2020 and "after" json file from 30th April 2020 until 30th June 2020. In this case, the 30th April 2020 was shared by both json files, so there is overlap and the insights report will run.
 
 ## Explaining the Success Metrics Data API
 
