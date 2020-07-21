@@ -604,9 +604,11 @@ def get_scope(first,last):
 
         d1 = date(int(last[0]),int(last[1]),int(last[2]))
         d2 = date(int(first[0]),int(first[1]),int(first[2]))
-        scope = (d1-d2).days//7
+        aux = (d1-d2).days
+        scope = aux//7
         scope += 1
-        #print(scope)
+        if aux%7 != 0:
+            scope += 1
         return scope
                                                   
 def get_week(recency = 0): # recency is number of weeks prior to current week.
