@@ -403,7 +403,9 @@ def insights(apps1,apps2,summary1,summary2,report):
 
     scans = sum(summary2["weeklyScans"]) - sum(summary1["weeklyScans"])
     scans1 = sum(summary1["weeklyScans"])
-    scans2 = sum(summary2["weeklyScans"])                
+    scans2 = sum(summary2["weeklyScans"])
+    if scans < 0:
+        scans = scans2
     weeklyScans = average(scans,weeks,0,0)
     weeklyScans1 = average(scans1,weeks1,0,0)
     weeklyScans2 = average(scans2,weeks2,0,0)
