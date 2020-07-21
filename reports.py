@@ -360,7 +360,7 @@ def executive(apps, summary, report):
     riskRatioAvg = average(sum(riskRatio),scope,0,0)
     mttrAvg = nonzeroAvg(summary["mttrCriticalThreat"],0,0)
     content0 = "Report run on: "+str(today)
-    content1 = "In the past "+str(weeks)+" weeks your organisation:"
+    content1 = "During the "+str(weeks)+" weeks in scope, your organisation:"
     content2 = "\t- Onboarded "+str(onboarded)+" applications (for a total of "+str(total_onboarded)+"), at an average of "+str(weeklyOnboard)+" per week."
     content3 = "\t- Scanned applications at an average of "+str(weeklyScanned)+" apps scanned per week."
     content4 = "\t- Performed "+str(scans)+" scans at an average of "+str(weeklyScans)+" scans per week."
