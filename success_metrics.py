@@ -59,6 +59,7 @@ def appChecker(iq_url):
     url = "{}/api/v2/applications".format(iq_url)
     response = iq_session.get(url)
     rawData = response.json()
+    #print(rawData)
     for i in range(0,len(rawData["applications"])):
         appList.append(rawData["applications"][i]["id"])
     d = {today : appList}
