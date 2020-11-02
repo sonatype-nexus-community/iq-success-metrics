@@ -741,8 +741,25 @@ def executive(apps, summary, report):
     #---------------------------------------------------------------------
 
 
-    
- #-------------------------------------------------------------------------
+#-------------------------------------------------------------------------
+    if report == 'summary':
+        pdf.print_chapter('Risk Ratio (number of violations / apps onboarded) for Critical violations (all violations)', "")
+    elif report == 'security':
+        pdf.print_chapter('Risk Ratio (number of violations / apps onboarded) for Critical violations (security violations only)', "")
+    elif report =='licences':
+        pdf.print_chapter('Risk Ratio (number of violations / apps onboarded) for Critical violations (licensing violations only)', "")
+    make_chart( 
+        summary['timePeriodStart'], 
+        summary['riskRatioCritical'], 
+        "./output/riskRatioCritical.png", 
+        "Risk Ratio for Critical violations (weekly view)", 
+        xtitle[0])
+    pdf.image("./output/riskRatioCritical.png",10,36,270)
+    t +=1
+    printProgressBar(t,graphNo)
+#-------------------------------------------------------------------------
+    '''
+#-------------------------------------------------------------------------
     if len(summary['timePeriodStart']) >= 4:
         header_riskRatio = ['Risk Ratio', summary['timePeriodStart'][-4], summary['timePeriodStart'][-3], summary['timePeriodStart'][-2], summary['timePeriodStart'][-1]]
         shift = [-4,-3,-2,-1]
@@ -771,7 +788,7 @@ def executive(apps, summary, report):
     printProgressBar(t,graphNo)
     
     #-------------------------------------------------------------------------
-
+'''
 
     #-------------------------------------------------------------------------
     return pdf
