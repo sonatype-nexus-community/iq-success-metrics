@@ -285,7 +285,7 @@ def weeksWithData(scope):
 #EXECUTIVE: Executive summary report (combination of reports but without going into app level)
 def executive(apps, summary, report):
 
-    pages, t, graphNo = [], 0, 18
+    pages, t, graphNo = [], 0, 17
     appName, orgName, OpeLow, OpeMod, OpeSev, OpeCri, mttrLow, mttrMod, mttrSev, mttrCri = [],[],[],[],[],[],[],[],[],[]
     printProgressBar(t,graphNo)
     
@@ -691,6 +691,7 @@ def executive(apps, summary, report):
     t +=1
     printProgressBar(t,graphNo)
      #---------------------------------------------------------------------
+    '''
     make_chart( 
         summary['timePeriodStart'], 
         summary['mttrLowThreat'], 
@@ -714,18 +715,8 @@ def executive(apps, summary, report):
     pdf.image('./output/MTTR_Moderate.png',10,36,270)
     t +=1
     printProgressBar(t, graphNo)
-     #---------------------------------------------------------------------
-    make_chart( 
-        summary['timePeriodStart'], 
-        summary['mttrSevereThreat'], 
-        "./output/MTTR_Severe.png", 
-        "MTTR (in days) for all Severe Threat violations week-on-week", 
-        xtitle[0]
-    )
-    pdf.print_chapter('MTTR (in days) for all Severe Threat violations week-on-week','')
-    pdf.image('./output/MTTR_Severe.png',10,36,270)
-    t +=1
-    printProgressBar(t, graphNo)
+    '''
+
      #---------------------------------------------------------------------
     make_chart( 
         summary['timePeriodStart'], 
@@ -739,6 +730,19 @@ def executive(apps, summary, report):
     t +=1
     printProgressBar(t, graphNo)
     #---------------------------------------------------------------------
+
+     #---------------------------------------------------------------------
+    make_chart( 
+        summary['timePeriodStart'], 
+        summary['mttrSevereThreat'], 
+        "./output/MTTR_Severe.png", 
+        "MTTR (in days) for all Severe Threat violations week-on-week", 
+        xtitle[0]
+    )
+    pdf.print_chapter('MTTR (in days) for all Severe Threat violations week-on-week','')
+    pdf.image('./output/MTTR_Severe.png',10,36,270)
+    t +=1
+    printProgressBar(t, graphNo)
 
 
 #-------------------------------------------------------------------------
@@ -758,6 +762,25 @@ def executive(apps, summary, report):
     t +=1
     printProgressBar(t,graphNo)
 #-------------------------------------------------------------------------
+
+#-------------------------------------------------------------------------
+    if report == 'summary':
+        pdf.print_chapter('Risk Ratio (number of violations / apps onboarded) for Severe violations (all violations)', "")
+    elif report == 'security':
+        pdf.print_chapter('Risk Ratio (number of violations / apps onboarded) for Severe violations (security violations only)', "")
+    elif report =='licences':
+        pdf.print_chapter('Risk Ratio (number of violations / apps onboarded) for Severe violations (licensing violations only)', "")
+    make_chart( 
+        summary['timePeriodStart'], 
+        summary['riskRatioSevere'], 
+        "./output/riskRatioSevere.png", 
+        "Risk Ratio for Severe violations (weekly view)", 
+        xtitle[0])
+    pdf.image("./output/riskRatioSevere.png",10,36,270)
+    t +=1
+    printProgressBar(t,graphNo)
+#-------------------------------------------------------------------------
+
     '''
 #-------------------------------------------------------------------------
     if len(summary['timePeriodStart']) >= 4:
