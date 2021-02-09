@@ -18,10 +18,13 @@ The script is actually two different files: `success_metrics.py`  and `reports.p
 
 ## Usage
 
+CSE Demo
+[![Image from Gyazo](https://i.gyazo.com/16ecb370994550be080ee9f57ace8c01.gif)](https://gyazo.com/16ecb370994550be080ee9f57ace8c01)
+
 First we create a temporary folder to store the outputs:
 
 ```
-mkdir /tmp/output
+mkdir ~/Documents/output
 ```
 
 Then we pull the latest docker image from Docker Hub:
@@ -33,7 +36,7 @@ docker pull sonatypecommunity/iq-success-metrics:latest
 Then we use the following docker command to generate the JSON file (switch -s stands for scope and it is the number of weeks that we want data from, in this case the past 50 weeks) and the desired PDF reports (-r stands for reports and will generate an executive report and an app-level detailed table report). Do not forget to replace the URL with your IQ server's:
 
 ```
-docker run --name iq-success-metrics --rm -it -v /tmp/output:/usr/src/app/output sonatypecommunity/iq-success-metrics:latest success_metrics.py -u http://iq.server.com:8070 -a user:password -s 50 -r
+docker run --name iq-success-metrics --rm -it -v ~/Documents/output:/usr/src/app/output sonatypecommunity/iq-success-metrics:latest success_metrics.py -u http://iq.server.com:8070 -a user:password -s 50 -r
 ```
 
 If you want to generate the executive and table reports just for security violations, use the `-rs` switch instead of just `-r`. If you are only interested in licence obligations, you can generate such executive and table reports by using the `-rl` switch instead. 
@@ -54,13 +57,13 @@ If you want to generate the executive and table reports just for security violat
 For example, for HTTPS not using reverse proxy:
 
 ```
-docker run --name iq-success-metrics --rm -it -v /tmp/output:/usr/src/app/output sonatypecommunity/iq-success-metrics:latest success_metrics.py -u https://iq.server.com:8070 -a user:password -s 50 -r -k
+docker run --name iq-success-metrics --rm -it -v ~/Documents/output:/usr/src/app/output sonatypecommunity/iq-success-metrics:latest success_metrics.py -u https://iq.server.com:8070 -a user:password -s 50 -r -k
 ```
 
 An equivalent example for HTTPS using reverse proxy would be:
 
 ```
-docker run --name iq-success-metrics --rm -it -v /tmp/output:/usr/src/app/output sonatypecommunity/iq-success-metrics:latest success_metrics.py -u https://iq.server.com -a user:password -s 50 -r -k
+docker run --name iq-success-metrics --rm -it -v ~/Documents/output:/usr/src/app/output sonatypecommunity/iq-success-metrics:latest success_metrics.py -u https://iq.server.com -a user:password -s 50 -r -k
 ```
 
 If after trying all of this, you still encounter problems, contact your CSE.
@@ -121,7 +124,7 @@ A similar example but using date range would be:
 `python3 success_metrics.py -a admin:admin123 -d 2019-06-01:2020-05-05 -u http://localhost:8070 -i 'd8f63854f4ea4405a9600e34f4d4514e','Test App1','MyApp3' -o 'c6f2775a45d44d43a32621536e638a8e','The A Team' -p -r`
 
 ### The Docker equivalent for advanced usage
-`docker run --name iq-success-metrics --rm -it -v /tmp/output:/usr/src/app/output sonatypecommunity/iq-success-metrics:latest success_metrics.py -a admin:admin123 -s 50 -u http://host.docker.internal:8070 -i 'd8f63854f4ea4405a9600e34f4d4514e','Test App1','MyApp3' -o 'c6f2775a45d44d43a32621536e638a8e','The A Team' -p -r`
+`docker run --name iq-success-metrics --rm -it -v ~/Documents/output:/usr/src/app/output sonatypecommunity/iq-success-metrics:latest success_metrics.py -a admin:admin123 -s 50 -u http://host.docker.internal:8070 -i 'd8f63854f4ea4405a9600e34f4d4514e','Test App1','MyApp3' -o 'c6f2775a45d44d43a32621536e638a8e','The A Team' -p -r`
 
 Do not forget to replace http://host.docker.internal:8070 with the URL of your IQ server and use your own user:password instead of admin:admin123.
 
@@ -142,7 +145,7 @@ You can see that in May, only two apps were onboarded and in June there are nine
 
 Or using docker:
 
-`docker run --name iq-success-metrics --rm -it -v /tmp/output:/usr/src/app/output sonatypecommunity/iq-success-metrics:latest success_metrics.py -a admin:admin123 -u http://host.docker.internal:8070 -d 2020-01-01:2020-06-04 -snap 2020-05-04 -r`
+`docker run --name iq-success-metrics --rm -it -v ~/Documents/output:/usr/src/app/output sonatypecommunity/iq-success-metrics:latest success_metrics.py -a admin:admin123 -u http://host.docker.internal:8070 -d 2020-01-01:2020-06-04 -snap 2020-05-04 -r`
 
 ### The Insights feature
 Since release v5.1, the insights feature is available by calling the `insights.py` script. This script compares two json files and generates a pdf report with a detailed analysis providing insights of what has happened between the two time periods covered.
@@ -153,7 +156,7 @@ Let's say that you ran the `success_metrics.py` script on 4th May 2020 and a mon
 
 If you wanted to compare what has happened between those dates, you would simply run the following docker command to generate the pdf report for all violations (use `-s` for security violations only and `-l` for licensing violations only):
 
-`docker run --name iq-success-metrics --rm -it -v /tmp/output:/usr/src/app/output sonatypecommunity/iq-success-metrics:latest insights.py -before ./output/2020-05-04_successmetrics.json -after ./output/2020-06-04_successmetrics.json -all`
+`docker run --name iq-success-metrics --rm -it -v ~/Documents/output:/usr/src/app/output sonatypecommunity/iq-success-metrics:latest insights.py -before ./output/2020-05-04_successmetrics.json -after ./output/2020-06-04_successmetrics.json -all`
 
 It is important to select the correct json files with the correct date ranges. Choose the json file with the latest or most recent data for the `-after` switch and the json with the older data for the `-before` switch. Ideally, there should be one or more weeks of data overlapping between the two json files (the script is intelligent enough to pick that up and select the correct data).
 
