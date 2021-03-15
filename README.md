@@ -1,4 +1,5 @@
-# IQ Success Metrics
+# [DEPRECATED] IQ Success Metrics 
+# [Please use the new java version](https://github.com/sonatype-nexus-community/iq-success-metrics2)
 
 [![CircleCI](https://circleci.com/gh/sonatype-nexus-community/iq-success-metrics.svg?style=svg)](https://circleci.com/gh/sonatype-nexus-community/iq-success-metrics)
 
