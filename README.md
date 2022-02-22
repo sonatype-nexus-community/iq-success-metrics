@@ -13,7 +13,7 @@
 \
 \
 \
-
+Old instructions kept below for reference.
 
 [![CircleCI](https://circleci.com/gh/sonatype-nexus-community/iq-success-metrics.svg?style=svg)](https://circleci.com/gh/sonatype-nexus-community/iq-success-metrics)
 
