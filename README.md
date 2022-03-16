@@ -1,5 +1,5 @@
 # [DEPRECATED] IQ Success Metrics 
-# [Please use the new java version](https://github.com/sonatype-nexus-community/iq-success-metrics2)
+# [Please use the new java version](https://github.com/sonatype-nexus-community/nexusiq-successmetrics)
 
 \
 \
